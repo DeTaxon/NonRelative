@@ -32,26 +32,26 @@ InitVulkan := !() -> bool
 
 	count := s32
 
-	//vkEnumerateInstanceLayerProperties(count&,null)
-	//lays := new VkLayerProperties[count] ; $temp
-	//vkEnumerateInstanceLayerProperties(count&,lays)
+	vkEnumerateInstanceLayerProperties(count&,null)
+	lays := new VkLayerProperties[count] ; $temp
+	vkEnumerateInstanceLayerProperties(count&,lays)
 
-	//printf("%i : %s\n",i,lays[^i].layerName)
+	printf("%i : %s\n",i,lays[^i].layerName)
 
-	//vkEnumerateInstanceExtensionProperties(null,count&,null)
-	//exts := new VkExtensionProperties[count] ; $temp
-	//vkEnumerateInstanceExtensionProperties(null,count&,exts)
+	vkEnumerateInstanceExtensionProperties(null,count&,null)
+	exts := new VkExtensionProperties[count] ; $temp
+	vkEnumerateInstanceExtensionProperties(null,count&,exts)
 
-	//printf("%i : %s\n",i,exts[^i].extensionName)
+	printf("%i : %s\n",i,exts[^i].extensionName)
 
-	//wantedLayers := AVLSet.{string}() ; $temp
-	//wantedLayers << "VK_LAYER_LUNARG_standard_validation"
+	wantedLayers := AVLSet.{string}() ; $temp
+	wantedLayers << "VK_LAYER_LUNARG_standard_validation"
 	
-	//toUseLayers := Queue.{string}() ; $temp
-	//if wantedLayers.Contain(lays[^].layerName)
-	//	toUseLayers.Push(it.layerName)
+	toUseLayers := Queue.{string}() ; $temp $uniq
+	if wantedLayers.Contain(lays[^].layerName)
+		toUseLayers.Push(it.layerName)
 
-	//printf("using %i %s\n",i,toUseLayers[^i])
+	printf("using %i %s\n",i,toUseLayers[^i])
 
 	return 0
 }

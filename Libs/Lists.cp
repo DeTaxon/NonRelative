@@ -67,7 +67,78 @@ Stack := class .{@T}
 
 		return this
 	}
-	Pop := !() .{} -> T
+	Pop := !()  -> T
+	{
+		oldVal := Start.Data
+		oldNode := Start
+		Start = Start.Next
+		if $keep 
+		{
+			oldNode = CreatedNodes
+			CreatedNodes = oldNode
+		}else{
+			if not $temp
+				delete oldNode
+		}
+		Counter--
+		return oldVal
+	}
+	IsEmpty := !() -> bool
+	{
+		return Counter == 0
+	}
+	"~For" := !() -> ListIter.{T}
+	{
+		return ListIter.{T}(Start)
+	}
+}
+Queue := class .{@T}
+{
+	Start := ListNode.{T}^
+	Counter := int
+
+	if $keep
+		CreatedNodes := ListNode.{T}^
+
+	this := !() -> void
+	{
+		Start = null
+		Counter = 0
+		if $keep CreatedNodes = null
+	}
+	Push := !(T toAdd) .{} -> void
+	{
+		this << toAdd
+	}
+	"<<" := !(T toAdd) .{} -> ref Stack.{T}
+	{
+
+		if $uniq 
+		{
+			if this[^] == toAdd
+				return this
+		}
+
+		newNode := ListNode.{T}^()
+
+		if $keep and CreatedNodes != null
+		{
+			newNode = CreatedNodes
+			CreatedNodes = CreatedNodes.Next
+		}
+		if newNode == null
+		{
+			newNode = new ListNode.{T}
+		}
+
+		newNode.Data = toAdd
+		newNode.Next = Start
+		Start = newNode
+		Counter++
+
+		return this
+	}
+	Pop := !()  -> T
 	{
 		oldVal := Start.Data
 		oldNode := Start
