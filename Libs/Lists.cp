@@ -67,7 +67,7 @@ Stack := class .{@T}
 
 		return this
 	}
-	Pop := !()  -> T
+	Pop := !()  .{} -> T
 	{
 		oldVal := Start.Data
 		oldNode := Start
@@ -110,7 +110,7 @@ Queue := class .{@T}
 	{
 		this << toAdd
 	}
-	"<<" := !(T toAdd) .{} -> ref Stack.{T}
+	"<<" := !(T toAdd) .{} -> ref Queue.{T}
 	{
 
 		if $uniq 

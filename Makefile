@@ -1,4 +1,4 @@
-ForcedLibs := -f Libs/Lists.cp -f Libs/Memory.cp -f Libs/stdc.cp -f Libs/String.cp
+ForcedLibs := -f Libs/Lists.cp -f Libs/Memory.cp -f Libs/stdc.cp -f Libs/String.cp -f Libs/AVLMap.cp -f Libs/AVLTree.cp -f Libs/AVLSet.cp -f Libs/FatArray.cp
 TimeFlags := -f "time results: real - %E , user - %U user,system - %S ,memory %M KiB"
 
 Libs := -ldl -lpthread
@@ -7,9 +7,9 @@ Libs := -ldl -lpthread
 FLibs := -f FLibs/glfw.cp  
 
 engi: 
-	./halfvoid Source/main.cp $(FLibs) $(ForcedLibs) --vk vk.xml -o Objs/engi.ll; clang++ Objs/engi.ll $(Libs)  -lglfw -o engi
+	./halfvoid Source/main.cp $(FLibs) -F "Libs/*.cp" --vk vk.xml -o Objs/engi.ll; clang++ Objs/engi.ll $(Libs)  -lglfw -o engi
 engig: 
-	gdb --args ./halfvoid --work Source/main.cp $(FLibs) $(ForcedLibs) --vk vk.xml -o Objs/engi.ll; clang++ Objs/engi.ll $(Libs)  -lglfw -o engi
+	gdb --args ./halfvoid --work Source/main.cp $(FLibs) -F "Libs/*.cp" --vk vk.xml -o Objs/engi.ll; clang++ Objs/engi.ll $(Libs)  -lglfw -o engi
 
 
 	
