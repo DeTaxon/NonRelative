@@ -100,6 +100,7 @@ Queue := class .{@T}
 	if $keep
 		CreatedNodes := ListNode.{T}^
 
+	Size := !() -> int { return Counter }
 	this := !() -> void
 	{
 		Start = null
@@ -161,5 +162,14 @@ Queue := class .{@T}
 	"~For" := !() -> ListIter.{T}
 	{
 		return ListIter.{T}(Start)
+	}
+	ToArray := !() .{} -> T[]
+	{
+		if Counter == 0 
+			return null->{T[]}
+
+		preRes := new T[Counter]
+		preRes[i] = this[^i]
+		return preRes
 	}
 }
