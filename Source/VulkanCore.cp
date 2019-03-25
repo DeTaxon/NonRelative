@@ -8,6 +8,7 @@ vkDllHandle := void^
 
 vkFuncs := VkFuncsHolder
 vkInstance := void^
+vkDebugObj := VkDebugReportCallbackEXT
 
 InitVulkan := !() -> bool
 {
@@ -92,22 +93,30 @@ InitVulkan := !() -> bool
 	for i :VkFuncsHolderCount
 	{
 		itr[i] = vkLoadAddr(vkInstance,VkFuncsHolderStrs[i])
+
+		if itr[i] == null
+		{
+			printf("cant load object %s\n",VkFuncsHolderStrs[i])
+
+		}
 	}
 
 	debPrint := new VkDebugReportCallbackCreateInfoEXT ; $temp
 	debPrint.sType = 1000011000
-	debPrint.pfnCallback = VkDebugCallback
+	debPrint.pfnCallback = VkDebugCallback->{void^}
+	debPrint.flags = 2 or_b 4 or_b 8
 
-	a := vkFuncs.vkEnumeratePhysicalDevices//(vkInstance,null,null)
-	a(vkInstance,null,null)
-	//vkFuncs.vkCreateDebugReportCallbackEXT//(vkInstance,null,null)
+	//vkFuncs.vkEnumeratePhysicalDevices(vkInstance,null,null)
+	//a := vkFuncs.vkEnumeratePhysicalDevices//(vkInstance,null,null)
+	//a(vkInstance,null,null)
+	vkFuncs.vkCreateDebugReportCallbackEXT(vkInstance,debPrint,null,vkDebugObj&)
 	//vkFuncs.vkCreateDevice
 
 	
 	return 0
 }
 
-VkDebugCallback := !(int flags,int bojType,u64 object,u64 location,int msgCode,char^ prefix,char^ msg,void^ usrData)
+VkDebugCallback := !(int flags,int bojType,u64 object,u64 location,int msgCode,char^ prefix,char^ msg,void^ usrData) -> int
 {
 	printf("VkError <%s>\n",msg)
 }
