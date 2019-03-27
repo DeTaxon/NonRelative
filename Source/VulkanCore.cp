@@ -90,7 +90,7 @@ InitVulkan := !() -> bool
 		return instRes
 
 	itr := vkFuncs&->{void^^}
-	for i :VkFuncsHolderCount
+	for i : VkFuncsHolderCount
 	{
 		itr[i] = vkLoadAddr(vkInstance,VkFuncsHolderStrs[i])
 
@@ -105,12 +105,49 @@ InitVulkan := !() -> bool
 	debPrint.sType = 1000011000
 	debPrint.pfnCallback = VkDebugCallback->{void^}
 	debPrint.flags = 2 or_b 4 or_b 8
+	vkFuncs.vkCreateDebugReportCallbackEXT(vkInstance,debPrint,null,vkDebugObj&)
 
-	//vkFuncs.vkEnumeratePhysicalDevices(vkInstance,null,null)
+	
+	devCount := u32
+	vkFuncs.vkEnumeratePhysicalDevices(vkInstance,devCount&,null)
+	if devCount == 0 {
+		printf("no physical devices\n")
+		return 0
+	}
+	devs := new VkPhysicalDevice[devCount->{s64}->{s32}] ; $temp
+	vkFuncs.vkEnumeratePhysicalDevices(vkInstance,devCount&,devs)
+
+	for it, i : devs
+	{
+		printf("device id %i\n",i)
+
+		devProp := new VkPhysicalDeviceProperties ; $temp
+		vkFuncs.vkGetPhysicalDeviceProperties(it,devProp)
+			
+		printf("-name %s\n",devProp.deviceName)
+		printf("-type %i\n",devProp.deviceType)
+
+		propsCount := u32
+		vkFuncs.vkGetPhysicalDeviceQueueFamilyProperties(it,propsCount&,null)
+		prps := new VkQueueFamilyProperties[propsCount->{s64}->{s32}] ; $temp
+		vkFuncs.vkGetPhysicalDeviceQueueFamilyProperties(it,propsCount&,prps)
+
+		for it,i : prps
+		{
+			printf("-quque family %i\n",i)
+			printf("-- queueCount %i\n",it.queueCount)
+			printf("-- queueFlags %X\n",it.queueFlags)
+		}
+	}
+
+
+
+
 	//a := vkFuncs.vkEnumeratePhysicalDevices//(vkInstance,null,null)
 	//a(vkInstance,null,null)
-	vkFuncs.vkCreateDebugReportCallbackEXT(vkInstance,debPrint,null,vkDebugObj&)
 	//vkFuncs.vkCreateDevice
+
+	
 
 	
 	return 0
