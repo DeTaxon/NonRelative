@@ -1246,15 +1246,6 @@ server.
             <member optional="true"><type>VkCommandBufferUsageFlags</type>  <name>flags</name><comment>Command buffer usage flags</comment></member>
             <member optional="true" noautovalidity="true">const <type>VkCommandBufferInheritanceInfo</type>*       <name>pInheritanceInfo</name><comment>Pointer to inheritance info for secondary command buffers</comment></member>
         </type>
-        <type category="struct" name="VkRenderPassBeginInfo">
-            <member values="VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO"><type>VkStructureType</type> <name>sType</name></member>
-            <member>const <type>void</type>*            <name>pNext</name></member>
-            <member><type>VkRenderPass</type>           <name>renderPass</name></member>
-            <member><type>VkFramebuffer</type>          <name>framebuffer</name></member>
-            <member><type>VkRect2D</type>               <name>renderArea</name></member>
-            <member optional="true"><type>uint32_t</type>               <name>clearValueCount</name></member>
-            <member len="clearValueCount">const <type>VkClearValue</type>*    <name>pClearValues</name></member>
-        </type>
         <type category="union" name="VkClearColorValue" comment="// Union allowing specification of floating point, integer, or unsigned integer color data. Actual value selected is based on image/attachment being cleared.">
             <member><type>float</type>                  <name>float32</name>[4]</member>
             <member><type>int32_t</type>                <name>int32</name>[4]</member>
@@ -1272,6 +1263,15 @@ server.
             <member><type>VkImageAspectFlags</type>     <name>aspectMask</name></member>
             <member><type>uint32_t</type>               <name>colorAttachment</name></member>
             <member><type>VkClearValue</type>           <name>clearValue</name></member>
+        </type>
+        <type category="struct" name="VkRenderPassBeginInfo">
+            <member values="VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO"><type>VkStructureType</type> <name>sType</name></member>
+            <member>const <type>void</type>*            <name>pNext</name></member>
+            <member><type>VkRenderPass</type>           <name>renderPass</name></member>
+            <member><type>VkFramebuffer</type>          <name>framebuffer</name></member>
+            <member><type>VkRect2D</type>               <name>renderArea</name></member>
+            <member optional="true"><type>uint32_t</type>               <name>clearValueCount</name></member>
+            <member len="clearValueCount">const <type>VkClearValue</type>*    <name>pClearValues</name></member>
         </type>
         <type category="struct" name="VkAttachmentDescription">
             <member optional="true"><type>VkAttachmentDescriptionFlags</type> <name>flags</name></member>

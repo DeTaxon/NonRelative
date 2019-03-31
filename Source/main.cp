@@ -1,26 +1,31 @@
 #import "VulkanCore.cp"
 
+glfwWindow := void^
+
+startW := int
+startH := int
 
 main := !(int argc, char^^ argv) -> int
 {
+	startW = 700
+	startH = 700
+
+	glfwInit()
+	defer glfwTerminate()
+
+	glfwWindowHint(GLFW_CLIENT_API,GLFW_NO_API)
+	glfwWindow = glfwCreateWindow(startW,startH,"Hi again",null,null)
+
 	InitVulkan()
 	defer DestroyVulkan()
-	return 0
 
-	//glfwInit()
-	//defer glfwTerminate()
+	while not glfwWindowShouldClose(glfwWindow)
+	{
+		FlushTempMemory()
+		glfwPollEvents()
 
-	//glfwWindowHint(GLFW_CLIENT_API,GLFW_NO_API)
-	//win := glfwCreateWindow(640,480,"Hi again",null,null)
-
-	////glfwMakeContextCurrent(win)
-
-	//while not glfwWindowShouldClose(win)
-	//{
-	//	//glClear(GL_COLOR_BUFFER_BIT)
-	//	//glfwSwapBuffers(win)
-	//	glfwPollEvents()
-	//}
+		StartDraw()
+	}
 		
 	return 0
 

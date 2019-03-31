@@ -1,3 +1,5 @@
+#import "main.cp"
+
 
 vkLoadAddr := PFN_vkGetInstanceProcAddr
 vkEnumerateInstanceExtensionProperties := PFN_vkEnumerateInstanceExtensionProperties
@@ -9,6 +11,18 @@ vkDllHandle := void^
 vkFuncs := VkFuncsHolder
 vkInstance := void^
 vkDebugObj := VkDebugReportCallbackEXT
+vkPhysCard := VkPhysicalDevice
+vkLogCard := VkDevice
+vkSurface := VkSurfaceKHR
+vkQueue := VkQueue
+vkSwapchain := VkSwapchainKHR
+vkImages := VkImage[]
+vkRenderPass := VkRenderPass
+vkImageViews := VkImageView[]
+vkFramebuffers := VkFramebuffer[]
+vkCmdPool := VkCommandPool
+vkCmdBufs := VkCommandBuffer[]
+vkFence := VkFence
 
 InitVulkan := !() -> bool
 {
@@ -139,20 +153,307 @@ InitVulkan := !() -> bool
 			printf("-- queueFlags %X\n",it.queueFlags)
 		}
 	}
+	vkPhysCard = devs[0]
 
+	//devExtsCount := 0
+	//vkFuncs.vkEnumerateDeviceExtensionProperties(vkPhysCard,null,devExtsCount&,null)
+	//devExts := new VkExtensionProperties[devExtsCount] ; $temp
+	//vkFuncs.vkEnumerateDeviceExtensionProperties(vkPhysCard,null,devExts&,devExts)
 
+	//printf("dev extensions\n")
+	//for 5
+	//{
+	//	printf("- %s\n",devExts[it]&)
+	//}
 
+	physExts := Queue.{string}() ; $temp
+	physExts << "VK_KHR_swapchain"
 
-	//a := vkFuncs.vkEnumeratePhysicalDevices//(vkInstance,null,null)
-	//a(vkInstance,null,null)
-	//vkFuncs.vkCreateDevice
+	queueCreateInf := new VkDeviceQueueCreateInfo() ; $temp
+	queueCreateInf.queueFamilyIndex = 0
+	zeroPrior := float
+	zeroPrior = 0.0
+	queueCreateInf.queueCount = 1
+	queueCreateInf.pQueuePriorities = zeroPrior&
+	
+	zeroFeature := new VkPhysicalDeviceFeatures ; $temp
+
+	logDevice := new VkDeviceCreateInfo() ; $temp
+
+	logDevice.queueCreateInfoCount = 1
+	logDevice.pQueueCreateInfos = queueCreateInf
+	logDevice.enabledLayerCount = toUseLayers.Size()
+	logDevice.ppEnabledLayerNames = toUseLayers.ToArray() ; $temp
+	logDevice.enabledExtensionCount = physExts.Size() //toUseExts.Size()
+	logDevice.ppEnabledExtensionNames = physExts.ToArray()->{void^} ; $temp
+		//toUseExts.ToArray()->{void^} ; $temp
+	logDevice.pEnabledFeatures = zeroFeature
 
 	
+	vkFuncs.vkCreateDevice(vkPhysCard,logDevice,null,vkLogCard&)
 
 	
+	resC := glfwCreateWindowSurface(vkInstance,glfwWindow,null,vkSurface&)
+
+	isPres := 0
+	vkFuncs.vkGetPhysicalDeviceSurfaceSupportKHR(vkPhysCard,0,vkSurface,isPres&)
+
+
+	surfAb := new VkSurfaceCapabilitiesKHR ; $temp
+	vkFuncs.vkGetPhysicalDeviceSurfaceCapabilitiesKHR(vkPhysCard,vkSurface,surfAb)
+
+	printf("surface settings\n")
+	printf("img count min = %i , max = %i\n",surfAb.minImageCount,surfAb.maxImageCount)
+
+	formsCount := 0
+	vkFuncs.vkGetPhysicalDeviceSurfaceFormatsKHR(vkPhysCard,vkSurface,formsCount&,null)
+	formts := new VkSurfaceFormatKHR[formsCount] ; $temp
+	vkFuncs.vkGetPhysicalDeviceSurfaceFormatsKHR(vkPhysCard,vkSurface,formsCount&,formts)
+
+	printf("formats\n")
+	for formts
+	{
+		printf("-format %i\n",it)
+	}
+
+	presMods := 0
+	vkFuncs.vkGetPhysicalDeviceSurfacePresentModesKHR(vkPhysCard,vkSurface,presMods&,null)
+	pMods := new VkPresentModeKHR[presMods] ; $temp
+	vkFuncs.vkGetPhysicalDeviceSurfacePresentModesKHR(vkPhysCard,vkSurface,presMods&,pMods)
+
+	printf("supported mods\n")
+	for pMods
+	{
+		switch it
+		{
+			case VK_PRESENT_MODE_IMMEDIATE_KHR
+				printf("- IMMEDIATE\n")
+			case VK_PRESENT_MODE_MAILBOX_KHR
+				printf("- MAILBOX\n")
+			case VK_PRESENT_MODE_FIFO_KHR
+				printf("- FIFO\n")
+			case VK_PRESENT_MODE_FIFO_RELAXED_KHR
+				printf("- FIFO_RELAXED\n")
+			case else
+				printf("- unknown %i\n",it)
+		}
+	}
+
+	crtSwap := new VkSwapchainCreateInfoKHR ; $temp
+	crtSwap.sType = 1000001000
+	crtSwap.surface = vkSurface
+	crtSwap.minImageCount = 2
+	crtSwap.imageFormat = formts[0].format
+	crtSwap.imageColorSpace = formts[0].colorSpace
+	crtSwap.imageExtent.width = startW
+	crtSwap.imageExtent.height = startH
+	crtSwap.imageArrayLayers = 1
+	crtSwap.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT
+	crtSwap.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE
+	crtSwap.queueFamilyIndexCount = 0
+	crtSwap.pQueueFamilyIndices = null
+	crtSwap.preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR
+	crtSwap.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR
+	crtSwap.presentMode = VK_PRESENT_MODE_IMMEDIATE_KHR
+	crtSwap.clipped = 0
+	crtSwap.oldSwapchain = null
+	
+	vkFuncs.vkCreateSwapchainKHR(vkLogCard,crtSwap,null,vkSwapchain&)
+
+	imgCount := 0
+	vkFuncs.vkGetSwapchainImagesKHR(vkLogCard,vkSwapchain,imgCount&,null)
+	vkImages = new VkImage[imgCount]
+	vkFuncs.vkGetSwapchainImagesKHR(vkLogCard,vkSwapchain,imgCount&,vkImages)
+
+	attmDesc := new VkAttachmentDescription ; $temp
+	attmDesc.format = formts[0].format
+	attmDesc.samples = VK_SAMPLE_COUNT_1_BIT
+	attmDesc.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR
+	attmDesc.storeOp = VK_ATTACHMENT_STORE_OP_STORE
+	attmDesc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE
+	attmDesc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE
+	attmDesc.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED
+	attmDesc.finalLayout  = 1000001002//1000111000//VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+
+	attmRef := new VkAttachmentReference ; $temp
+	attmRef.attachment = 0
+	attmRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+
+	subpass := new VkSubpassDescription ; $temp
+	subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS
+	subpass.inputAttachmentCount = 0
+	subpass.pInputAttachments = null
+	subpass.colorAttachmentCount = 1
+	subpass.pColorAttachments = attmRef
+	subpass.pResolveAttachments = null
+	subpass.pDepthStencilAttachment = null
+	subpass.preserveAttachmentCount = 0
+	subpass.pPreserveAttachments = null
+
+	rpC := new VkRenderPassCreateInfo() ; $temp
+	rpC.attachmentCount = 1
+	rpC.pAttachments = attmDesc
+	rpC.subpassCount = 1
+	rpC.pSubpasses = subpass
+	rpC.dependencyCount = 0
+	rpC.pDependencies = null
+
+	vkFuncs.vkCreateRenderPass(vkLogCard,rpC,null,vkRenderPass&)
+
+	vkImageViews = new VkImageView[vkImages->len]
+	vkFramebuffers = new VkFramebuffer[vkImages->len]
+	for it,i : vkImages
+	{
+		imgViewC := new VkImageViewCreateInfo() ; $temp
+		imgViewC.image = it
+		imgViewC.viewType = VK_IMAGE_VIEW_TYPE_2D
+		imgViewC.format = formts[0].format
+		imgViewC.components.r = VK_COMPONENT_SWIZZLE_R
+		imgViewC.components.g = VK_COMPONENT_SWIZZLE_G
+		imgViewC.components.b = VK_COMPONENT_SWIZZLE_B
+		imgViewC.components.a = VK_COMPONENT_SWIZZLE_A
+
+		imgViewC.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT
+		imgViewC.subresourceRange.baseMipLevel = 0
+		imgViewC.subresourceRange.levelCount = 1
+		imgViewC.subresourceRange.baseArrayLayer = 0
+		imgViewC.subresourceRange.layerCount = 1
+
+		vkFuncs.vkCreateImageView(vkLogCard,imgViewC,null,vkImageViews[i]&)
+
+
+		fbC := new VkFramebufferCreateInfo() ; $temp
+		fbC.renderPass = vkRenderPass
+		fbC.attachmentCount = 1
+		fbC.pAttachments = vkImageViews[i]&
+		fbC.width = surfAb.currentExtent.width
+		fbC.height = surfAb.currentExtent.height
+		fbC.layers = 1
+
+		vkFuncs.vkCreateFramebuffer(vkLogCard,fbC,null,vkFramebuffers[i]&)
+	}
+
+	vkFuncs.vkGetDeviceQueue(vkLogCard,0,0,vkQueue&)
+
+	cmdPoolC := new VkCommandPoolCreateInfo() ; $temp
+	cmdPoolC.queueFamilyIndex = 0
+	cmdPoolC.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT
+	vkFuncs.vkCreateCommandPool(vkLogCard,cmdPoolC,null,vkCmdPool&)
+
+	vkFuncs.vkResetCommandPool(vkLogCard,vkCmdPool,VK_COMMAND_POOL_RESET_RELEASE_RESOURCES_BIT)
+
+	cmdBufC := new VkCommandBufferAllocateInfo() ; $temp
+
+	vkCmdBufs = new VkCommandBuffer[vkImages->len]
+
+	cmdBufC.commandPool = vkCmdPool
+	cmdBufC.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY
+	cmdBufC.commandBufferCount = vkImages->len
+	
+	vkFuncs.vkAllocateCommandBuffers(vkLogCard,cmdBufC,vkCmdBufs)
+
+	for it,i : vkCmdBufs
+	{
+		vkFuncs.vkResetCommandBuffer(it,VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT)
+
+		inhC := new VkCommandBufferInheritanceInfo() ; $temp
+
+		inhC.renderPass = vkRenderPass
+		inhC.subpass = 0
+		inhC.framebuffer = vkFramebuffers[i]
+		inhC.occlusionQueryEnable = 0
+		inhC.queryFlags = 0
+		inhC.pipelineStatistics = 0
+
+		biC := new VkCommandBufferBeginInfo() ; $temp
+		biC.pInheritanceInfo = inhC->{void^}
+
+		vkFuncs.vkBeginCommandBuffer(it,biC)
+
+		rpC := new VkRenderPassBeginInfo() ; $temp
+
+		clrValues := new float[4] ; $temp
+
+		clrValues[0] = 1.0f
+		clrValues[1] = 0.5f
+		clrValues[2] = 0.0f
+		clrValues[3] = 1.0f
+
+		rpC.renderPass = vkRenderPass
+		rpC.framebuffer = it
+		rpC.renderArea.extent.width = surfAb.currentExtent.width
+		rpC.renderArea.extent.height = surfAb.currentExtent.height
+		rpC.clearValueCount = 1
+		rpC.framebuffer = vkFramebuffers[i]
+		rpC.pClearValues = clrValues->{void^}
+
+		vkFuncs.vkCmdBeginRenderPass(it,rpC,VK_SUBPASS_CONTENTS_INLINE)
+
+
+		imgBarC := new VkImageMemoryBarrier() ; $temp
+		imgBarC.srcAccessMask = VK_ACCESS_MEMORY_READ_BIT
+		imgBarC.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT or_b VK_ACCESS_MEMORY_READ_BIT
+		imgBarC.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED
+		imgBarC.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL//1000111000 //VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
+		imgBarC.srcQueueFamilyIndex = 0
+		imgBarC.dstQueueFamilyIndex = 0
+		imgBarC.image = vkImages[i]
+		imgBarC.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT
+		imgBarC.subresourceRange.baseMipLevel = 0
+		imgBarC.subresourceRange.levelCount = 1
+		imgBarC.subresourceRange.baseArrayLayer = 0
+
+		vkFuncs.vkCmdPipelineBarrier(it,VK_PIPELINE_STAGE_TRANSFER_BIT,VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,0,0,null,0,null,1,imgBarC)
+
+		vkFuncs.vkCmdEndRenderPass(it)
+		vkFuncs.vkEndCommandBuffer(it)
+
+	}
+
+
+	crtFence := new VkFenceCreateInfo() ; $temp
+	vkFuncs.vkCreateFence(vkLogCard,crtFence,null,vkFence&)
+
+	
+	printf("finished\n")
+
 	return 0
 }
+nowImg := int
+StartDraw := !() -> void
+{
+	vkFuncs.vkResetFences(vkLogCard,1,vkFence&)
+	vkFuncs.vkAcquireNextImageKHR(vkLogCard,vkSwapchain,10000000,null,vkFence,nowImg&)
+	vkFuncs.vkWaitForFences(vkLogCard,1,vkFence&,1,10000000)
 
+	waitMsk := VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT
+	submInf := new VkSubmitInfo() ; $temp
+	submInf.waitSemaphoreCount = 0
+	submInf.pWaitSemaphores = null
+	submInf.pWaitDstStageMask = waitMsk&->{void^}
+	submInf.commandBufferCount = 1
+  	submInf.pCommandBuffers = vkCmdBufs[nowImg]&;
+  	submInf.signalSemaphoreCount = 0;
+  	submInf.pSignalSemaphores = null
+
+	vkFuncs.vkQueueSubmit(vkQueue, 1, submInf, null)
+	
+	vkFuncs.vkQueueWaitIdle(vkQueue)
+	
+	res := VkResult
+	pI := new VkPresentInfoKHR ; $temp
+	pI.sType = 1000001001//VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+	pI.pNext = null
+	pI.waitSemaphoreCount = 0
+	pI.pWaitSemaphores = null
+	pI.swapchainCount = 1
+	pI.pSwapchains = vkSwapchain&->{void^}
+	pI.pImageIndices = nowImg&->{void^}
+	pI.pResults = res&
+
+	vkFuncs.vkQueueWaitIdle(vkQueue)
+	vkFuncs.vkQueuePresentKHR(vkQueue,pI)
+}
 VkDebugCallback := !(int flags,int bojType,u64 object,u64 location,int msgCode,char^ prefix,char^ msg,void^ usrData) -> int
 {
 	printf("VkError <%s>\n",msg)

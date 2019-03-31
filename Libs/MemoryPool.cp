@@ -56,7 +56,7 @@ StupidMemoryPool := class .{@PageSize}
 			memset(itPage,0,itLoaded)
 		}
 		itLoaded = 0
-		itFreedPages <<< itBusyPages
+		//itFreedPages <<< itBusyPages
 	}
 }
 
