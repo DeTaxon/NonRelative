@@ -4,8 +4,8 @@ StupidMemoryPool := class .{@PageSize}
 	itPage := u8^
 	itLoaded := int
 
-	itBusyPages := Stack.{u8^}
-	itFreedPages := Stack.{u8^}
+	itBusyPages := List.{u8^}
+	itFreedPages := List.{u8^}
 
 	this := !() -> void
 	{
@@ -56,7 +56,7 @@ StupidMemoryPool := class .{@PageSize}
 			memset(itPage,0,itLoaded)
 		}
 		itLoaded = 0
-		//itFreedPages <<< itBusyPages
+		itFreedPages <<< itBusyPages
 	}
 }
 

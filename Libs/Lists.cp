@@ -27,19 +27,26 @@ ListIter := class .{@T}
 	IsEnd := !() -> bool { return iter == null }
 }
 
-Stack := class .{@T}
+List := class .{@T}
 {
 	Start := ListNode.{T}^
+	End := ListNode.{T}^
 	Counter := int
 
 	if $keep
 		CreatedNodes := ListNode.{T}^
 
+	this := !() -> void
+	{
+		Start = null
+		End = null
+		Counter = 0
+	}
 	Push := !(T toAdd) .{} -> void
 	{
 		this << toAdd
 	}
-	"<<" := !(T toAdd) .{} -> ref Stack.{T}
+	"<<" := !(T toAdd) .{} -> ref List.{T}
 	{
 
 		if $uniq 
@@ -61,11 +68,47 @@ Stack := class .{@T}
 		}
 
 		newNode.Data = toAdd
+		newNode.Next = null
+		if End == null
+		{
+			End = newNode
+			Start = newNode
+		}else{
+			End.Next = newNode
+			End = newNode
+		}
+
+		Counter++
+
+		return this
+	}
+	PushFront := !(T toAdd) .{} -> void
+	{
+
+		if $uniq 
+		{
+			if this[^] == toAdd
+				return void
+		}
+
+		newNode := ListNode.{T}^()
+
+		if $keep and CreatedNodes != null
+		{
+			newNode = CreatedNodes
+			CreatedNodes = CreatedNodes.Next
+		}
+		if newNode == null
+		{
+			newNode = new ListNode.{T}
+		}
+
+		newNode.Data = toAdd
 		newNode.Next = Start
 		Start = newNode
 		Counter++
 
-		return this
+		return void
 	}
 	Pop := !()  .{} -> T
 	{
@@ -80,6 +123,8 @@ Stack := class .{@T}
 			if not $temp
 				delete oldNode
 		}
+		if Start == null End = null
+
 		Counter--
 		return oldVal
 	}
@@ -91,77 +136,9 @@ Stack := class .{@T}
 	{
 		return ListIter.{T}(Start)
 	}
-}
-Queue := class .{@T}
-{
-	Start := ListNode.{T}^
-	Counter := int
-
-	if $keep
-		CreatedNodes := ListNode.{T}^
-
-	Size := !() -> int { return Counter }
-	this := !() -> void
+	Size := !() -> int
 	{
-		Start = null
-		Counter = 0
-		if $keep CreatedNodes = null
-	}
-	Push := !(T toAdd) .{} -> void
-	{
-		this << toAdd
-	}
-	"<<" := !(T toAdd) .{} -> ref Queue.{T}
-	{
-
-		if $uniq 
-		{
-			if this[^] == toAdd
-				return this
-		}
-
-		newNode := ListNode.{T}^()
-
-		if $keep and CreatedNodes != null
-		{
-			newNode = CreatedNodes
-			CreatedNodes = CreatedNodes.Next
-		}
-		if newNode == null
-		{
-			newNode = new ListNode.{T}
-		}
-
-		newNode.Data = toAdd
-		newNode.Next = Start
-		Start = newNode
-		Counter++
-
-		return this
-	}
-	Pop := !()  -> T
-	{
-		oldVal := Start.Data
-		oldNode := Start
-		Start = Start.Next
-		if $keep 
-		{
-			oldNode = CreatedNodes
-			CreatedNodes = oldNode
-		}else{
-			if not $temp
-				delete oldNode
-		}
-		Counter--
-		return oldVal
-	}
-	IsEmpty := !() -> bool
-	{
-		return Counter == 0
-	}
-	"~For" := !() -> ListIter.{T}
-	{
-		return ListIter.{T}(Start)
+		return Counter
 	}
 	ToArray := !() .{} -> T[]
 	{
@@ -171,5 +148,26 @@ Queue := class .{@T}
 		preRes := new T[Counter]
 		preRes[i] = this[^i]
 		return preRes
+	}
+	"<<<" := !(List.{T} toAdd) -> ref List.{T}
+	{
+		if toAdd.Counter == 0
+			return this
+		if Counter == 0
+		{
+			Start = toAdd.Start
+			End = toAdd.End
+			Counter = toAdd.Counter
+			toAdd.Start = null
+			toAdd.End = null
+			toAdd.Counter = 0
+			return this
+		}
+		End.Next = toAdd.Start
+		End = toAdd.End
+		toAdd.Start = null
+		toAdd.End = null
+		toAdd.Counter = 0
+		Counter += toAdd.Counter
 	}
 }

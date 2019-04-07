@@ -1,4 +1,5 @@
 #import "main.cp"
+#import "CmdBuffer.cp"
 
 
 vkLoadAddr := PFN_vkGetInstanceProcAddr
@@ -23,6 +24,10 @@ vkFramebuffers := VkFramebuffer[]
 vkCmdPool := VkCommandPool
 vkCmdBufs := VkCommandBuffer[]
 vkFence := VkFence
+vkLayout := VkPipelineLayout
+vkGraphPipe := VkPipeline
+
+lastCmd := CmdBuffer
 
 InitVulkan := !() -> bool
 {
@@ -71,12 +76,13 @@ InitVulkan := !() -> bool
 	wantedExtensions << "VK_KHR_xcb_surface"
 	wantedExtensions << "VK_KHR_xlib_surface"
 	wantedExtensions << "VK_KHR_surface"
+	//wantedExtensions << "VK_KHR_get_physical_device_properties2"
 	
-	toUseLayers := Queue.{string}() ; $temp $uniq 
+	toUseLayers := List.{string}() ; $temp $uniq 
 	if wantedLayers.Contain(lays[^].layerName)
 		toUseLayers.Push(it.layerName)
 
-	toUseExts := Queue.{string}() ; $temp $uniq
+	toUseExts := List.{string}() ; $temp $uniq
 	if wantedExtensions.Contain(exts[^].extensionName)
 		toUseExts << it.extensionName
 
@@ -166,7 +172,7 @@ InitVulkan := !() -> bool
 	//	printf("- %s\n",devExts[it]&)
 	//}
 
-	physExts := Queue.{string}() ; $temp
+	physExts := List.{string}() ; $temp
 	physExts << "VK_KHR_swapchain"
 
 	queueCreateInf := new VkDeviceQueueCreateInfo() ; $temp
@@ -352,6 +358,11 @@ InitVulkan := !() -> bool
 	
 	vkFuncs.vkAllocateCommandBuffers(vkLogCard,cmdBufC,vkCmdBufs)
 
+
+	crtFence := new VkFenceCreateInfo() ; $temp
+	vkFuncs.vkCreateFence(vkLogCard,crtFence,null,vkFence&)
+
+	
 	for it,i : vkCmdBufs
 	{
 		vkFuncs.vkResetCommandBuffer(it,VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT)
@@ -367,6 +378,7 @@ InitVulkan := !() -> bool
 
 		biC := new VkCommandBufferBeginInfo() ; $temp
 		biC.pInheritanceInfo = inhC->{void^}
+		biC.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT
 
 		vkFuncs.vkBeginCommandBuffer(it,biC)
 
@@ -386,35 +398,38 @@ InitVulkan := !() -> bool
 		rpC.clearValueCount = 1
 		rpC.framebuffer = vkFramebuffers[i]
 		rpC.pClearValues = clrValues->{void^}
-
+	
 		vkFuncs.vkCmdBeginRenderPass(it,rpC,VK_SUBPASS_CONTENTS_INLINE)
+		vkFuncs.vkCmdEndRenderPass(lastCmd.Get())
+
+		//vkFuncs.vkCmdBindPipeline(it,VK_PIPELINE_BIND_POINT_GRAPHICS,vkGraphPipe)
+		//vkFuncs.vkCmdDraw(it,3,1,0,0)
 
 
-		imgBarC := new VkImageMemoryBarrier() ; $temp
-		imgBarC.srcAccessMask = VK_ACCESS_MEMORY_READ_BIT
-		imgBarC.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT or_b VK_ACCESS_MEMORY_READ_BIT
-		imgBarC.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED
-		imgBarC.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL//1000111000 //VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
-		imgBarC.srcQueueFamilyIndex = 0
-		imgBarC.dstQueueFamilyIndex = 0
-		imgBarC.image = vkImages[i]
-		imgBarC.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT
-		imgBarC.subresourceRange.baseMipLevel = 0
-		imgBarC.subresourceRange.levelCount = 1
-		imgBarC.subresourceRange.baseArrayLayer = 0
-
-		vkFuncs.vkCmdPipelineBarrier(it,VK_PIPELINE_STAGE_TRANSFER_BIT,VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,0,0,null,0,null,1,imgBarC)
-
-		vkFuncs.vkCmdEndRenderPass(it)
 		vkFuncs.vkEndCommandBuffer(it)
 
 	}
 
+	memReq := new VkPhysicalDeviceMemoryProperties ; $temp
+	vkFuncs.vkGetPhysicalDeviceMemoryProperties(vkPhysCard,memReq)
 
-	crtFence := new VkFenceCreateInfo() ; $temp
-	vkFuncs.vkCreateFence(vkLogCard,crtFence,null,vkFence&)
+	for i : (memReq.memoryTypeCount)&->{int^}^
+	{
+		printf("mem info %i\n",i)
+		if (memReq.memoryTypes[i]&->{int^}^ 
+			and_b VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) != 0 
+				printf("VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT\n")
+		if (memReq.memoryTypes[i]&->{int^}^ 
+			and_b VK_MEMORY_PROPERTY_HOST_COHERENT_BIT) != 0 
+				printf("VK_MEMORY_PROPERTY_HOST_COHERENT_BIT\n")
+		if (memReq.memoryTypes[i]&->{int^}^ 
+			and_b VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT) != 0 
+				printf("VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT\n")
+	}
 
-	
+	ppC := new VkPipelineLayoutCreateInfo() ; $temp
+	vkFuncs.vkCreatePipelineLayout(vkLogCard,ppC,null,vkLayout&)
+
 	printf("finished\n")
 
 	return 0
@@ -438,8 +453,31 @@ StartDraw := !() -> void
 
 	vkFuncs.vkQueueSubmit(vkQueue, 1, submInf, null)
 	
-	vkFuncs.vkQueueWaitIdle(vkQueue)
 	
+}
+StopDraw := !() -> void
+{
+	lastCmd.Reset()
+	lastCmd.Start()
+
+		imgBarC := new VkImageMemoryBarrier() ; $temp
+		imgBarC.srcAccessMask = VK_ACCESS_MEMORY_READ_BIT
+		imgBarC.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT//VK_ACCESS_COLOR_ATTACHMENT_READ_BIT or_b VK_ACCESS_MEMORY_READ_BIT
+		imgBarC.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED
+		imgBarC.newLayout = 1000001002 //VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL//1000111000 //VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
+		imgBarC.srcQueueFamilyIndex = 0
+		imgBarC.dstQueueFamilyIndex = 0
+		imgBarC.image = vkImages[nowImg]
+		imgBarC.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT
+		imgBarC.subresourceRange.baseMipLevel = 0
+		imgBarC.subresourceRange.levelCount = 1
+		imgBarC.subresourceRange.baseArrayLayer = 0
+		imgBarC.subresourceRange.layerCount = 1
+
+		vkFuncs.vkCmdPipelineBarrier(lastCmd.Get(),VK_PIPELINE_STAGE_TRANSFER_BIT,VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,0,0,null,0,null,1,imgBarC)
+	lastCmd.Stop()
+	//lastCmd.Submit()
+	vkFuncs.vkQueueWaitIdle(vkQueue)
 	res := VkResult
 	pI := new VkPresentInfoKHR ; $temp
 	pI.sType = 1000001001//VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
@@ -451,7 +489,6 @@ StartDraw := !() -> void
 	pI.pImageIndices = nowImg&->{void^}
 	pI.pResults = res&
 
-	vkFuncs.vkQueueWaitIdle(vkQueue)
 	vkFuncs.vkQueuePresentKHR(vkQueue,pI)
 }
 VkDebugCallback := !(int flags,int bojType,u64 object,u64 location,int msgCode,char^ prefix,char^ msg,void^ usrData) -> int
