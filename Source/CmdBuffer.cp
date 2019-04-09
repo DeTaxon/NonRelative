@@ -54,7 +54,7 @@ CmdBuffer := class
 		submInf.pWaitSemaphores = null
 		submInf.pWaitDstStageMask = waitMsk&->{void^}
 		submInf.commandBufferCount = 1
-  		submInf.pCommandBuffers = vkCmdBufs[nowImg]&;
+  		submInf.pCommandBuffers = itCmdBuf&;
   		submInf.signalSemaphoreCount = 0;
   		submInf.pSignalSemaphores = null
 

@@ -36,6 +36,7 @@ Model := class
 		vkFuncs.vkMapMemory(vkLogCard,memsValue[0],0,allc1.allocationSize,0,memPoint&)
 		memcpy(memPoint,rFile.verts->{void^},allc1.allocationSize)
 
+
 		flushRange := new VkMappedMemoryRange() ; $temp
 		flushRange.memory = memsValue[0]
 		flushRange.offset = 0
@@ -50,23 +51,23 @@ Model := class
 		vkFuncs.vkAllocateMemory(vkLogCard,allc1,null,memsValue[1]&)
 		vkFuncs.vkBindBufferMemory(vkLogCard,hndls[1],memsValue[1],0)
 		vkFuncs.vkMapMemory(vkLogCard,memsValue[1],0,allc1.allocationSize,0,memPoint&)
-		memcpy(memPoint,rFile.verts->{void^},allc1.allocationSize)
+		memcpy(memPoint,rFile.inds->{void^},allc1.allocationSize)
 
 		flushRange.memory = memsValue[1]
 		flushRange.offset = 0
 		flushRange.size = allc1.allocationSize
 		vkFuncs.vkFlushMappedMemoryRanges(vkLogCard,1,flushRange)
 		vkFuncs.vkUnmapMemory(vkLogCard,memsValue[1])
+		
+		printf("huh\n")
+
+		printf("huh\n")
 	}
 	AddToCmdBuffer := !(VkCommandBuffer cmdB) -> void
 	{
 		offsets := new VkDeviceSize() ; $temp
-		printf("a\n")
 		vkFuncs.vkCmdBindVertexBuffers(cmdB,0,1,hndls[0]&,offsets)
-		printf("a\n")
 		vkFuncs.vkCmdBindIndexBuffer(cmdB,hndls[1],0,VK_INDEX_TYPE_UINT32)
-		printf("a\n")
 		vkFuncs.vkCmdDrawIndexed(cmdB,indexCount,1,0,0,0)
-		printf("b\n")
 	}
 }

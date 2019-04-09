@@ -22,12 +22,12 @@ vkRenderPass := VkRenderPass
 vkImageViews := VkImageView[]
 vkFramebuffers := VkFramebuffer[]
 vkCmdPool := VkCommandPool
-vkCmdBufs := VkCommandBuffer[]
+//vkCmdBufs := VkCommandBuffer[]
 vkFence := VkFence
 vkLayout := VkPipelineLayout
 vkGraphPipe := VkPipeline
 
-lastCmd := CmdBuffer
+mainCmd := CmdBuffer
 
 InitVulkan := !() -> bool
 {
@@ -350,66 +350,10 @@ InitVulkan := !() -> bool
 
 	cmdBufC := new VkCommandBufferAllocateInfo() ; $temp
 
-	vkCmdBufs = new VkCommandBuffer[vkImages->len]
-
-	cmdBufC.commandPool = vkCmdPool
-	cmdBufC.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY
-	cmdBufC.commandBufferCount = vkImages->len
-	
-	vkFuncs.vkAllocateCommandBuffers(vkLogCard,cmdBufC,vkCmdBufs)
-
-
 	crtFence := new VkFenceCreateInfo() ; $temp
 	vkFuncs.vkCreateFence(vkLogCard,crtFence,null,vkFence&)
 
 	
-	for it,i : vkCmdBufs
-	{
-		vkFuncs.vkResetCommandBuffer(it,VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT)
-
-		inhC := new VkCommandBufferInheritanceInfo() ; $temp
-
-		inhC.renderPass = vkRenderPass
-		inhC.subpass = 0
-		inhC.framebuffer = vkFramebuffers[i]
-		inhC.occlusionQueryEnable = 0
-		inhC.queryFlags = 0
-		inhC.pipelineStatistics = 0
-
-		biC := new VkCommandBufferBeginInfo() ; $temp
-		biC.pInheritanceInfo = inhC->{void^}
-		biC.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT
-
-		vkFuncs.vkBeginCommandBuffer(it,biC)
-
-		rpC := new VkRenderPassBeginInfo() ; $temp
-
-		clrValues := new float[4] ; $temp
-
-		clrValues[0] = 1.0f
-		clrValues[1] = 0.5f
-		clrValues[2] = 0.0f
-		clrValues[3] = 1.0f
-
-		rpC.renderPass = vkRenderPass
-		rpC.framebuffer = it
-		rpC.renderArea.extent.width = surfAb.currentExtent.width
-		rpC.renderArea.extent.height = surfAb.currentExtent.height
-		rpC.clearValueCount = 1
-		rpC.framebuffer = vkFramebuffers[i]
-		rpC.pClearValues = clrValues->{void^}
-	
-		vkFuncs.vkCmdBeginRenderPass(it,rpC,VK_SUBPASS_CONTENTS_INLINE)
-		vkFuncs.vkCmdEndRenderPass(lastCmd.Get())
-
-		//vkFuncs.vkCmdBindPipeline(it,VK_PIPELINE_BIND_POINT_GRAPHICS,vkGraphPipe)
-		//vkFuncs.vkCmdDraw(it,3,1,0,0)
-
-
-		vkFuncs.vkEndCommandBuffer(it)
-
-	}
-
 	memReq := new VkPhysicalDeviceMemoryProperties ; $temp
 	vkFuncs.vkGetPhysicalDeviceMemoryProperties(vkPhysCard,memReq)
 
@@ -429,7 +373,7 @@ InitVulkan := !() -> bool
 
 	ppC := new VkPipelineLayoutCreateInfo() ; $temp
 	vkFuncs.vkCreatePipelineLayout(vkLogCard,ppC,null,vkLayout&)
-
+	mainCmd.CreateBuffer()
 	printf("finished\n")
 
 	return 0
@@ -441,43 +385,63 @@ StartDraw := !() -> void
 	vkFuncs.vkAcquireNextImageKHR(vkLogCard,vkSwapchain,10000000,null,vkFence,nowImg&)
 	vkFuncs.vkWaitForFences(vkLogCard,1,vkFence&,1,10000000)
 
-	waitMsk := VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT
-	submInf := new VkSubmitInfo() ; $temp
-	submInf.waitSemaphoreCount = 0
-	submInf.pWaitSemaphores = null
-	submInf.pWaitDstStageMask = waitMsk&->{void^}
-	submInf.commandBufferCount = 1
-  	submInf.pCommandBuffers = vkCmdBufs[nowImg]&;
-  	submInf.signalSemaphoreCount = 0;
-  	submInf.pSignalSemaphores = null
+	mainCmd.Reset()
+	mainCmd.Start()
 
-	vkFuncs.vkQueueSubmit(vkQueue, 1, submInf, null)
+	rpC := new VkRenderPassBeginInfo() ; $temp
+
+	clrValues := new float[4] ; $temp
+
+	clrValues[0] = 1.0f
+	clrValues[1] = 0.5f
+	clrValues[2] = 0.0f
+	clrValues[3] = 1.0f
+
+	rpC.renderPass = vkRenderPass
+	rpC.framebuffer = vkFramebuffers[nowImg]
+	rpC.renderArea.extent.width = 700 //surfAb.currentExtent.width
+	rpC.renderArea.extent.height = 700 //surfAb.currentExtent.height
+	rpC.clearValueCount = 1
+	rpC.pClearValues = clrValues->{void^}
 	
+	vkFuncs.vkCmdBeginRenderPass(mainCmd.Get(),rpC,VK_SUBPASS_CONTENTS_INLINE)
 	
 }
 StopDraw := !() -> void
 {
-	lastCmd.Reset()
-	lastCmd.Start()
 
-		imgBarC := new VkImageMemoryBarrier() ; $temp
-		imgBarC.srcAccessMask = VK_ACCESS_MEMORY_READ_BIT
-		imgBarC.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT//VK_ACCESS_COLOR_ATTACHMENT_READ_BIT or_b VK_ACCESS_MEMORY_READ_BIT
-		imgBarC.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED
-		imgBarC.newLayout = 1000001002 //VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL//1000111000 //VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
-		imgBarC.srcQueueFamilyIndex = 0
-		imgBarC.dstQueueFamilyIndex = 0
-		imgBarC.image = vkImages[nowImg]
-		imgBarC.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT
-		imgBarC.subresourceRange.baseMipLevel = 0
-		imgBarC.subresourceRange.levelCount = 1
-		imgBarC.subresourceRange.baseArrayLayer = 0
-		imgBarC.subresourceRange.layerCount = 1
+	vkFuncs.vkCmdEndRenderPass(mainCmd.Get())
+		
+	imgBarC := new VkImageMemoryBarrier() ; $temp
+	imgBarC.srcAccessMask = VK_ACCESS_MEMORY_READ_BIT
+	imgBarC.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT//VK_ACCESS_COLOR_ATTACHMENT_READ_BIT or_b VK_ACCESS_MEMORY_READ_BIT
+	imgBarC.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED
+	imgBarC.newLayout = 1000001002 //VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL//1000111000 //VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
+	imgBarC.srcQueueFamilyIndex = 0
+	imgBarC.dstQueueFamilyIndex = 0
+	imgBarC.image = vkImages[nowImg]
+	imgBarC.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT
+	imgBarC.subresourceRange.baseMipLevel = 0
+	imgBarC.subresourceRange.levelCount = 1
+	imgBarC.subresourceRange.baseArrayLayer = 0
+	imgBarC.subresourceRange.layerCount = 1
 
-		vkFuncs.vkCmdPipelineBarrier(lastCmd.Get(),VK_PIPELINE_STAGE_TRANSFER_BIT,VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,0,0,null,0,null,1,imgBarC)
-	lastCmd.Stop()
-	//lastCmd.Submit()
+	vkFuncs.vkCmdPipelineBarrier(mainCmd.Get(),VK_PIPELINE_STAGE_TRANSFER_BIT,VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,0,0,null,0,null,1,imgBarC)
+	mainCmd.Stop()
+
+	//waitMsk := VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT
+	//submInf := new VkSubmitInfo() ; $temp
+	//submInf.waitSemaphoreCount = 0
+	//submInf.pWaitSemaphores = null
+	//submInf.pWaitDstStageMask = waitMsk&->{void^}
+	//submInf.commandBufferCount = 1
+  	//submInf.pCommandBuffers = vkCmdBufs[nowImg]&;
+  	//submInf.signalSemaphoreCount = 0;
+  	//submInf.pSignalSemaphores = null
+	//vkFuncs.vkQueueSubmit(vkQueue, 1, submInf, null)
+	mainCmd.Submit()
 	vkFuncs.vkQueueWaitIdle(vkQueue)
+
 	res := VkResult
 	pI := new VkPresentInfoKHR ; $temp
 	pI.sType = 1000001001//VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;

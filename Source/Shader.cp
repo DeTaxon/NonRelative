@@ -46,7 +46,7 @@ Shader := class
 		inputsBind.stride = 8*4
 		inputsBind.inputRate = VK_VERTEX_INPUT_RATE_VERTEX
 
-		inputsStuf := new VkVertexInputAttributeDescription[1] ; $temp
+		inputsStuf := new VkVertexInputAttributeDescription[3] ; $temp
 		//vertex
 		inputsStuf[0].location = 0
 		inputsStuf[0].binding = inputsBind.binding
@@ -57,11 +57,11 @@ Shader := class
 		inputsStuf[1].binding = inputsBind.binding
 		inputsStuf[1].format = VK_FORMAT_R32G32B32_SFLOAT
 		inputsStuf[1].offset = 4*4
-		////texture
-		//inputsStuf[2].location = 2
-		//inputsStuf[2].binding = inputsBind.binding
-		//inputsStuf[2].format = VK_FORMAT_R32G32_SFLOAT
-		//inputsStuf[2].offset = 8*3
+		//texture
+		inputsStuf[2].location = 2
+		inputsStuf[2].binding = inputsBind.binding
+		inputsStuf[2].format = VK_FORMAT_R32G32_SFLOAT
+		inputsStuf[2].offset = 6*3
 	
 		plC := new VkPipelineVertexInputStateCreateInfo() ; $temp
 
@@ -97,6 +97,7 @@ Shader := class
 		rasterC := new VkPipelineRasterizationStateCreateInfo() ; $temp
 		rasterC.polygonMode = VK_POLYGON_MODE_FILL
 		rasterC.cullMode = VK_CULL_MODE_BACK_BIT
+		rasterC.cullMode = VK_CULL_MODE_NONE
 		rasterC.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE
 		rasterC.lineWidth = 1.0f
 		//  VK_FALSE, VkBool32   depthClampEnable

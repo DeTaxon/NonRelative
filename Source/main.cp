@@ -25,11 +25,11 @@ main := !(int argc, char^^ argv) -> int
 	mdl := new Model
 	mdl.LoadFile("Models/HiResBox.ply")
 
-	extraCmdBuf := CmdBuffer
-	extraCmdBuf.CreateBuffer()
+	//extraCmdBuf := CmdBuffer
+	//extraCmdBuf.CreateBuffer()
 
 	simpleShader := new Shader
-	//simpleShader.LoadShader("Shaders/LearnVert.vert","Shaders/LearnFrag.frag")
+	simpleShader.LoadShader("Shaders/LearnVert.vert","Shaders/LearnFrag.frag")
 
 	while not glfwWindowShouldClose(glfwWindow)
 	{
@@ -38,11 +38,11 @@ main := !(int argc, char^^ argv) -> int
 
 		StartDraw()
 
-		extraCmdBuf.Reset()
-		extraCmdBuf.Start()
-		simpleShader.ApplyShaderToQueue(extraCmdBuf.Get())
-		//mdl.AddToCmdBuffer(extraCmdBuf.Get())
-		extraCmdBuf.Stop()
+		//extraCmdBuf.Reset()
+		//extraCmdBuf.Start()
+		simpleShader.ApplyShaderToQueue(mainCmd.Get())
+		mdl.AddToCmdBuffer(mainCmd.Get())
+		//extraCmdBuf.Stop()
 		//extraCmdBuf.Submit()
 
 		StopDraw()
