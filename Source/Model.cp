@@ -27,14 +27,33 @@ Model := class
 		bufC.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT
 		bufC.sharingMode = VK_SHARING_MODE_EXCLUSIVE
 
+		memInfo := VkMemoryRequirements
+
 		vkFuncs.vkCreateBuffer(vkLogCard,bufC,null,hndls[0]&)
+		vkFuncs.vkGetBufferMemoryRequirements(vkLogCard,hndls[0],memInfo&)
 		vkFuncs.vkAllocateMemory(vkLogCard,allc1,null,memsValue[0]&)
 		
 		vkFuncs.vkBindBufferMemory(vkLogCard,hndls[0],memsValue[0],0)
 
 		memPoint := void^
 		vkFuncs.vkMapMemory(vkLogCard,memsValue[0],0,allc1.allocationSize,0,memPoint&)
-		memcpy(memPoint,rFile.verts->{void^},allc1.allocationSize)
+		//memcpy(memPoint,rFile.verts->{void^},allc1.allocationSize)
+
+		asFlt := memPoint->{float^}
+		vertCount := rFile.verts->len div 8
+		for i : vertCount
+		{
+			asFlt[i*8    ] = rFile.verts[i*8]
+			asFlt[i*8 + 1] = rFile.verts[i*8 + 1]
+			asFlt[i*8 + 2] = rFile.verts[i*8 + 2]
+
+			asFlt[i*8 + 4] = rFile.verts[i*8 + 3]
+			asFlt[i*8 + 5] = rFile.verts[i*8 + 4]
+			asFlt[i*8 + 6] = rFile.verts[i*8 + 5]
+
+			asFlt[i*8 + 3] = rFile.verts[i*8 + 6]
+			asFlt[i*8 + 7] = rFile.verts[i*8 + 7]
+		}
 
 
 		flushRange := new VkMappedMemoryRange() ; $temp
@@ -48,6 +67,7 @@ Model := class
 		bufC.size = allc1.allocationSize
 		bufC.usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT
 		vkFuncs.vkCreateBuffer(vkLogCard,bufC,null,hndls[1]&)
+		vkFuncs.vkGetBufferMemoryRequirements(vkLogCard,hndls[1],memInfo&)
 		vkFuncs.vkAllocateMemory(vkLogCard,allc1,null,memsValue[1]&)
 		vkFuncs.vkBindBufferMemory(vkLogCard,hndls[1],memsValue[1],0)
 		vkFuncs.vkMapMemory(vkLogCard,memsValue[1],0,allc1.allocationSize,0,memPoint&)
@@ -58,10 +78,6 @@ Model := class
 		flushRange.size = allc1.allocationSize
 		vkFuncs.vkFlushMappedMemoryRanges(vkLogCard,1,flushRange)
 		vkFuncs.vkUnmapMemory(vkLogCard,memsValue[1])
-		
-		printf("huh\n")
-
-		printf("huh\n")
 	}
 	AddToCmdBuffer := !(VkCommandBuffer cmdB) -> void
 	{

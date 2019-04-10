@@ -248,7 +248,7 @@ InitVulkan := !() -> bool
 	crtSwap := new VkSwapchainCreateInfoKHR ; $temp
 	crtSwap.sType = 1000001000
 	crtSwap.surface = vkSurface
-	crtSwap.minImageCount = 2
+	crtSwap.minImageCount = 3
 	crtSwap.imageFormat = formts[0].format
 	crtSwap.imageColorSpace = formts[0].colorSpace
 	crtSwap.imageExtent.width = startW
@@ -260,7 +260,7 @@ InitVulkan := !() -> bool
 	crtSwap.pQueueFamilyIndices = null
 	crtSwap.preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR
 	crtSwap.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR
-	crtSwap.presentMode = VK_PRESENT_MODE_IMMEDIATE_KHR
+	crtSwap.presentMode = VK_PRESENT_MODE_MAILBOX_KHR
 	crtSwap.clipped = 0
 	crtSwap.oldSwapchain = null
 	
@@ -371,9 +371,18 @@ InitVulkan := !() -> bool
 				printf("VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT\n")
 	}
 
+	pcrC := new VkPushConstantRange ; $temp
+	pcrC.stageFlags = VK_SHADER_STAGE_VERTEX_BIT
+	pcrC.offset = 0
+	pcrC.size = 2*4*4
 	ppC := new VkPipelineLayoutCreateInfo() ; $temp
+	ppC.pushConstantRangeCount = 1
+	ppC.pPushConstantRanges = pcrC->{void^}
+
 	vkFuncs.vkCreatePipelineLayout(vkLogCard,ppC,null,vkLayout&)
 	mainCmd.CreateBuffer()
+	
+
 	printf("finished\n")
 
 	return 0

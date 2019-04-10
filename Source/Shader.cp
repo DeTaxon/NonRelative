@@ -46,22 +46,22 @@ Shader := class
 		inputsBind.stride = 8*4
 		inputsBind.inputRate = VK_VERTEX_INPUT_RATE_VERTEX
 
-		inputsStuf := new VkVertexInputAttributeDescription[3] ; $temp
+		inputsStuf := new VkVertexInputAttributeDescription[2] ; $temp
 		//vertex
 		inputsStuf[0].location = 0
 		inputsStuf[0].binding = inputsBind.binding
-		inputsStuf[0].format = VK_FORMAT_R32G32B32_SFLOAT
+		inputsStuf[0].format = VK_FORMAT_R32G32B32A32_SFLOAT
 		inputsStuf[0].offset = 0
 		//normal
 		inputsStuf[1].location = 1
 		inputsStuf[1].binding = inputsBind.binding
-		inputsStuf[1].format = VK_FORMAT_R32G32B32_SFLOAT
+		inputsStuf[1].format = VK_FORMAT_R32G32B32A32_SFLOAT
 		inputsStuf[1].offset = 4*4
 		//texture
-		inputsStuf[2].location = 2
-		inputsStuf[2].binding = inputsBind.binding
-		inputsStuf[2].format = VK_FORMAT_R32G32_SFLOAT
-		inputsStuf[2].offset = 6*3
+		//inputsStuf[2].location = 2
+		//inputsStuf[2].binding = inputsBind.binding
+		//inputsStuf[2].format = VK_FORMAT_R32G32_SFLOAT
+		//inputsStuf[2].offset = 6*3
 	
 		plC := new VkPipelineVertexInputStateCreateInfo() ; $temp
 

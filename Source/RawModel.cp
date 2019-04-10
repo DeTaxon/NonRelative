@@ -102,7 +102,6 @@ RawModel := class
 		if vertItems and_b MODEL_NORMAL vertSize += 3
 		if vertItems and_b MODEL_UV vertSize += 2
 
-		printf("hah %i\n",vertItems)
 		if vertItems != 7 return false //TODO: normalless support
 
 		totalVerts := vertsCount*vertSize
