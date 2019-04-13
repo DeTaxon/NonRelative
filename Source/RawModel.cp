@@ -215,7 +215,6 @@ RawModel := class
 		}
 		inds = preInd.ToArray()
 
-		printf("loaded\n")
 		return true
 	}
 }

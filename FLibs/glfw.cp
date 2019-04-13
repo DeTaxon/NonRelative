@@ -19,6 +19,8 @@ glfwPollEvents := !() -> void declare
 glfwSwapBuffers := !(void^ win) -> void declare
 glfwSwapInterval := !(int num) -> void declare
 
+glfwGetTime := !() -> double declare
+
 glfwCreateWindowSurface := !(void^ instance,void^ windo, void^ allctr, void^ surf) -> int declare
 
 GLFW_KEY_0               :=    48

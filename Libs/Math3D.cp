@@ -68,12 +68,19 @@ centf := class
 	}
 	"<*>" := !(centf toAdd) -> centf
 	{
-		result.ang = ang <*> toAdd.ang
-		result.pos = (toAdd.ang * this.pos) + pos
+		ToRet.ang = ang <*> toAdd.ang
+		ToRet.pos = (toAdd.ang * this.pos) + pos
 	}
 	"=" := !(centf toSet) -> void
 	{	
 		ang = toSet.ang
 		pos = toSet.pos
 	}
+	Inverse := !() -> centf
+	{
+		ToRet.ang = quantf(-ang.x,-ang.y,-ang.z,ang.w)
+		ToRet.pos = ToRet.ang*pos
+		ToRet.pos.w = 1.0f / pos.w
+	}
 }
+
