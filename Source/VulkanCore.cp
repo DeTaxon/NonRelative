@@ -27,7 +27,15 @@ vkFence := VkFence
 vkLayout := VkPipelineLayout
 vkGraphPipe := VkPipeline
 
+vkPerspLayout := VkDescriptorSetLayout
+vkDescPool := VkDescriptorPool
+vkPerspSet := VkDescriptorSet
+
 mainCmd := CmdBuffer
+
+depthImage := VkImage
+depthImageView := VkImageView
+depthMemory := VkDeviceMemory
 
 InitVulkan := !() -> bool
 {
@@ -266,24 +274,87 @@ InitVulkan := !() -> bool
 	
 	vkFuncs.vkCreateSwapchainKHR(vkLogCard,crtSwap,null,vkSwapchain&)
 
+
+	//create deth
+	imgDC := new VkImageCreateInfo() ; $temp
+	imgDC.imageType = VK_IMAGE_TYPE_2D
+	imgDC.format = VK_FORMAT_D16_UNORM
+	imgDC.extent.width = 700
+	imgDC.extent.height = 700
+	imgDC.extent.depth = 1
+	imgDC.mipLevels = 1
+	imgDC.arrayLayers = 1
+	imgDC.samples = VK_SAMPLE_COUNT_1_BIT
+	imgDC.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED
+	imgDC.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT
+	imgDC.queueFamilyIndexCount = 0
+	imgDC.pQueueFamilyIndices = null
+	imgDC.sharingMode = VK_SHARING_MODE_EXCLUSIVE
+
+	vkFuncs.vkCreateImage(vkLogCard,imgDC,null,depthImage&)
+
+	imgMC := new VkMemoryAllocateInfo() ; $temp
+	imgMC.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO
+	imgMC.pNext = null
+	imgMC.allocationSize = 0
+	imgMC.memoryTypeIndex = 0
+
+	memReq := VkMemoryRequirements
+	vkFuncs.vkGetImageMemoryRequirements(vkLogCard,depthImage,memReq&)
+	imgMC.allocationSize = memReq.size
+
+	vkFuncs.vkAllocateMemory(vkLogCard,imgMC,null,depthMemory&)
+	vkFuncs.vkBindImageMemory(vkLogCard,depthImage,depthMemory,0)
+
+	imgVC := new VkImageViewCreateInfo() ; $temp
+	imgVC.image = depthImage
+	imgVC.format = VK_FORMAT_D16_UNORM
+	imgVC.components.r = VK_COMPONENT_SWIZZLE_R
+	imgVC.components.g = VK_COMPONENT_SWIZZLE_G
+	imgVC.components.b = VK_COMPONENT_SWIZZLE_B
+	imgVC.components.a = VK_COMPONENT_SWIZZLE_A
+	imgVC.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT
+	imgVC.subresourceRange.baseMipLevel = 0
+	imgVC.subresourceRange.levelCount = 1
+	imgVC.subresourceRange.baseArrayLayer = 0
+	imgVC.subresourceRange.layerCount = 1
+	imgVC.viewType = VK_IMAGE_VIEW_TYPE_2D
+
+	vkFuncs.vkCreateImageView(vkLogCard,imgVC,null,depthImageView&)
+
+
+
+
 	imgCount := 0
 	vkFuncs.vkGetSwapchainImagesKHR(vkLogCard,vkSwapchain,imgCount&,null)
 	vkImages = new VkImage[imgCount]
 	vkFuncs.vkGetSwapchainImagesKHR(vkLogCard,vkSwapchain,imgCount&,vkImages)
 
-	attmDesc := new VkAttachmentDescription ; $temp
-	attmDesc.format = formts[0].format
-	attmDesc.samples = VK_SAMPLE_COUNT_1_BIT
-	attmDesc.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR
-	attmDesc.storeOp = VK_ATTACHMENT_STORE_OP_STORE
-	attmDesc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE
-	attmDesc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE
-	attmDesc.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED
-	attmDesc.finalLayout  = 1000001002//1000111000//VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+	attmDesc := new VkAttachmentDescription[2] ; $temp
+	attmDesc[0].format = formts[0].format
+	attmDesc[0].samples = VK_SAMPLE_COUNT_1_BIT
+	attmDesc[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR
+	attmDesc[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE
+	attmDesc[0].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE
+	attmDesc[0].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE
+	attmDesc[0].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED
+	attmDesc[0].finalLayout  = 1000001002//1000111000//VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+
+	attmDesc[1].format = VK_FORMAT_D16_UNORM
+	attmDesc[1].samples = VK_SAMPLE_COUNT_1_BIT
+	attmDesc[1].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR
+	attmDesc[1].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE
+	attmDesc[1].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE
+	attmDesc[1].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE
+	attmDesc[1].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED
+	attmDesc[1].finalLayout  =VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
 
 	attmRef := new VkAttachmentReference ; $temp
 	attmRef.attachment = 0
 	attmRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+	attmRef2 := new VkAttachmentReference ; $temp
+	attmRef2.attachment = 1
+	attmRef2.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
 
 	subpass := new VkSubpassDescription ; $temp
 	subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS
@@ -292,12 +363,12 @@ InitVulkan := !() -> bool
 	subpass.colorAttachmentCount = 1
 	subpass.pColorAttachments = attmRef
 	subpass.pResolveAttachments = null
-	subpass.pDepthStencilAttachment = null
+	subpass.pDepthStencilAttachment = attmRef2
 	subpass.preserveAttachmentCount = 0
 	subpass.pPreserveAttachments = null
 
 	rpC := new VkRenderPassCreateInfo() ; $temp
-	rpC.attachmentCount = 1
+	rpC.attachmentCount = 2
 	rpC.pAttachments = attmDesc
 	rpC.subpassCount = 1
 	rpC.pSubpasses = subpass
@@ -327,11 +398,13 @@ InitVulkan := !() -> bool
 
 		vkFuncs.vkCreateImageView(vkLogCard,imgViewC,null,vkImageViews[i]&)
 
-
+		extrV := VkImageView[2]
+		extrV[0] = vkImageViews[i]
+		extrV[1] = depthImageView
 		fbC := new VkFramebufferCreateInfo() ; $temp
 		fbC.renderPass = vkRenderPass
-		fbC.attachmentCount = 1
-		fbC.pAttachments = vkImageViews[i]&
+		fbC.attachmentCount = 2
+		fbC.pAttachments = extrV[0]&
 		fbC.width = surfAb.currentExtent.width
 		fbC.height = surfAb.currentExtent.height
 		fbC.layers = 1
@@ -371,6 +444,19 @@ InitVulkan := !() -> bool
 				printf("VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT\n")
 	}
 
+	oneDesc := new VkDescriptorSetLayoutBinding ; $temp
+	oneDesc.binding = 0
+	oneDesc.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
+	oneDesc.descriptorCount = 1
+	oneDesc.stageFlags = VK_SHADER_STAGE_VERTEX_BIT
+	oneDesc.pImmutableSamplers = null
+
+	setDesc := new VkDescriptorSetLayoutCreateInfo() ; $temp
+	setDesc.bindingCount = 1
+	setDesc.pBindings = oneDesc->{void^}
+
+	vkFuncs.vkCreateDescriptorSetLayout(vkLogCard,setDesc,null,vkPerspLayout&)
+
 	pcrC := new VkPushConstantRange ; $temp
 	pcrC.stageFlags = VK_SHADER_STAGE_VERTEX_BIT
 	pcrC.offset = 0
@@ -378,10 +464,30 @@ InitVulkan := !() -> bool
 	ppC := new VkPipelineLayoutCreateInfo() ; $temp
 	ppC.pushConstantRangeCount = 1
 	ppC.pPushConstantRanges = pcrC->{void^}
+	ppC.setLayoutCount = 1
+	ppC.pSetLayouts = vkPerspLayout&->{void^}
 
 	vkFuncs.vkCreatePipelineLayout(vkLogCard,ppC,null,vkLayout&)
 	mainCmd.CreateBuffer()
 	
+	descPoolSize := new VkDescriptorPoolSize ; $temp
+	descPoolSize.descriptorCount = 10
+	descPoolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
+
+	descPoolC := new VkDescriptorPoolCreateInfo() ; $temp
+	descPoolC.maxSets = 10
+	descPoolC.poolSizeCount = 1
+	descPoolC.pPoolSizes = descPoolSize
+
+	vkFuncs.vkCreateDescriptorPool(vkLogCard,descPoolC,null,vkDescPool&)
+
+	allDesc := new VkDescriptorSetAllocateInfo() ; $temp
+	allDesc.descriptorPool = vkDescPool
+	allDesc.descriptorSetCount = 1
+	allDesc.pSetLayouts = vkPerspLayout&
+
+	vkFuncs.vkAllocateDescriptorSets(vkLogCard,allDesc,vkPerspSet&)
+
 
 	printf("finished\n")
 
@@ -399,18 +505,20 @@ StartDraw := !() -> void
 
 	rpC := new VkRenderPassBeginInfo() ; $temp
 
-	clrValues := new float[4] ; $temp
+	clrValues := new float[8] ; $temp
 
 	clrValues[0] = 1.0f
 	clrValues[1] = 0.5f
 	clrValues[2] = 0.0f
 	clrValues[3] = 1.0f
+	clrValues[4] = 1.0f
+	clrValues[5] = 0.0f
 
 	rpC.renderPass = vkRenderPass
 	rpC.framebuffer = vkFramebuffers[nowImg]
 	rpC.renderArea.extent.width = 700 //surfAb.currentExtent.width
 	rpC.renderArea.extent.height = 700 //surfAb.currentExtent.height
-	rpC.clearValueCount = 1
+	rpC.clearValueCount = 2
 	rpC.pClearValues = clrValues->{void^}
 	
 	vkFuncs.vkCmdBeginRenderPass(mainCmd.Get(),rpC,VK_SUBPASS_CONTENTS_INLINE)

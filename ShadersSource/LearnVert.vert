@@ -12,6 +12,11 @@ layout(push_constant) uniform PushConsts{
 layout(location = 0) out vec2 o_uv;
 layout(location = 1) out vec4 o_Color;
 
+layout(set = 0,binding = 0) uniform perspInfo
+{
+	vec4 prespData;
+};
+
 vec4 quat_conj(vec4 q)
 { 
   return vec4(-q.x, -q.y, -q.z, q.w); 

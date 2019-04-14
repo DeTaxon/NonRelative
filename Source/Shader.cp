@@ -139,6 +139,30 @@ Shader := class
 		//  0,        uint32_t                       pushConstantRangeCount
 		//  nullptr   const VkPushConstantRange     *pPushConstantRanges
 
+		dsC := new VkPipelineDepthStencilStateCreateInfo() ; $temp
+		dsC.depthTestEnable = VK_TRUE
+		dsC.depthWriteEnable = VK_TRUE
+		dsC.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL
+		dsC.depthBoundsTestEnable = VK_FALSE
+		dsC.minDepthBounds = 0.0f
+		dsC.maxDepthBounds = 0.0f
+		dsC.stencilTestEnable = VK_FALSE
+		dsC.back.failOp = VK_STENCIL_OP_KEEP
+		dsC.back.passOp = VK_STENCIL_OP_KEEP
+		dsC.back.compareOp = VK_COMPARE_OP_ALWAYS
+		dsC.back.compareMask = 0
+		dsC.back.reference = 0
+		dsC.back.depthFailOp = VK_STENCIL_OP_KEEP
+		dsC.back.writeMask = 0
+		dsC.front.failOp = VK_STENCIL_OP_KEEP
+		dsC.front.passOp = VK_STENCIL_OP_KEEP
+		dsC.front.compareOp = VK_COMPARE_OP_ALWAYS
+		dsC.front.compareMask = 0
+		dsC.front.reference = 0
+		dsC.front.depthFailOp = VK_STENCIL_OP_KEEP
+		dsC.front.writeMask = 0
+
+
 		gpC := new VkGraphicsPipelineCreateInfo() ; $temp
 		gpC.stageCount = 2
 		gpC.pStages = sStg->{void^}
@@ -151,8 +175,8 @@ Shader := class
 		gpC.layout = vkLayout
 		gpC.renderPass = vkRenderPass
 		gpC.basePipelineIndex = -1
+		gpC.pDepthStencilState = dsC
 		//  nullptr,        const VkPipelineTessellationStateCreateInfo   *pTessellationState
-		//  nullptr,        const VkPipelineDepthStencilStateCreateInfo   *pDepthStencilState
 		//  nullptr,        const VkPipelineDynamicStateCreateInfo        *pDynamicState
 		//  0,              uint32_t                                       subpass
 		//  VK_NULL_HANDLE, VkPipeline                                     basePipelineHandle
