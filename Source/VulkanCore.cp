@@ -1,5 +1,6 @@
 #import "main.cp"
 #import "CmdBuffer.cp"
+#import "VkMem.cp"
 
 
 vkLoadAddr := PFN_vkGetInstanceProcAddr
@@ -35,7 +36,7 @@ mainCmd := CmdBuffer
 
 depthImage := VkImage
 depthImageView := VkImageView
-depthMemory := VkDeviceMemory
+depthMemory := vMemObj
 
 InitVulkan := !() -> bool
 {
@@ -293,18 +294,12 @@ InitVulkan := !() -> bool
 
 	vkFuncs.vkCreateImage(vkLogCard,imgDC,null,depthImage&)
 
-	imgMC := new VkMemoryAllocateInfo() ; $temp
-	imgMC.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO
-	imgMC.pNext = null
-	imgMC.allocationSize = 0
-	imgMC.memoryTypeIndex = 0
-
 	memReq := VkMemoryRequirements
 	vkFuncs.vkGetImageMemoryRequirements(vkLogCard,depthImage,memReq&)
-	imgMC.allocationSize = memReq.size
 
-	vkFuncs.vkAllocateMemory(vkLogCard,imgMC,null,depthMemory&)
-	vkFuncs.vkBindImageMemory(vkLogCard,depthImage,depthMemory,0)
+	depthMemory.CreateObject(memReq.size->{int})
+
+	vkFuncs.vkBindImageMemory(vkLogCard,depthImage,depthMemory.Get(),0)
 
 	imgVC := new VkImageViewCreateInfo() ; $temp
 	imgVC.image = depthImage
@@ -321,8 +316,6 @@ InitVulkan := !() -> bool
 	imgVC.viewType = VK_IMAGE_VIEW_TYPE_2D
 
 	vkFuncs.vkCreateImageView(vkLogCard,imgVC,null,depthImageView&)
-
-
 
 
 	imgCount := 0
@@ -474,10 +467,15 @@ InitVulkan := !() -> bool
 	descPoolSize.descriptorCount = 10
 	descPoolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
 
+	test := u32[2]
+	test[0] = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
+	test[1] = 1 //count
+
+
 	descPoolC := new VkDescriptorPoolCreateInfo() ; $temp
-	descPoolC.maxSets = 10
+	descPoolC.maxSets = 1
 	descPoolC.poolSizeCount = 1
-	descPoolC.pPoolSizes = descPoolSize
+	descPoolC.pPoolSizes = test[0]&->{void^}//descPoolSize
 
 	vkFuncs.vkCreateDescriptorPool(vkLogCard,descPoolC,null,vkDescPool&)
 
@@ -487,7 +485,6 @@ InitVulkan := !() -> bool
 	allDesc.pSetLayouts = vkPerspLayout&
 
 	vkFuncs.vkAllocateDescriptorSets(vkLogCard,allDesc,vkPerspSet&)
-
 
 	printf("finished\n")
 
@@ -575,6 +572,7 @@ StopDraw := !() -> void
 VkDebugCallback := !(int flags,int bojType,u64 object,u64 location,int msgCode,char^ prefix,char^ msg,void^ usrData) -> int
 {
 	printf("VkError <%s>\n",msg)
+	return 0
 }
 
 DestroyVulkan := !() -> void

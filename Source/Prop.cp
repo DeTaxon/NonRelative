@@ -5,7 +5,7 @@ Prop := class
 	modelPos := centf
 	calculatedPos := centf
 
-	modelPtr := Model^
+	modelPtr := vModel^
 
 	testPos := float
 	AddToCmdBuffer := !(VkCommandBuffer cmdB) -> void

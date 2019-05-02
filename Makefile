@@ -9,7 +9,7 @@ glComp := glslangValidator -V100 -e main
 FLibs := -f FLibs/glfw.cp  
 
 engi: LearnVert
-	./halfvoid Source/main.cp $(FLibs) -F "Libs/*.cp" --vk vk.xml -o Objs/engi.ll; clang++ Objs/engi.ll $(Libs)  -lglfw -o engi
+	./halfvoid --rname result  Source/main.cp $(FLibs) -F "Libs/*.cp" --vk vk.xml -o Objs/engi.ll; clang++ Objs/engi.ll $(Libs)  -lglfw -o engi
 engig: 
 	gdb --args ./halfvoid --work Source/main.cp $(FLibs) -F "Libs/*.cp" --vk vk.xml -o Objs/engi.ll; clang++ Objs/engi.ll $(Libs)  -lglfw -o engi
 

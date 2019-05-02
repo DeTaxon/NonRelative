@@ -5,13 +5,17 @@
 #import "Prop.cp"
 #import "Window.cp"
 #import "Camera.cp"
+#import "ZipFS.cp"
 
 gCam := vCamera
 
 main := !(int argc, char^^ argv) -> int
 {
-	gCam.SetPerspective(700.0f,700.0f,0.01f,100.0f,90deg)
+	test := vRepo
+	test.Init(".")
 
+	cc := test.GetFile("Models/RepoTest/HiResBox.ply")
+	return 0
 	startW = 700
 	startH = 700
 
@@ -22,7 +26,7 @@ main := !(int argc, char^^ argv) -> int
 	InitVulkan()
 	defer DestroyVulkan()
 
-	mdl := new Model
+	mdl := new vModel
 	mdl.LoadFile("Models/HiResBox.ply")
 
 	prp := new Prop
@@ -35,6 +39,7 @@ main := !(int argc, char^^ argv) -> int
 	prp.modelPos.pos = vec4f(1.0f,0.0f,0.0f,0.4f)
 
 	gCam."this"()
+	gCam.SetPerspective(700.0f,700.0f,0.01f,100.0f,90deg)
 	prevTime := glfwGetTime()
 	walkM := 0.5f
 
@@ -46,6 +51,7 @@ main := !(int argc, char^^ argv) -> int
 		deltaTime := glfwGetTime() - prevTime
 		prevTime = glfwGetTime()
 		StartDraw()
+		gCam.BindDescriptor(mainCmd.Get())
 	
 		addLR := 0.0f
 		addFB := 0.0f

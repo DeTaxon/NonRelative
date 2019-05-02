@@ -6,11 +6,40 @@ FlushTempMemory := !() -> void
 	gTemporaryPool.FlushMem()
 }
 
+IMemoryPool := class
+{
+	GetMem := virtual !(size_t size, int align) -> void^
+	{
+	}
+	FreeMem := virtual !(void^ memPtr) -> void
+	{
+	}
+	Push := !() -> void
+	{
+		hUserPoolStack[hUserPoolCount]  = hUserPoolCurrentPool
+		hUserPoolCount += 1
+		hUserPoolCurrentPool = this&
+	}
+	Pop := !() -> void
+	{
+		hUserPoolCount -= 1 
+		hUserPoolCurrentPool = hUserPoolStack[hUserPoolCount]
+	}
+}
+
+hUserPoolStack := thread_local IMemoryPool^[64]
+hUserPoolCurrentPool := thread_local IMemoryPool^
+hUserPoolCount := int
+
+
 "new" := !() . {@R} -> void^ 
 {
 	val := R->TypeSize
 	if $temp {
 		return gTemporaryPool.GetMem(val,R->Align)
+	}
+	if $pool {
+		return hUserPoolCurrentPool.GetMem(val,R->Align)
 	}
 	newNode :=  malloc(val)
 	memset(newNode,0,val)
@@ -27,8 +56,12 @@ FlushTempMemory := !() -> void
 	if $temp {
 		newNode = gTemporaryPool.GetMem(itSi,itAl)->{u8^}
 	}else{
-		newNode = malloc(itSi)->{u8^}
-		memset(newNode,0,itSi)
+		if $pool {
+			newNode = hUserPoolCurrentPool.GetMem(itSi,itAl)->{u8^}
+		}else{
+			newNode = malloc(itSi)->{u8^}
+			memset(newNode,0,itSi)
+		}
 	}
 	preRet := newNode[itAl]&->{R[]}
 	preRet->{int^}[-1] = count	

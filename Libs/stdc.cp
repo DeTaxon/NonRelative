@@ -1,6 +1,6 @@
 printf := !(char^ str, ...) -> int declare
-calloc := !(int size,int sizet) -> void^ declare
-malloc := !(int size) -> void^ declare
+calloc := !(size_t size,int sizet) -> void^ declare
+malloc := !(size_t size) -> void^ declare
 free := !(void^ point) -> void declare
 
 dlopen := !(char^ name,int pri) -> void^ declare

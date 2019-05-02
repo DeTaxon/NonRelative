@@ -1,3 +1,49 @@
+AllocOnlyMP := class .{@PageSize,@CleanResult} extend IMemoryPool
+{
+	itPage := u8^
+	itLoaded := int
+	createdPages := List.{u8^}
+
+	GetPage := !() -> u8^
+	{	
+		newPage := null->{u8^}
+		newPage = malloc(PageSize)
+		if CleanResult
+		{
+			memset(newPage,0,PageSize)
+		}
+		createdPages << newPage
+		return newPage
+	}
+	GetMem := virtual !(size_t size, int align) -> void^
+	{
+		if itPage == null{
+			itPage = GetPage()
+		}
+		newSize := itLoaded
+		if align > 1 {
+			newSize +=  0xFF % align
+			newSize -= newSize % align
+		}
+		itLoaded = newSize + size
+
+		if itLoaded >= PageSize
+		{
+			itPage = GetPage()
+			itLoaded = size
+			return itPage
+		}
+		return itPage[newSize]&
+	}
+	FreeMem := virtual !(void^ memPtr) -> void
+	{
+	}
+	Clear := !() -> void
+	{
+		free(createdPages[^])
+	}
+}
+
 
 StupidMemoryPool := class .{@PageSize}
 {

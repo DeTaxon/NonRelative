@@ -1,3 +1,4 @@
+#import "VulkanCore.cp"
 
 vCamera := class
 {
@@ -6,6 +7,8 @@ vCamera := class
 	camPos := vec4f
 
 	perspConsts := float[4]
+
+
 
 	this := !() -> void
 	{
@@ -28,6 +31,8 @@ vCamera := class
 		if upDownAng > limit upDownAng = limit
 		if upDownAng < -limit upDownAng = -limit
 	}
+	vkPerspMem := VkDeviceMemory
+	vkPerspBuffer := VkBuffer
 	SetPerspective := !(float w, float h, float near, float far, float pov) -> void
 	{
 		aspect := w / h
@@ -38,6 +43,49 @@ vCamera := class
 		perspConsts[1] = fovTM
 		perspConsts[2] = (near + far) / range
 		perspConsts[3] =  -(2.0f * far*near/range)
+
+		allc1 := new VkMemoryAllocateInfo() ; $temp
+		allc1.allocationSize =  4*4
+		allc1.memoryTypeIndex = 1
+
+		bufC := new VkBufferCreateInfo() ; $temp
+		bufC.size = allc1.allocationSize
+		bufC.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT + VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT
+		//bufC.sharingMode = VK_SHARING_MODE_EXCLUSIVE
+
+		memInfo := VkMemoryRequirements
+
+		vkFuncs.vkCreateBuffer(vkLogCard,bufC,null,vkPerspBuffer&)
+		vkFuncs.vkGetBufferMemoryRequirements(vkLogCard,vkPerspBuffer,memInfo&)
+		vkFuncs.vkAllocateMemory(vkLogCard,allc1,null,vkPerspMem&)
+
+		
+		memPoint := void^
+		vkFuncs.vkMapMemory(vkLogCard,vkPerspMem,0,allc1.allocationSize,0,memPoint&)
+		memcpy(memPoint,perspConsts[0]&,4*4)
+		flushRange := new VkMappedMemoryRange() ; $temp
+		flushRange.memory = vkPerspMem
+		flushRange.offset = 0
+		flushRange.size = allc1.allocationSize
+		vkFuncs.vkFlushMappedMemoryRanges(vkLogCard,1,flushRange)
+		vkFuncs.vkUnmapMemory(vkLogCard,vkPerspMem)
+
+
+		vkFuncs.vkBindBufferMemory(vkLogCard,vkPerspBuffer,vkPerspMem,0)
+
+		bufInfo := new VkDescriptorBufferInfo ; $temp
+		bufInfo.buffer = vkPerspBuffer 
+		bufInfo.offset = 0
+		bufInfo.range = 4*4
+		someWrite := new VkWriteDescriptorSet() ; $temp
+		someWrite.dstSet = vkPerspSet
+		someWrite.dstBinding = 0
+		someWrite.dstArrayElement = 0
+		someWrite.descriptorCount = 1
+		someWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
+		someWrite.pBufferInfo = bufInfo->{void^}
+
+		vkFuncs.vkUpdateDescriptorSets(vkLogCard,1,someWrite,0,null)
 	}
 
 	addLocal := !(vec4f diffAdd) -> void
@@ -56,6 +104,10 @@ vCamera := class
 
 		invC := tempCent.Inverse()
 		posRes = invC<*>propPos
+	}
+	BindDescriptor := !(VkCommandBuffer cmdB) -> void
+	{
+		vkFuncs.vkCmdBindDescriptorSets(cmdB,VK_PIPELINE_BIND_POINT_GRAPHICS,vkLayout,0,1,vkPerspSet&,0,null)
 	}
 }
 

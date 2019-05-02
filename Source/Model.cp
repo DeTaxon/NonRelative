@@ -1,9 +1,10 @@
 #import "VulkanCore.cp"
 #import "RawModel.cp"
+#import "VkMem.cp"
 
-Model := class 
+vModel := class 
 {
-	memsValue := VkDeviceMemory[2]
+	memObjs := vMemObj[2]
 	hndls := VkBuffer[2]
 	indexCount := int
 	LoadFile := !(char^ fName) -> bool
@@ -18,12 +19,10 @@ Model := class
 	
 		indexCount = rFile.inds->len
 		
-		allc1 := new VkMemoryAllocateInfo() ; $temp
-		allc1.allocationSize =  rFile.verts->len*4
-		allc1.memoryTypeIndex = 1
+		vertSize :=  rFile.verts->len*4
 
 		bufC := new VkBufferCreateInfo() ; $temp
-		bufC.size = allc1.allocationSize
+		bufC.size = vertSize
 		bufC.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT
 		bufC.sharingMode = VK_SHARING_MODE_EXCLUSIVE
 
@@ -31,13 +30,11 @@ Model := class
 
 		vkFuncs.vkCreateBuffer(vkLogCard,bufC,null,hndls[0]&)
 		vkFuncs.vkGetBufferMemoryRequirements(vkLogCard,hndls[0],memInfo&)
-		vkFuncs.vkAllocateMemory(vkLogCard,allc1,null,memsValue[0]&)
+		memObjs[0].CreateObject(vertSize)
 		
-		vkFuncs.vkBindBufferMemory(vkLogCard,hndls[0],memsValue[0],0)
+		vkFuncs.vkBindBufferMemory(vkLogCard,hndls[0],memObjs[0].Get(),0)
 
-		memPoint := void^
-		vkFuncs.vkMapMemory(vkLogCard,memsValue[0],0,allc1.allocationSize,0,memPoint&)
-		//memcpy(memPoint,rFile.verts->{void^},allc1.allocationSize)
+		memPoint := memObjs[0].Map()
 
 		asFlt := memPoint->{float^}
 		vertCount := rFile.verts->len div 8
@@ -55,29 +52,21 @@ Model := class
 			asFlt[i*8 + 7] = rFile.verts[i*8 + 7]
 		}
 
+		memObjs[0].Unmap()
 
-		flushRange := new VkMappedMemoryRange() ; $temp
-		flushRange.memory = memsValue[0]
-		flushRange.offset = 0
-		flushRange.size = allc1.allocationSize
-		vkFuncs.vkFlushMappedMemoryRanges(vkLogCard,1,flushRange)
-		vkFuncs.vkUnmapMemory(vkLogCard,memsValue[0])
-
-		allc1.allocationSize = rFile.inds->len*4
-		bufC.size = allc1.allocationSize
+		indSize := rFile.inds->len*4
+		bufC.size = indSize
 		bufC.usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT
 		vkFuncs.vkCreateBuffer(vkLogCard,bufC,null,hndls[1]&)
 		vkFuncs.vkGetBufferMemoryRequirements(vkLogCard,hndls[1],memInfo&)
-		vkFuncs.vkAllocateMemory(vkLogCard,allc1,null,memsValue[1]&)
-		vkFuncs.vkBindBufferMemory(vkLogCard,hndls[1],memsValue[1],0)
-		vkFuncs.vkMapMemory(vkLogCard,memsValue[1],0,allc1.allocationSize,0,memPoint&)
-		memcpy(memPoint,rFile.inds->{void^},allc1.allocationSize)
 
-		flushRange.memory = memsValue[1]
-		flushRange.offset = 0
-		flushRange.size = allc1.allocationSize
-		vkFuncs.vkFlushMappedMemoryRanges(vkLogCard,1,flushRange)
-		vkFuncs.vkUnmapMemory(vkLogCard,memsValue[1])
+		memObjs[1].CreateObject(indSize)
+
+		vkFuncs.vkBindBufferMemory(vkLogCard,hndls[1],memObjs[1].Get(),0)
+		memPoint = memObjs[1].Map()
+		memcpy(memPoint,rFile.inds->{void^},indSize)
+		memObjs[1].Unmap()
+
 	}
 	AddToCmdBuffer := !(VkCommandBuffer cmdB) -> void
 	{

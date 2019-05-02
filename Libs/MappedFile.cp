@@ -122,6 +122,11 @@ MappedFile := class
 		return false
 	}
 
+	Get := !() -> u8^
+	{
+		return point
+	}
+
 	Size := !() -> int
 	{
 		return size
