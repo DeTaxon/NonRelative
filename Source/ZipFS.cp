@@ -1,58 +1,8 @@
-
-zipFileHeader := packed_class
-{
-	signature := u32
-	versNeededToExtract := u16
-	flags := u16
-	compressionMethod := u16
-	lastModifTime := u16
-	lastModifDate := u16
-	crc32 := u32
-	compressedSize := u32
-	realSize := u32
-	fileNameLen := u16
-	extraFieldsLen := u16
-	//fileName
-	//extraFields
-}
-zipCentralDirectory := packed_class
-{
-	signature := u32
-	madeWithVersion := u16
-	versionNeedToExtract := u16
-	flags := u16
-	compressionMethod := u16
-	lastModifTime := u16
-	lastModifDate := u16
-	crc32 := u32
-	compressedSize := u32
-	realSize := u32
-	fileNameLen := u16
-	extraFieldsLen := u16
-	commentLen := u16
-	fileStartsAtDisk := u16
-	internalFileAttrs := u16
-	externalFileAttrs := u32
-	offsetToFileHeader := u32
-	// file name
-	// extra fields
-	// comments
-}
-zipEndOfDirectory := packed_class
-{
-	signature := u32
-	diskNumber := u16
-	centrDirStartDisk := u16
-	numberOfCentralDirectoryHere := u16
-	totalNumberOfCentralDirectory := u16
-	sizeOfCentralDirectoryBytes := u32
-	offsetToStartOfCD := u32
-	commentLength := u16
-	//comments[len]
-}
+#import "ZipSpec.cp"
 
 vZipEntry := class
 {
+	ptrToObj := vZipObject^
 	offset := int
 	realSize := u32
 	zipSize := u32
@@ -61,6 +11,20 @@ vZipEntry := class
 	subFolders := List.{vZipEntry}
 
 	"this" := !() -> void {}
+
+	Size := !() -> size_t
+	{
+		return realSize
+	}
+	Map := !() -> void^
+	{
+		ptrToObj.AddUser()
+		return ptrToObj.asMapped.Get()[offset]&
+	}
+	Unmap := !() -> void
+	{
+		ptrToObj.DecUser()
+	}
 
 	Print := !(int de) -> void
 	{
@@ -76,20 +40,33 @@ vZipObject := class
 	examined := bool
 	asMapped := MappedFile
 	upFolder := vRepoFolder^
-	fileName := StringSpan
+	fileName := char^
 
 	zipRoot := vZipEntry
 
 	"this" := !() -> void
 	{
 		zipRoot.objName = StringSpan("/")
+		zipRoot.ptrToObj = this&
+	}
+	AddUser := !() -> void
+	{
+		filesInUse++
+		if filesInUse == 1
+			asMapped."this"(fileName)
+	}
+	DecUser := !() -> void
+	{
+		filesInUse--
+		if filesInUse == 0
+			asMapped.Close()
 	}
 
 	AnalizeFile := !(char^ fileToLoad) -> bool
 	{
-		filesInUse++
-		if filesInUse == 1
-			asMapped."this"(fileToLoad)
+		fileName = StrCopy(fileToLoad) ; $pool
+		AddUser()
+		defer DecUser()
 
 		ptrToFl := asMapped.Get()
 		eod := ptrToFl[asMapped.Size() - zipEndOfDirectory->TypeSize]&->{zipEndOfDirectory^}
@@ -110,16 +87,16 @@ vZipObject := class
 				]&->{zipCentralDirectory^}
 				continue
 			}
-
 			fldrs := newStr.DivideStr("/") ; $temp
 			itmIter := zipRoot&
+
 
 			for itm,j : fldrs
 			{	
 				found := false
-				for itS : itmIter.subFolders
+				if itmIter.subFolders[^].objName == itm
 				{
-					itmIter = itS&
+					itmIter = it&
 					found = true
 					break
 				}
@@ -127,12 +104,17 @@ vZipObject := class
 				{
 					itmIter.subFolders.Emplace()
 					nI := ref itmIter.subFolders.Back()
+					nI.ptrToObj = this&
 					nI.objName = StringSpan(itm.Str()) ; $pool
 
 					if  j == fldrs.Size() - 1
 					{
 						nI.realSize = cdTable.realSize
 						nI.zipSize = cdTable.compressedSize
+
+						ptTH := ptrToFl[cdTable.offsetToFileHeader]&->{zipFileHeader^}
+
+						nI.offset = cdTable.offsetToFileHeader + zipFileHeader->TypeSize + ptTH.fileNameLen + ptTH.extraFieldsLen
 					}else{
 						itmIter = nI&
 					}
@@ -145,16 +127,9 @@ vZipObject := class
 			+ cdTable.commentLen
 			]&->{zipCentralDirectory^}
 		}
-
-
 	}
 }
 
-vZipProxy := class
-{
-	ptrToZip := vZipObject^
-	itemNR := int
-}
 vRepoObject := class
 {
 	objName := StringSpan
@@ -190,6 +165,8 @@ vRepoObject := class
 vRepoFolder := class extend vRepoObject
 {
 	examined := bool
+	virtualFolder := bool
+	subZipFolders := List.{vZipEntry^}
 	subFolders := List.{vRepoFolder^}
 	subFiles := List.{vRepoFile^}
 }
@@ -197,7 +174,7 @@ vRepoFolder := class extend vRepoObject
 vRepoFile := class extend vRepoObject
 {
 	ptrToRepo := vRepo^
-	ptrToProxy := vZipProxy^
+	ptrToZip := vZipEntry^
 	mFile := MappedFile
 
 	this := !() -> void
@@ -206,13 +183,12 @@ vRepoFile := class extend vRepoObject
 	}
 	Map := !() -> void^
 	{
-		if ptrToProxy != null
+		if ptrToZip != null
 		{
-			//TODO: zip support
-			return null
+			return ptrToZip.Map()
 		}
 
-		mFile.open(fileName)
+		mFile.Open(GetPath())
 
 		if mFile.IsInvalid()
 			return null
@@ -221,17 +197,18 @@ vRepoFile := class extend vRepoObject
 	}
 	Unmap := !() -> void
 	{
-		if ptrToProxy != null
+		if ptrToZip != null
 		{
-			//TODO: zip support
+			ptrToZip.Unmap()
+		}else{
+			mFile.Close()
 		}
-		mFile.Close()
 	}
-	GetSize := !() -> size_t
+	Size := !() -> size_t
 	{
-		if ptrToProxy != null
+		if ptrToZip != null
 		{
-			//TODO: zip support
+			return ptrToZip.Size()
 		}
 		return 0
 	}
@@ -268,38 +245,99 @@ vRepo := class
 
 			if not iterFolder.examined
 			{	
-				fldPath := Path(iterFolder.GetPath())
 
-				for subF : fldPath
+				zips := List.{char^}() ; $temp
+
+				if not iterFolder.virtualFolder
 				{
-					if subF.IsFolder()
+					fldPath := Path(iterFolder.GetPath())
+					for subF : fldPath
 					{
-						newStr := subF.Name().Str() ; $pool
-						newObj := new vRepoFolder ; $pool
-						newObj.objName = StringSpan(newStr)
-						newObj.upFolder = iterFolder
-						iterFolder.subFolders << newObj
-					}else{
-						if subF.Get()[-4..0] == ".zip"
+						if subF.IsFolder()
 						{
-							printf("hoh %s\n",subF.Get())
-							tt := new vZipObject ; $pool
-							tt.AnalizeFile(subF.Get())
-							tt.zipRoot.Print(0)
-							return null
-						}else{
 							newStr := subF.Name().Str() ; $pool
+							newObj := new vRepoFolder ; $pool
+							newObj.objName = StringSpan(newStr)
+							newObj.upFolder = iterFolder
+							iterFolder.subFolders << newObj ; $pool
+						}else{
+							if subF.Get()[-4..0] == ".zip"
+							{
+								zips << StrCopy(subF.Get()) ; $temp
+							}else{
+								newStr := subF.Name().Str() ; $pool
+								newObj := new vRepoFile ; $pool
+								newObj.upFolder = iterFolder
+								newObj.objName = StringSpan(newStr)
+								iterFolder.subFiles << newObj ; $pool
+							}
+						}
+					}
+					for z : zips
+					{
+						tt := new vZipObject ; $pool
+						tt.AnalizeFile(z)
+
+						itPP :=Path(z)
+						itP := itPP.Name()
+
+						rpFld := null->{vRepoFolder^}
+
+						if iterFolder.subFolders[^].objName == itP
+						{
+							rpFld = it
+							break
+						}
+						if rpFld == null
+						{
+							rpFld = new vRepoFolder ; $pool
+							rpFld.objName = StringSpan(itP[0..-4].Str()) ; $pool
+							rpFld.virtualFolder = true
+							iterFolder.subFolders << rpFld ; $pool
+						}
+						rpFld.subZipFolders << tt.zipRoot& ; $pool
+					}
+				}
+
+				for entrs : iterFolder.subZipFolders
+				{
+					for subItm : entrs.subFolders
+					{
+						found := false
+						if iterFolder.subFiles[^].objName == subItm.objName
+						{
+							found = true
+							break
+						}
+						if found continue
+
+						if iterFolder.subFolders[^].objName == subItm.objName
+						{
+							found = true
+							if subItm.realSize == 0
+								it.subZipFolders << subItm& ; $pool
+							break
+						}
+						if found continue
+
+						if subItm.realSize == 0
+						{
+							rpFld := new vRepoFolder ; $pool
+							rpFld.objName = subItm.objName
+							rpFld.virtualFolder = true
+							iterFolder.subFolders << rpFld ; $pool
+							rpFld.subZipFolders << subItm&
+						}else{
 							newObj := new vRepoFile ; $pool
 							newObj.upFolder = iterFolder
-							newObj.objName = StringSpan(newStr)
-							iterFolder.subFiles << newObj
+							newObj.objName = subItm.objName
+							iterFolder.subFiles << newObj ; $pool
+							newObj.ptrToZip = subItm&
 						}
 					}
 				}
 			}
-			
 			found := false
-			printf("ho ho %s & %s\n",iterFolder.subFolders[^].objName.Str(),cheks.Str())
 			if iterFolder.subFolders[^].objName == cheks
 			{
 				iterFolder = it

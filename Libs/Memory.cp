@@ -31,6 +31,10 @@ hUserPoolStack := thread_local IMemoryPool^[64]
 hUserPoolCurrentPool := thread_local IMemoryPool^
 hUserPoolCount := int
 
+gMallocTemporary := !(size_t nSize, size_t nAlign) -> void^
+{
+	return gTemporaryPool.GetMem(nSize,nAlign)
+}
 
 "new" := !() . {@R} -> void^ 
 {

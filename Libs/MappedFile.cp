@@ -74,6 +74,10 @@ MappedFile := class
 		point = null
 		Open(fileName,flg,itSize)
 	}
+	Open := !(char^ fileName) -> void
+	{
+		Open(fileName,FILE_READ,0)
+	}
 	Open := !(char^ fileName,int flg, s64 itSize) -> void
 	{
 		flag = flg

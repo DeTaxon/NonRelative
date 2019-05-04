@@ -209,27 +209,25 @@ Path := class
 	}
 	"==" := !(Path pt2) -> bool
 	{
-		pathA := realpath(itStr,null->{char^})
-		if pathA == null return false
-		defer free(pathA)
-
-		pathB := realpath(pt2.itStr,null->{char^})
-		if pathB == null return false
-		defer free(pathB)
-
-		return pathA == pathB
+		idX := u64
+		idY := u64
+		if prvtGetFileInfo(itStr,null,null,idX&,null,gMallocTemporary) == 0
+			return false
+		if prvtGetFileInfo(pt2.itStr,null,null,idY&,null,gMallocTemporary) == 0
+			return false
+		return idX == idY
 	}
 	IsExist := !() -> bool
 	{
-		newLine := realpath(itStr,null->{char^})
-		if newLine == null return false
-		delete newLine
-		return true
+		fInd := u64
+		return prvtGetFileInfo(pt2.itStr,null,null,fInd&,null,gMallocTemporary) == 1
 	}
 
 	FullPath := !() -> Path
 	{
-		newLine := realpath(itStr,null->{char^})
+		newLine := char^
+		if(prvtGetFileInfo(itStr,newLine&,null,null,null,gMallocTemporary) == 0)
+			return Path("")
 		if newLine == null return Path("")
 		return Path(newLine)
 	}
@@ -239,9 +237,10 @@ Path := class
 	}
 	IsFolder := !() -> bool
 	{
-		statStruct := char[144]
-		res := stat(itStr,statStruct->{char^})
-		return (statStruct[25] and_b 0x40) != 0
+		isF := int
+		if prvtGetFileInfo(itStr,null,null,null,isF&,gMallocTemporary) == 0
+			return false
+		return isF == 1
 	}
 	"=" := !(Path pt) -> void
 	{

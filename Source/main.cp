@@ -11,67 +11,77 @@ gCam := vCamera
 
 main := !(int argc, char^^ argv) -> int
 {
-	test := vRepo
-	test.Init(".")
-
-	cc := test.GetFile("Models/RepoTest/HiResBox.ply")
+	printf("tet\n")
+	tt := Path(".")
+	printf("hah %s\n",tt.FullPath().Get())
 	return 0
-	startW = 700
-	startH = 700
+	//test := vRepo
+	//test.Init(".")
 
-	CreateWindow()
-	defer DestroyWindow() 
+	//cc := test.GetFile("Models/RepoTest/SubFolder/Scribs.bmp")
+	//printf("result %i\n",cc.Size())
+
+	//ptrR := cc.Map()
+	//defer cc.Unmap()
 
 
-	InitVulkan()
-	defer DestroyVulkan()
+	return 0
+	//startW = 700
+	//startH = 700
 
-	mdl := new vModel
-	mdl.LoadFile("Models/HiResBox.ply")
+	//CreateWindow()
+	//defer DestroyWindow() 
 
-	prp := new Prop
-	prp.modelPtr = mdl
 
-	simpleShader := new Shader
-	simpleShader.LoadShader("Shaders/LearnVert.vert","Shaders/LearnFrag.frag")
+	//InitVulkan()
+	//defer DestroyVulkan()
 
-	prp.modelPos.ang = quantfAt(1.0f,0.0f,0.0f,0.0f)
-	prp.modelPos.pos = vec4f(1.0f,0.0f,0.0f,0.4f)
+	//mdl := new vModel
+	//mdl.LoadFile("Models/HiResBox.ply")
 
-	gCam."this"()
-	gCam.SetPerspective(700.0f,700.0f,0.01f,100.0f,90deg)
-	prevTime := glfwGetTime()
-	walkM := 0.5f
+	//prp := new Prop
+	//prp.modelPtr = mdl
 
-	while not glfwWindowShouldClose(glfwWindow)
-	{
-		FlushTempMemory()
-		glfwPollEvents()
+	//simpleShader := new Shader
+	//simpleShader.LoadShader("Shaders/LearnVert.vert","Shaders/LearnFrag.frag")
 
-		deltaTime := glfwGetTime() - prevTime
-		prevTime = glfwGetTime()
-		StartDraw()
-		gCam.BindDescriptor(mainCmd.Get())
-	
-		addLR := 0.0f
-		addFB := 0.0f
-		if buttons['a'] addLR = -walkM*deltaTime
-		if buttons['d'] addLR =  walkM*deltaTime
-		if buttons['w'] addFB =  walkM*deltaTime
-		if buttons['s'] addFB = -walkM*deltaTime
-		if buttons['q'] gCam.AddAngs(-deltaTime*0.5f,0.0f)
-		if buttons['e'] gCam.AddAngs( deltaTime*0.5f,0.0f)
-		if buttons['r'] gCam.AddAngs(0.0f, deltaTime*0.5f)
-		if buttons['f'] gCam.AddAngs(0.0f,-deltaTime*0.5f)
+	//prp.modelPos.ang = quantfAt(1.0f,0.0f,0.0f,0.0f)
+	//prp.modelPos.pos = vec4f(1.0f,0.0f,0.0f,0.4f)
 
-		gCam.addLocal(vec4f(addLR,0.0f,addFB,0.0f))
+	//gCam."this"()
+	//gCam.SetPerspective(700.0f,700.0f,0.01f,100.0f,90deg)
+	//prevTime := glfwGetTime()
+	//walkM := 0.5f
 
-		simpleShader.ApplyShaderToQueue(mainCmd.Get())
-		prp.AddToCmdBuffer(mainCmd.Get())
+	//while not glfwWindowShouldClose(glfwWindow)
+	//{
+	//	FlushTempMemory()
+	//	glfwPollEvents()
 
-		StopDraw()
-	}
-		
+	//	deltaTime := glfwGetTime() - prevTime
+	//	prevTime = glfwGetTime()
+	//	StartDraw()
+	//	gCam.BindDescriptor(mainCmd.Get())
+	//
+	//	addLR := 0.0f
+	//	addFB := 0.0f
+	//	if buttons['a'] addLR = -walkM*deltaTime
+	//	if buttons['d'] addLR =  walkM*deltaTime
+	//	if buttons['w'] addFB =  walkM*deltaTime
+	//	if buttons['s'] addFB = -walkM*deltaTime
+	//	if buttons['q'] gCam.AddAngs(-deltaTime*0.5f,0.0f)
+	//	if buttons['e'] gCam.AddAngs( deltaTime*0.5f,0.0f)
+	//	if buttons['r'] gCam.AddAngs(0.0f, deltaTime*0.5f)
+	//	if buttons['f'] gCam.AddAngs(0.0f,-deltaTime*0.5f)
+
+	//	gCam.addLocal(vec4f(addLR,0.0f,addFB,0.0f))
+
+	//	simpleShader.ApplyShaderToQueue(mainCmd.Get())
+	//	prp.AddToCmdBuffer(mainCmd.Get())
+
+	//	StopDraw()
+	//}
+	//	
 	return 0
 
 }

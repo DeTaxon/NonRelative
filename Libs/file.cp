@@ -52,7 +52,7 @@ sfile := class extend file
 		if fgets(Buff,4096,Handle) == null return ""
 		return StrCopy(Buff)
 	}	
-	"<<" := !(string likeCpp) -> ref sfile
+	"<<" := !(char^ likeCpp) -> ref sfile
 	{
 		fputs(likeCpp,Handle)
 		return this

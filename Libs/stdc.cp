@@ -103,7 +103,7 @@ FixedArrayIter := class .{@Type}
 {
 	return FixedArrayIter.{Type}(item->{Type^},item->len)
 }
-"in" := !(int val, string str) -> bool
+"in" := !(int val, char^ str) -> bool
 {
 	if str == null return false
 	i := 0
