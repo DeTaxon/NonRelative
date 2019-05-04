@@ -11,9 +11,10 @@ gCam := vCamera
 
 main := !(int argc, char^^ argv) -> int
 {
-	printf("tet\n")
-	tt := Path(".")
-	printf("hah %s\n",tt.FullPath().Get())
+	for Path(".")
+	{
+		printf("huh %s\n",it.Get())
+	}
 	return 0
 	//test := vRepo
 	//test.Init(".")

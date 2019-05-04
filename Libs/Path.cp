@@ -17,40 +17,44 @@ DirectoryIterator := class
 {
 	toUse := Path^
 	dirFd := void^
-	nowEntry := void^
 	nowPath := Path
+	nowBuff := char[1024]
+	bufSize := int
 	this := !(Path^ tu) -> void
 	{
-		toUse = tu
-		dirFd = opendir(toUse.itStr)
-		nowEntry =  readdir(dirFd)
-		if GetDirectoryName(nowEntry) == "." nowEntry = readdir(dirFd)
-		if GetDirectoryName(nowEntry) == ".." nowEntry = readdir(dirFd)
-		if nowEntry != null
-		{
-			nowPath.itStr = toUse^.itStr + "/" + GetDirectoryName(nowEntry)
-		}
+		dirFd = prvtStartFolderIter(tu.itStr,gMallocTemporary)
+		bufSize = strlen(tu.itStr)
+		memcpy(nowBuff[0]&,tu.itStr,bufSize )
+		nowBuff[bufSize] = '/'
+		
+		nowPath.itStr = nowBuff[0]&
+		itmName := prvtGetFolderIterItem(dirFd,gMallocTemporary)
+		itmSize := strlen(itmName)
+		newSize := nowBuff[bufSize+1]&
+		memcpy(newSize,itmName,itmSize)
+		newSize[itmSize] = 0
 	}
-	"~this" := !() -> void
-	{
-		if dirFd != null closedir(dirFd)
-	}
+
 	"^" := !() -> ref Path
 	{
 		return nowPath
 	}
 	Inc := !() -> void
 	{
-		nowEntry = readdir(dirFd)
-		if nowEntry != null
+		prvtGetNextFolderIter(dirFd)
+		itmName := prvtGetFolderIterItem(dirFd,gMallocTemporary)
+
+		if itmName != null
 		{
-			newName := GetDirectoryName(nowEntry)
-			nowPath.itStr = toUse.itStr + "/" + GetDirectoryName(nowEntry)
+			itmSize := strlen(itmName)
+			newSize := nowBuff[bufSize+1]&
+			memcpy(newSize,itmName,itmSize)
+			newSize[itmSize] = 0
 		}
 	}
 	IsEnd := !() -> bool
 	{
-		return nowEntry == null
+		return prvtIsEndFolderIter(dirFd) == 1
 	}
 }
 
