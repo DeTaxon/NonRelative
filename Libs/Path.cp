@@ -295,6 +295,12 @@ Path := class
 
 		return StringSpan(itStr[pos + 1]&, size - pos - 1)
 	}
+	Size := !() -> u64
+	{
+		preRes := u64
+		prvtGetFileInfo(itStr,null,preRes&,null,null,gMallocTemporary)
+		return preRes
+	}
 	FolderName := !() -> string
 	{
 		size := StrSize(itStr)

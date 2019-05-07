@@ -7,19 +7,9 @@ FILE_CREATE := 3
 
 
 
-GetFileSizeLinux2 := !(int fd,s64^ size) -> bool
-{
-	dataD := char[144]
-	val := fstat(fd,dataD->{char^})
-	if val == -1 return false
-	asNeed1 := dataD->{char^}[48]&
-	asNeed2 := asNeed1->{s64^}
-	size^ = asNeed2^
-	return true
-}
 ArrayIterMappedFile := class
 {	
-	x := s64
+	x := u64
 	pFile := void^
 	this := !(void^ pF) -> void
 	{
@@ -38,7 +28,7 @@ ArrayIterMappedFile := class
 	IsEnd := !() -> bool
 	{
 		pP := pFile->{MappedFile^}
-		return x >= pP.size
+		return x >= pP.fileSize
 	}
 	IsInvalid := !() -> bool
 	{
@@ -48,20 +38,20 @@ ArrayIterMappedFile := class
 }
 MappedFile := class
 {
-	name := string
-	itemId := int
-	flag := int
-	size  := s64
+	fileId := u64
+	fileSize  := u64
+	mapId := u64
 	point := u8^
+	isValid := bool
 	this := !(char^ fileName) -> void
 	{
-		itemId = -1
+		fileId = 0
 		point = null
 		Open(fileName,FILE_READ,0)
 	}
 	this := !(char^ fileName,int flg) -> void
 	{
-		itemId = -1
+		fileId = 0
 		point = null
 		if flg == FILE_CREATE
 			Open(fileName,FILE_WRITE,0)
@@ -70,7 +60,7 @@ MappedFile := class
 	}
 	this := !(char^ fileName,int flg, s64 itSize) -> void
 	{
-		itemId = -1
+		fileId = 0
 		point = null
 		Open(fileName,flg,itSize)
 	}
@@ -80,50 +70,33 @@ MappedFile := class
 	}
 	Open := !(char^ fileName,int flg, s64 itSize) -> void
 	{
-		flag = flg
-		fdFlag := int
-		if flg == FILE_READ
-			fdFlag = O_RDONLY
-		else
-			fdFlag = O_RDWR
-		if flg == FILE_CREATE fdFlag = O_CREAT + O_RDWR
-
-		itemId = open(fileName,fdFlag,511)
-
-		if itemId == -1 return void
-
-		val := GetFileSizeLinux2(itemId,size&)
-
-		if not val
+		isValid = false
+		if prvtOpenFile(fileName,fileId&,flg,0,gMallocTemporary) == 0
+			return void
+	
+		fileSize = itSize
+		if prvtMapFile(fileId,mapId&,point&,fileSize&,flg,gMallocTemporary) == 0
 		{
-			close(itemId)
-			itemId = -1
+			prvtCloseFile(fileId)
 			return void
 		}
 
-		if flg == FILE_CREATE
-		{
-			if itSize != size Resize(itSize)
-				else makeMap()
-		}else{
-			if size == 0 return void
-			makeMap()
-		}
+		isValid = true
 	}
-	Resize := !(s64 newSize) -> void
-	{
-		if IsInvalid() return void
-		if newSize < 0 return void
+	//Resize := !(s64 newSize) -> void
+	//{
+	//	if IsInvalid() return void
+	//	if newSize < 0 return void
 
-		if point != null munmap(point,size)
-		w := ftruncate(itemId,newSize)
-		size = newSize
-		makeMap()
-	}
+	//	if point != null munmap(point,size)
+	//	ftruncate(itemId,newSize)
+	//	prvtSetFileSize(f
+	//	size = newSize
+	//	makeMap()
+	//}
 	IsInvalid := !() -> bool
 	{
-		if itemId == -1 return true
-		return false
+		return not isValid
 	}
 
 	Get := !() -> u8^
@@ -133,7 +106,7 @@ MappedFile := class
 
 	Size := !() -> int
 	{
-		return size
+		return fileSize
 	}
 	"~For" := !() -> ArrayIterMappedFile
 	{
@@ -145,27 +118,7 @@ MappedFile := class
 	}
 	Close := !() -> void
 	{
-		if itemId == -1 return void
-		close(itemId)
-		if point == null return void
-		munmap(point,size)
-		itemId = -1
-	}
-
-	makeMap := !() -> void
-	{
-		PROTS := PROT_READ
-		SHARES := MAP_PRIVATE
-		if flag != FILE_READ 
-		{
-			PROTS = PROTS or_b PROT_WRITE
-			SHARES = MAP_SHARED
-		}
-		point = mmap(null,size,PROTS,SHARES,itemId,null)
-		if point == null //TODO: in error it returns 0xFFFFFFFFFFFFF
-		{
-			close(itemId)
-			itemId = -1
-		}
+		prvtUnmapFile(mapId,point,fileSize)
+		prvtCloseFile(fileId)
 	}
 }

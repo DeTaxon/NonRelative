@@ -11,10 +11,9 @@ gCam := vCamera
 
 main := !(int argc, char^^ argv) -> int
 {
-	for Path(".")
-	{
-		printf("huh %s\n",it.Get())
-	}
+	tt := MappedFile("newFile.txt",3,15)
+	tt[^i] = 'a' + i
+	tt.Close()
 	return 0
 	//test := vRepo
 	//test.Init(".")

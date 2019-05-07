@@ -35,18 +35,32 @@ extern "C"
 			fileNameFW[nameSize] = 0;
 			fileFullName[0] = wideToUtf8(fileNameFW,talloc);
 		}
-		//if (fileId != nullptr || fileSize != nullptr || isFolder != nullptr)
-		//{
-		//	struct stat resB;
-		//	if(stat(fileName,&resB) != 0)
-		//		return 0;
-		//	if(fileId != nullptr)
-		//		fileId[0] = resB.st_ino;
-		//	if(fileSize != nullptr)
-		//		fileSize[0] = resB.st_blocks*512;
-		//	if(isFolder != nullptr)
-		//		isFolder[0] = S_ISDIR(resB.st_mode) ? 1 : 0;
-		//}
+		if( isFolder != nullptr)
+		{
+			isFolder[0] = (GetFileAttributesW(wideChr) & FILE_ATTRIBUTE_DIRECTORY) != 0 ? 1 : 0;
+		}
+		if(fileSize != nullptr || fileId != nullptr)
+		{
+			auto anlFile = CreateFileW(wideChr,0,FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,nullptr,OPEN_EXISTING,FILE_ATTRIBUTE_NORMAL,nullptr);
+
+			if(anlFile == INVALID_HANDLE_VALUE)
+				return 0;
+
+			if(fileSize != nullptr || fileId != nullptr)
+			{
+				BY_HANDLE_FILE_INFORMATION flInf;
+				if(!GetFileInformationByHandle(anlFile,&flInf))
+				{
+					CloseHandle(anlFile);
+					return 0;
+				}
+				if(fileSize != nullptr)
+					fileSize[0] = flInf.nFileSizeLow + (((uint64_t)flInf.nFileSizeHigh) << 32);
+				if(fileId != nullptr)
+					fileId[0] = flInf.nFileIndexLow + (((uint64_t)flInf.nFileIndexHigh) << 32);
+
+			}
+		}
 
 		return 1;
 	}
@@ -97,4 +111,71 @@ extern "C"
 		return newObj->isEnd ? 1 : 0;
 	}
 
+	int prvtOpenFile(char* fileName,HANDLE* resId,int opnType,int flags,void* tall)
+	{
+		talloc_t talloc = (talloc_t)tall;
+		auto wName = utf8ToWide(fileName,talloc);
+		
+		auto oType = GENERIC_READ;
+		auto fFlg = OPEN_EXISTING;
+		auto fS = FILE_SHARE_READ;
+
+		if(opnType != 1)
+		{
+			fS |= FILE_SHARE_WRITE;
+			oType |= GENERIC_WRITE;
+		}
+		if(opnType == 3)
+		{
+			fFlg = CREATE_NEW;
+		}
+		auto newFile = CreateFileW(wName,oType,fS,nullptr,fFlg,FILE_ATTRIBUTE_NORMAL,nullptr);
+		if(newFile == INVALID_HANDLE_VALUE)
+			return 0;
+		resId[0] = newFile;
+		return 1;
+	}
+	void prvtCloseFile(HANDLE fId) 
+	{
+		CloseHandle(fId);
+	}
+	
+	int prvtMapFile(HANDLE fileId,HANDLE* mapId,void** mapPtr,uint64_t* fileSize,int fileFlags,void* tall)
+	{
+		union{
+			DWORD vals[2];
+			uint64_t fRSize;
+		};
+		vals[0] = GetFileSize(fileId,&vals[1]);
+		auto oldSize = fileSize[0];
+		if(fileSize[0] == 0)
+		{
+			fileSize[0] = fRSize;
+		}
+		fRSize = fileSize[0];
+
+		auto pageOp = PAGE_READONLY;
+		if(fileFlags != 1)
+		{
+			pageOp = PAGE_READWRITE;
+		}
+		auto mapHndl =CreateFileMappingW(fileId,nullptr,pageOp,vals[1],vals[0],nullptr);
+		
+		if(mapHndl == nullptr)
+			return 0;
+
+		auto mapValue = MapViewOfFile(mapHndl, fileFlags != 1 ? FILE_MAP_ALL_ACCESS : FILE_MAP_READ,0,0,fRSize);
+		if(mapValue == nullptr){
+			CloseHandle(mapHndl);
+			return 0;
+		}
+		mapPtr[0] = mapValue;
+		return 1;
+	}
+	int prvtUnmapFile(HANDLE mapId,void* mapPtr,uint64_t leng)
+	{
+		UnmapViewOfFile(mapPtr);
+		CloseHandle(mapId);
+		return 1;
+	}
 }

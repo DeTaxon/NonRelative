@@ -5,6 +5,9 @@
 #include <sys/stat.h>
 #include <stdio.h>
 #include <dirent.h>
+#include <unistd.h>
+#include <sys/mman.h>
+#include <fcntl.h>
 
 typedef void*(*talloc_t)(size_t itSize,size_t itAlign);
 
@@ -32,7 +35,7 @@ extern "C"
 			if(fileId != nullptr)
 				fileId[0] = resB.st_ino;
 			if(fileSize != nullptr)
-				fileSize[0] = resB.st_blocks*512;
+				fileSize[0] = resB.st_size;
 			if(isFolder != nullptr)
 				isFolder[0] = S_ISDIR(resB.st_mode) ? 1 : 0;
 		}
@@ -87,4 +90,56 @@ extern "C"
 		return 0;
 	}
 
+	int prvtOpenFile(char* fileName,uint64_t* resId,int opnType,int flags,void* tall)
+	{
+		auto flgs = O_RDONLY;
+		if(opnType != 1)
+			flgs = O_RDWR;
+		if(opnType == 3)
+			flgs |= O_CREAT;
+
+		auto flId = open(fileName,flgs,511);
+		if(flId == -1)
+			return 0;
+		resId[0] = flId;
+		return 1;
+	}
+	void prvtCloseFile(uint64_t fId) 
+	{
+		close(fId);
+	}
+	int prvtMapFile(uint64_t fileId,uint64_t* mapId,void** mapPtr,uint64_t* fileSize,int fileFlags,void* tall)
+	{
+		struct stat resB;
+		fstat(fileId,&resB);
+
+		auto itFlgs = PROT_READ;
+		if(fileFlags != 1) {
+			itFlgs |= PROT_WRITE;
+		}
+		void* mapValue = nullptr;
+		if(fileSize[0] == 0)
+		{
+			mapValue = mmap(nullptr,resB.st_size,itFlgs,MAP_SHARED,fileId,0);
+			fileSize[0] = resB.st_size;
+		}else{
+			if(resB.st_size < *fileSize)
+			{
+				if( ftruncate(fileId,*fileSize) == -1)
+					return 0;
+			}
+			mapValue = mmap(nullptr,*fileSize,itFlgs,MAP_SHARED,fileId,0);
+		}
+		if(mapValue == MAP_FAILED)
+			return 0;
+		mapPtr[0] = mapValue;
+		return 1;
+	}
+	int prvtUnmapFile(uint64_t mapId,void* mapPtr,uint64_t leng)
+	{
+		if (munmap(mapPtr,leng) != 0)
+			return 0;
+		return 1;
+	}
 }
+
