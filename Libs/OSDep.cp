@@ -11,3 +11,7 @@ prvtOpenFile := !(char^ fileName, u64^ resId,int opnType,int flags, void^ funcPt
 prvtCloseFile := !(u64 fileId) -> void declare
 prvtMapFile := !(u64 fileId,u64^ mapId, u8^^ mapPtr,u64^ fileSize,int flags,void^ funcPtr) -> int declare
 prvtUnmapFile := !(u64 mapId,void^ mapPtr,u64 mapSize) -> int declare
+
+OpenLib := !(char^ fileName,void^ talloc) -> u64 declare
+LoadFuncLib := !(u64 libId,char^ loadName) -> void^ declare
+CloseLib := !(u64 libId) -> void declare

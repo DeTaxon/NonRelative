@@ -221,14 +221,33 @@ vRepo := class
 {
 	rootFolder := vRepoFolder^
 	repoMP := AllocOnlyMP.{4096,true}^
+	ignZip := AVLSet.{u64}
 	Init := !(char^ pathName)-> void
 	{
+		ignZip."this"()
 		repoMP = new AllocOnlyMP.{4096,true}
 		repoMP.Push()
 		defer repoMP.Pop()
 		rootFolder = new vRepoFolder ; $pool
 		startName := StrCopy(pathName) ; $pool 
 		rootFolder.objName = StringSpan(startName)
+	}
+
+	AddZipRoot := !(char^ fileName) -> bool
+	{
+		repoMP.Push()
+		defer repoMP.Pop()
+
+		itId := u64
+		if prvtGetFileInfo(fileName,null,null,itId&,null,gMallocTemporary) == 0
+			return false
+
+		ignZip << itId ; $pool
+
+		itObj := new vZipObject ; $pool
+		itObj.AnalizeFile(fileName)
+		rootFolder.subZipFolders << itObj.zipRoot&; $pool
+
 	}
 
 	GetFile := !(char^ fileName) -> vRepoFile^
@@ -261,10 +280,21 @@ vRepo := class
 							newObj.upFolder = iterFolder
 							iterFolder.subFolders << newObj ; $pool
 						}else{
+							itmId := u64
+							prvtGetFileInfo(subF.Get(),null,null,itmId&,null,gMallocTemporary)
+
+							//if itmId in ignZip
+							if ignZip.Contain(itmId)
+							{
+								continue
+							}
 							if subF.Get()[-4..0] == ".zip"
 							{
 								zips << StrCopy(subF.Get()) ; $temp
 							}else{
+								
+
+									
 								newStr := subF.Name().Str() ; $pool
 								newObj := new vRepoFile ; $pool
 								newObj.upFolder = iterFolder

@@ -58,7 +58,7 @@ MappedFile := class
 		else
 			Open(fileName,flg,0)
 	}
-	this := !(char^ fileName,int flg, s64 itSize) -> void
+	this := !(char^ fileName,int flg, u64 itSize) -> void
 	{
 		fileId = 0
 		point = null
@@ -68,7 +68,7 @@ MappedFile := class
 	{
 		Open(fileName,FILE_READ,0)
 	}
-	Open := !(char^ fileName,int flg, s64 itSize) -> void
+	Open := !(char^ fileName,int flg, u64 itSize) -> void
 	{
 		isValid = false
 		if prvtOpenFile(fileName,fileId&,flg,0,gMallocTemporary) == 0

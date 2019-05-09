@@ -8,7 +8,7 @@ vkEnumerateInstanceExtensionProperties := PFN_vkEnumerateInstanceExtensionProper
 vkEnumerateInstanceLayerProperties := PFN_vkEnumerateInstanceLayerProperties
 vkCreateInstance := PFN_vkCreateInstance
 
-vkDllHandle := void^
+vkDllHandle := u64
 
 vkFuncs := VkFuncsHolder
 vkInstance := void^
@@ -40,13 +40,23 @@ depthMemory := vMemObj
 
 InitVulkan := !() -> bool
 {
-	vkDllHandle = dlopen("libvulkan.so.1",2)
+	vkDllHandle = OpenLib("libvulkan.so.1",gMallocTemporary)
 
-	vkLoadAddr = dlsym(vkDllHandle,"vkGetInstanceProcAddr")
+	if vkDllHandle == 0
+	{
+		vkDllHandle = OpenLib("vulkan-1.dll",gMallocTemporary)
+		if vkDllHandle == 0
+		{
+			printf("fail at loading dll\n")
+			return false
+		}
+	}
+
+	vkLoadAddr = LoadFuncLib(vkDllHandle,"vkGetInstanceProcAddr")
 
 	if vkLoadAddr == null{
 		printf("cant get function ProcAddr\n")
-		return 0
+		return false
 	}
 
 	newFunc := void^
@@ -84,6 +94,7 @@ InitVulkan := !() -> bool
 	wantedExtensions << "VK_KHR_wayland_surface"
 	wantedExtensions << "VK_KHR_xcb_surface"
 	wantedExtensions << "VK_KHR_xlib_surface"
+	wantedExtensions << "VK_KHR_win32_surface"
 	wantedExtensions << "VK_KHR_surface"
 	//wantedExtensions << "VK_KHR_get_physical_device_properties2"
 	
@@ -130,11 +141,14 @@ InitVulkan := !() -> bool
 		}
 	}
 
-	debPrint := new VkDebugReportCallbackCreateInfoEXT ; $temp
-	debPrint.sType = 1000011000
-	debPrint.pfnCallback = VkDebugCallback->{void^}
-	debPrint.flags = 2 or_b 4 or_b 8
-	vkFuncs.vkCreateDebugReportCallbackEXT(vkInstance,debPrint,null,vkDebugObj&)
+	if vkFuncs.vkCreateDebugReportCallbackEXT != null
+	{
+		debPrint := new VkDebugReportCallbackCreateInfoEXT ; $temp
+		debPrint.sType = 1000011000
+		debPrint.pfnCallback = VkDebugCallback->{void^}
+		debPrint.flags = 2 or_b 4 or_b 8
+		vkFuncs.vkCreateDebugReportCallbackEXT(vkInstance,debPrint,null,vkDebugObj&)
+	}
 
 	
 	devCount := u32
@@ -579,5 +593,5 @@ DestroyVulkan := !() -> void
 {
 	//if vkInstance != null
 	//	vkDestroyInstance(vkInstance)
-	dlclose(vkDllHandle)
+	CloseLib(vkDllHandle)
 }

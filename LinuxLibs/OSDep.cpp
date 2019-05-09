@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <sys/mman.h>
 #include <fcntl.h>
+#include <dlfcn.h>
 
 typedef void*(*talloc_t)(size_t itSize,size_t itAlign);
 
@@ -140,6 +141,18 @@ extern "C"
 		if (munmap(mapPtr,leng) != 0)
 			return 0;
 		return 1;
+	}
+	void* OpenLib(char* fileName,void* tFunc) 
+	{
+		return dlopen(fileName,2);
+	}
+	void* LoadFuncLib(void* libId,char* loadName)
+	{
+		return dlsym(libId,loadName);
+	}
+	void CloseLib(void* libId)
+	{
+		dlclose(libId);
 	}
 }
 

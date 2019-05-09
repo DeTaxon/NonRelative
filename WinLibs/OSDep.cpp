@@ -178,4 +178,19 @@ extern "C"
 		CloseHandle(mapId);
 		return 1;
 	}
+
+	HMODULE OpenLib(char* fileName,void* tFunc) 
+	{
+		talloc_t talloc = (talloc_t)tFunc;
+		auto wC = utf8ToWide(fileName,talloc);
+		return LoadLibraryW(wC);
+	}
+	void* LoadFuncLib(HMODULE libId,char* loadName)
+	{
+		return (void*)GetProcAddress(libId,loadName);
+	}
+	void CloseLib(HMODULE libId)
+	{
+		FreeLibrary(libId);
+	}
 }
