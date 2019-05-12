@@ -6,28 +6,15 @@
 #import "Window.cp"
 #import "Camera.cp"
 #import "ZipFS.cp"
+#import "VoidCore.cp"
+#import "ObjectInfo.cp"
 
 gCam := vCamera
 
 main := !(int argc, char^^ argv) -> int
 {
-	test := vRepo
-	test.Init(".")
-
-	test.AddZipRoot("./TestFolder.zip")
-
-	cc := test.GetFile("TestFolder/Hello")
-	printf(" a %p\n",cc)
-
-	r := cc.Map()
-
-	outF := MappedFile("/tmp/hoh",FILE_CREATE,cc.Size())
-
-	outF[^i] = r->{u8^}[i]
-	cc.Unmap()
-	outF.Close()
-
-	return 0
+	vCore := new VoidCore
+	vCore.Init()
 
 	startW = 700
 	startH = 700
@@ -45,8 +32,7 @@ main := !(int argc, char^^ argv) -> int
 	prp := new Prop
 	prp.modelPtr = mdl
 
-	simpleShader := new Shader
-	simpleShader.LoadShader("Shaders/LearnVert.vert","Shaders/LearnFrag.frag")
+	vCore.LoadShader("LearnShader")
 
 	prp.modelPos.ang = quantfAt(1.0f,0.0f,0.0f,0.0f)
 	prp.modelPos.pos = vec4f(1.0f,0.0f,0.0f,0.4f)
@@ -79,7 +65,8 @@ main := !(int argc, char^^ argv) -> int
 
 		gCam.addLocal(vec4f(addLR,0.0f,addFB,0.0f))
 
-		simpleShader.ApplyShaderToQueue(mainCmd.Get())
+		//simpleShader.ApplyShaderToQueue(mainCmd.Get())
+		vCore.itShaders[0].ApplyShaderToQueue(mainCmd.Get())
 		prp.AddToCmdBuffer(mainCmd.Get())
 
 		StopDraw()

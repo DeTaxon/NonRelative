@@ -3,29 +3,26 @@
 Shader := class 
 {
 	itPipe := VkPipeline
+	"this" := !() -> void {}
+
 	ApplyShaderToQueue := !(VkCommandBuffer itBuf) -> void
 	{
 		vkFuncs.vkCmdBindPipeline(itBuf,VK_PIPELINE_BIND_POINT_GRAPHICS,itPipe)
 	}
-	LoadShader := !(char^ vertName,char^ fragName) -> void
+	LoadShader := !(void^ vertPoint,int vertSize,void^ fragPoint,int fragSize) -> void
 	{
-		vertSh := MappedFile(vertName)
-		defer vertSh.Close()
 
 		vert := VkShaderModule
 		vSC := new VkShaderModuleCreateInfo() ; $temp
-		vSC.codeSize = vertSh.Size()
-		vSC.pCode = vertSh.point->{void^}
+		vSC.codeSize = vertSize
+		vSC.pCode = vertPoint
 		vkFuncs.vkCreateShaderModule(vkLogCard,vSC,null,vert&)
 		defer vkFuncs.vkDestroyShaderModule(vkLogCard,vert,null)
 
-		fragSh := MappedFile(fragName)
-		defer fragSh.Close()
-
 		frag := VkShaderModule
 		fSC := new VkShaderModuleCreateInfo() ; $temp
-		fSC.codeSize = fragSh.Size()
-		fSC.pCode = fragSh.point->{void^}
+		fSC.codeSize = fragSize
+		fSC.pCode = fragPoint
 		vkFuncs.vkCreateShaderModule(vkLogCard,fSC,null,frag&)
 		defer vkFuncs.vkDestroyShaderModule(vkLogCard,frag,null)
 

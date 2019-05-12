@@ -1,0 +1,4 @@
+shader:
+	vertex: LearnVert.vert
+	fragment: LearnFrag.frag
+test: obk

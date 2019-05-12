@@ -66,6 +66,10 @@ StringSpan := class{
 		memcpy(preRet->{void^},ptr,itSize)
 		return preRet
 	}
+	"->{}" := !() .{char^}-> char^
+	{
+		return Str() ; $temp
+	}
 	DivideStr := !(char^ to) . {} -> List.{StringSpan}
 	{
 		result."this"()

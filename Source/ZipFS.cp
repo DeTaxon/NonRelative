@@ -1,4 +1,5 @@
 #import "ZipSpec.cp"
+#import "DeflateEncoder.cp"
 
 vZipEntry := class
 {
@@ -19,7 +20,12 @@ vZipEntry := class
 	Map := !() -> void^
 	{
 		ptrToObj.AddUser()
-		return ptrToObj.asMapped.Get()[offset]&
+		resPtr := ptrToObj.asMapped.Get()[offset]&
+		//printf("hoh %i %i\n",zipSize,realSize)
+		//resMap := malloc(realSize + 3)
+		//DeflateEncode(resPtr,zipSize,resMap,realSize)
+
+		return resPtr
 	}
 	Unmap := !() -> void
 	{
@@ -176,23 +182,28 @@ vRepoFile := class extend vRepoObject
 	ptrToRepo := vRepo^
 	ptrToZip := vZipEntry^
 	mFile := MappedFile
+	fileSize := u64
 
 	this := !() -> void
 	{
 		ptrToProxy = null
 	}
-	Map := !() -> void^
+	GetFile := !(char^ fileName) -> vRepoFile^
+	{
+		return ptrToRepo.GetFile(fileName,upFolder)
+	}
+	Map := !() -> u8^
 	{
 		if ptrToZip != null
 		{
-			return ptrToZip.Map()
+			return ptrToZip.Map()->{u8^}
 		}
 
 		mFile.Open(GetPath())
 
 		if mFile.IsInvalid()
-			return null
-		return mFile.point
+			return null->{u8^}
+		return mFile.point->{u8^}
 
 	}
 	Unmap := !() -> void
@@ -210,7 +221,7 @@ vRepoFile := class extend vRepoObject
 		{
 			return ptrToZip.Size()
 		}
-		return 0
+		return fileSize
 	}
 	IsValid := !() -> bool
 	{
@@ -249,21 +260,26 @@ vRepo := class
 		rootFolder.subZipFolders << itObj.zipRoot&; $pool
 
 	}
+	GetFile := !(char^ fileName)-> vRepoFile^
+	{
+		return GetFile(fileName,rootFolder)
+	}
 
-	GetFile := !(char^ fileName) -> vRepoFile^
+	GetFile := !(char^ fileName,vRepoFolder^ rrF) -> vRepoFile^
 	{
 		repoMP.Push()
 		defer repoMP.Pop()
 		
 		itms := DivideStr(fileName,'/') ; $temp
-		iterFolder := rootFolder
+		iterFolder := rrF
 
 		for cheks,i : itms
 		{
 			if i == 0 and cheks == "." continue
 
 			if not iterFolder.examined
-			{	
+			{
+				iterFolder.examined = true
 
 				zips := List.{char^}() ; $temp
 
@@ -281,7 +297,8 @@ vRepo := class
 							iterFolder.subFolders << newObj ; $pool
 						}else{
 							itmId := u64
-							prvtGetFileInfo(subF.Get(),null,null,itmId&,null,gMallocTemporary)
+							flSz := u64
+							prvtGetFileInfo(subF.Get(),null,flSz&,itmId&,null,gMallocTemporary)
 
 							//if itmId in ignZip
 							if ignZip.Contain(itmId)
@@ -299,6 +316,8 @@ vRepo := class
 								newObj := new vRepoFile ; $pool
 								newObj.upFolder = iterFolder
 								newObj.objName = StringSpan(newStr)
+								newObj.ptrToRepo = this&
+								newObj.fileSize = flSz
 								iterFolder.subFiles << newObj ; $pool
 							}
 						}
@@ -361,6 +380,7 @@ vRepo := class
 							newObj := new vRepoFile ; $pool
 							newObj.upFolder = iterFolder
 							newObj.objName = subItm.objName
+							newObj.ptrToRepo = this&
 							iterFolder.subFiles << newObj ; $pool
 							newObj.ptrToZip = subItm&
 						}
@@ -380,6 +400,14 @@ vRepo := class
 			if iterFolder.subFiles[^].objName == cheks
 			{
 				return it
+			}
+
+			if cheks == ".."
+			{
+				iterFolder = iterFolder.upFolder
+				if iterFolder == null
+					return null
+				continue
 			}
 			return null
 

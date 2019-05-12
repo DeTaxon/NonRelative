@@ -77,6 +77,14 @@ List := class .{@T}
 		return End.Data
 	}
 
+	"[]" := !(int x) -> ref T
+	{
+		iitt := Start
+		for x
+			iitt = iitt.Next
+		return iitt.Data
+	}
+
 	"<<" := !(T toAdd) .{} -> ref List.{T}
 	{
 
