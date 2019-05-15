@@ -6,18 +6,92 @@ VoidCore := class
 {
 	itRepo := vRepo
 
-	itShaders := List.{Shader}
+	itShaders := AVLMap.{char^,vShader}
+	itModels := AVLMap.{char^,vModel}
+	itProps := List.{vProp}
 
 	Init := !() -> void
 	{
 		itRepo.Init("./")
 	}
-	LoadModel := !(char^ sName) -> bool
+	GetModel := !(char^ sName) -> vModel^
 	{
-		return true
+		if itModels.Contain(sName)
+			return itModels[sName]&
+		flName := char^
+		stB := "Models/"sbt
+		stB << sName
+		stB << ".inf"
+
+		asF := itRepo.GetFile(stB)
+
+		if asF == null
+			return null
+
+		heh := asF.Map()
+		defer asF.Unmap()
+
+		cc := ParseInfo(heh,asF.Size())
+
+		itMd := ref itModels[StrCopy(sName)]
+		reqShader := vShader^()
+		switch cc.SubList[^].Name
+		{
+			case "model"
+			switch it.SubList.Size()
+			{
+				case 1
+					switch it.SubList[0].Name
+					{
+						case "file"
+							cdP := ref it.SubList[0]
+							itF := asF.GetFile(cdP.ValueStr)
+							if itF == null 
+								return null
+							itMd.LoadFile(itF.Map(),itF.Size())
+							itF.Unmap()
+							
+						case void
+							return null
+					}
+				case void
+					return null
+			}
+			case "shader"
+			if it.IsValue()
+			{
+				reqShader = GetShader(it.ValueStr)
+			}else{
+				//TODO
+			}
+			case "texture"
+		}
+		itMd.ReqShader = reqShader
+
+		return itMd&
 	}
-	LoadShader := !(char^ sName) -> bool
+	AddProp := !(char^ modelName) -> vProp^
 	{
+		itProps.Emplace()
+		newPr := ref itProps.Back()
+		newPr.modelPtr = GetModel(modelName)
+		newPr.modelShader = newPr.modelPtr.ReqShader
+		newPr.modelPos.ang = quantf(0.0f,1.0f,0.0f,0.0f)
+		newPr.modelPos.pos = vec4f(0.0f,0.0f,0.0f,1.0f)
+		return newPr&
+	}
+	Draw := !() -> void
+	{
+		for itProps
+		{
+			it.modelShader.ApplyShaderToQueue(mainCmd.Get())
+			it.AddToCmdBuffer(mainCmd.Get())
+		}
+	}
+	GetShader := !(char^ sName) -> Shader^
+	{
+		if itShaders.Contain(sName)
+			return itShaders[sName]&
 		flName := char^
 		stB := "Shaders/"sbt
 		stB << sName
@@ -27,7 +101,7 @@ VoidCore := class
 		fl := itRepo.GetFile(flName)
 
 		if fl == null
-			return false
+			return null
 
 		heh := fl.Map()
 
@@ -51,7 +125,7 @@ VoidCore := class
 					case "fragment"
 						fragName = it.ValueStr
 					case void 
-						return false
+						return null
 				}
 				fndSh = true
 			}
@@ -62,19 +136,20 @@ VoidCore := class
 		if vertName != ""{
 			vertFile = fl.GetFile(vertName)
 			if vertFile == null
-				return false
+				return null
 		}
 		if fragName != ""{
 			fragFile = fl.GetFile(fragName)
 			if fragFile == null
-				return false
+				return null
 		}
-		itShaders.Emplace()
-		itSh := ref itShaders.Back()
+		itSh := ref itShaders[StrCopy(sName)]
 
 		itSh.LoadShader(vertFile.Map(),vertFile.Size(),fragFile.Map(),fragFile.Size())
+		vertFile.Unmap()
+		fragFile.Unmap()
 
 
-		return true
+		return itSh&
 	}
 }

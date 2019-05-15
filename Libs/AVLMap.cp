@@ -3,7 +3,7 @@
 
 AVLMapIterator := class .{@DATA,@KEY,@VALUE}
 {
-	miniStack := Stack.{AVLTreeNode.{DATA}^,32}
+	miniStack := List.{AVLTreeNode.{DATA}^,32}
 
 	this := !(AVLTreeNode.{DATA}^ nd) -> void
 	{
@@ -55,6 +55,10 @@ AVLMap := class .{@KEY,@VALUE}
 			itSize += 1
 		}
 		return resl.data.second
+	}
+	Contain := !(KEY dat) -> bool
+	{
+		return TryFind(dat) != null
 	}
 
 	TryFind := !(KEY dat) -> VALUE^

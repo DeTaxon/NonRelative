@@ -1,17 +1,19 @@
 #import "VulkanCore.cp"
 #import "RawModel.cp"
 #import "VkMem.cp"
+#import "Shader.cp"
 
 vModel := class 
 {
 	memObjs := vMemObj[2]
 	hndls := VkBuffer[2]
 	indexCount := int
-	LoadFile := !(char^ fName) -> bool
+	ReqShader := vShader^
+
+	LoadFile := !(void^ fPoint,u64 fSize) -> bool
 	{
-		printf("loading %s\n",fName)
 		rFile := new RawModel ; $temp
-		if not rFile.LoadFromPLY(fName)
+		if not rFile.MapFromPLY(fPoint,fSize)
 		{
 			printf("nope\n")
 			return false

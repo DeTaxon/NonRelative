@@ -41,8 +41,7 @@ vec3 rotate_vertex_position(vec3 position)
   return quat_mult(q_tmp, qr_conj).xyz;
 }
 void main() {
-	vec4 g_persp = vec4(1.0f,1.0f,1.0f,-0.02);
-	vec4 prePosition = vec4((rotate_vertex_position(i_Position.xyz) + consts.g_pos.xyz)*consts.g_pos.w,1.0f);
+	vec4 prePosition = vec4((rotate_vertex_position(i_Position.xyz))*consts.g_pos.w + consts.g_pos.xyz,1.0f);
 	gl_Position.x = prePosition.x*prespData.x;
 	gl_Position.y = prePosition.y*prespData.y;
 	gl_Position.z = prePosition.z*prespData.z + prespData.w;

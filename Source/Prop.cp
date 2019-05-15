@@ -1,11 +1,13 @@
 #import "Model.cp"
+#import "Shader.cp"
 
-Prop := class 
+vProp := class 
 {	
 	modelPos := centf
 	calculatedPos := centf
 
 	modelPtr := vModel^
+	modelShader := vShader^
 
 	testPos := float
 	AddToCmdBuffer := !(VkCommandBuffer cmdB) -> void

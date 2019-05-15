@@ -34,15 +34,9 @@ RawModel := class
 		if inds != null delete inds
 		if verts != null delete verts
 	}
-	LoadFromPLY := !(char^ name) -> bool
-	{	
-		daFile := MappedFile(name)
-
-		if daFile.IsInvalid() 
-		{
-			return false
-		}
-		
+	MapFromPLY := !(void^ flP,u64 itSize) -> bool
+	{
+		daFile := flP->{u8^}
 		keyWords := string[3]
 		keyWords[0] = "element vertex !" 
 		keyWords[1] = "end_header!"
@@ -58,9 +52,9 @@ RawModel := class
 
 		vertsCount := 0
 
-		while working and pos < daFile.Size()
+		while working and pos < itSize
 		{
-			nowVal := daFile[pos]
+			nowVal := flP->{u8^}[pos]
 
 			for i : keyWords->len
 			{
@@ -73,7 +67,7 @@ RawModel := class
 						{
 							pos += 1
 
-							while daFile[pos] in '0'..'9'
+							while flP->{u8^}[pos] in '0'..'9'
 							{
 								vertsCount = vertsCount*10 + daFile[pos] - '0'
 								pos += 1
@@ -115,7 +109,7 @@ RawModel := class
 
 		vertFileState := 0
 
-		while posInVerts < totalVerts and pos < daFile.Size()
+		while posInVerts < totalVerts and pos < itSize
 		{
 			if vertFileState == 0
 			{
@@ -163,7 +157,7 @@ RawModel := class
 		nowState := 0
 		intVal := 0
 
-		while pos < daFile.Size()
+		while pos < itSize
 		{
 			switch nowState
 			{

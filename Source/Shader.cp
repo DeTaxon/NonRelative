@@ -1,6 +1,6 @@
 #import "VulkanCore.cp"
 
-Shader := class 
+vShader := class 
 {
 	itPipe := VkPipeline
 	"this" := !() -> void {}

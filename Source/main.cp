@@ -26,16 +26,14 @@ main := !(int argc, char^^ argv) -> int
 	InitVulkan()
 	defer DestroyVulkan()
 
-	mdl := new vModel
-	mdl.LoadFile("Models/HiResBox.ply")
+	prp := vCore.AddProp("HiResBox")
+	prp.modelPos.ang = quantfAt(1.0f,0.0f,0.0f,30deg)
+	prp.modelPos.pos = vec4f(1.0f,0.0f,-3.0f,0.4f)
 
-	prp := new Prop
-	prp.modelPtr = mdl
+	nn := vCore.AddProp("HiResBox")
+	nn.modelPos.ang = quantfAt(1.0f,0.0f,0.0f,0.0f)
+	nn.modelPos.pos = vec4f(5.0f,0.0f,3.0f,1.0f)
 
-	vCore.LoadShader("LearnShader")
-
-	prp.modelPos.ang = quantfAt(1.0f,0.0f,0.0f,0.0f)
-	prp.modelPos.pos = vec4f(1.0f,0.0f,0.0f,0.4f)
 
 	gCam."this"()
 	gCam.SetPerspective(700.0f,700.0f,0.01f,100.0f,90deg)
@@ -66,8 +64,9 @@ main := !(int argc, char^^ argv) -> int
 		gCam.addLocal(vec4f(addLR,0.0f,addFB,0.0f))
 
 		//simpleShader.ApplyShaderToQueue(mainCmd.Get())
-		vCore.itShaders[0].ApplyShaderToQueue(mainCmd.Get())
-		prp.AddToCmdBuffer(mainCmd.Get())
+		//vCore.itShaders["LearnShader"].ApplyShaderToQueue(mainCmd.Get())
+		//prp.AddToCmdBuffer(mainCmd.Get())
+		vCore.Draw()
 
 		StopDraw()
 	}

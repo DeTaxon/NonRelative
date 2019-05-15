@@ -2,7 +2,7 @@ TimeFlags := -f "time results: real - %E , user - %U user,system - %S ,memory %M
 
 Libs := -ldl -lpthread
 
-glComp := glslangValidator -V100 -e main
+glComp := /media/Docs/VulkanSDK/1.0.39.1/x86_64/bin/glslangValidator -V100 -e main
 
 
 FLibs := -f FLibs/glfw.cp  
