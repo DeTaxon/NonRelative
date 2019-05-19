@@ -9,13 +9,8 @@
 #import "VoidCore.cp"
 #import "ObjectInfo.cp"
 
-gCam := vCamera
-
 main := !(int argc, char^^ argv) -> int
 {
-	vCore := new VoidCore
-	vCore.Init()
-
 	startW = 700
 	startH = 700
 
@@ -26,17 +21,16 @@ main := !(int argc, char^^ argv) -> int
 	InitVulkan()
 	defer DestroyVulkan()
 
-	prp := vCore.AddProp("HiResBox")
-	prp.modelPos.ang = quantfAt(1.0f,0.0f,0.0f,30deg)
-	prp.modelPos.pos = vec4f(1.0f,0.0f,-3.0f,0.4f)
+	vInit()
 
-	nn := vCore.AddProp("HiResBox")
+	prp := vAddProp("HiResBox")
+	prp.modelPos.ang = quantfAt(1.0f,0.0f,0.0f,30deg)
+	prp.modelPos.pos = vec4f(0.0f,0.0f,0.0f,0.4f)
+
+	nn := vAddProp("HiResBox")
 	nn.modelPos.ang = quantfAt(1.0f,0.0f,0.0f,0.0f)
 	nn.modelPos.pos = vec4f(5.0f,0.0f,3.0f,1.0f)
 
-
-	gCam."this"()
-	gCam.SetPerspective(700.0f,700.0f,0.01f,100.0f,90deg)
 	prevTime := glfwGetTime()
 	walkM := 0.5f
 
@@ -66,7 +60,7 @@ main := !(int argc, char^^ argv) -> int
 		//simpleShader.ApplyShaderToQueue(mainCmd.Get())
 		//vCore.itShaders["LearnShader"].ApplyShaderToQueue(mainCmd.Get())
 		//prp.AddToCmdBuffer(mainCmd.Get())
-		vCore.Draw()
+		vDraw()
 
 		StopDraw()
 	}

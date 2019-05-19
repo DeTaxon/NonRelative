@@ -38,8 +38,13 @@ depthImage := VkImage
 depthImageView := VkImageView
 depthMemory := vMemObj
 
+vkCpuMemId := int
+vkGpuMemId := int
+
 InitVulkan := !() -> bool
 {
+	vkGpuMemId = -1
+	vkCpuMemId = -1
 	vkDllHandle = OpenLib("libvulkan.so.1",gMallocTemporary)
 
 	if vkDllHandle == 0
@@ -267,6 +272,43 @@ InitVulkan := !() -> bool
 				printf("- unknown %i\n",it)
 		}
 	}
+	reqMod := VK_PRESENT_MODE_IMMEDIATE_KHR
+	if pMods[^] == VK_PRESENT_MODE_FIFO_KHR
+	{
+		reqMod = it
+	}
+	if pMods[^] == VK_PRESENT_MODE_MAILBOX_KHR
+	{
+		reqMod = it
+	}
+	memReq := new VkPhysicalDeviceMemoryProperties ; $temp
+	vkFuncs.vkGetPhysicalDeviceMemoryProperties(vkPhysCard,memReq)
+
+	for i : (memReq.memoryTypeCount)&->{int^}^
+	{
+		printf("mem info %i\n",i)
+		if (memReq.memoryTypes[i]&->{int^}^ 
+			and_b VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) != 0
+			{
+				printf("VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT\n")
+				if vkCpuMemId == -1
+					vkCpuMemId = i
+			}
+		if (memReq.memoryTypes[i]&->{int^}^ 
+			and_b VK_MEMORY_PROPERTY_HOST_COHERENT_BIT) != 0 
+				printf("VK_MEMORY_PROPERTY_HOST_COHERENT_BIT\n")
+		if (memReq.memoryTypes[i]&->{int^}^ 
+			and_b VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT) != 0 
+			{	
+				if vkGpuMemId == -1
+					vkGpuMemId = i
+				printf("VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT\n")
+			}
+	}
+	printf("mem result cpu=%i gpu=%i\n",vkCpuMemId,vkGpuMemId)
+	//vkCpuMemId = 1
+	//vkGpuMemId = 1
+
 
 	crtSwap := new VkSwapchainCreateInfoKHR ; $temp
 	crtSwap.sType = 1000001000
@@ -283,7 +325,7 @@ InitVulkan := !() -> bool
 	crtSwap.pQueueFamilyIndices = null
 	crtSwap.preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR
 	crtSwap.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR
-	crtSwap.presentMode = VK_PRESENT_MODE_MAILBOX_KHR
+	crtSwap.presentMode = reqMod
 	crtSwap.clipped = 0
 	crtSwap.oldSwapchain = null
 	
@@ -311,7 +353,7 @@ InitVulkan := !() -> bool
 	memReq := VkMemoryRequirements
 	vkFuncs.vkGetImageMemoryRequirements(vkLogCard,depthImage,memReq&)
 
-	depthMemory.CreateObject(memReq.size->{int})
+	depthMemory.CreateObject(memReq.size->{int},true)
 
 	vkFuncs.vkBindImageMemory(vkLogCard,depthImage,depthMemory.Get(),0)
 
@@ -434,22 +476,6 @@ InitVulkan := !() -> bool
 	vkFuncs.vkCreateFence(vkLogCard,crtFence,null,vkFence&)
 
 	
-	memReq := new VkPhysicalDeviceMemoryProperties ; $temp
-	vkFuncs.vkGetPhysicalDeviceMemoryProperties(vkPhysCard,memReq)
-
-	for i : (memReq.memoryTypeCount)&->{int^}^
-	{
-		printf("mem info %i\n",i)
-		if (memReq.memoryTypes[i]&->{int^}^ 
-			and_b VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) != 0 
-				printf("VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT\n")
-		if (memReq.memoryTypes[i]&->{int^}^ 
-			and_b VK_MEMORY_PROPERTY_HOST_COHERENT_BIT) != 0 
-				printf("VK_MEMORY_PROPERTY_HOST_COHERENT_BIT\n")
-		if (memReq.memoryTypes[i]&->{int^}^ 
-			and_b VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT) != 0 
-				printf("VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT\n")
-	}
 
 	oneDesc := new VkDescriptorSetLayoutBinding ; $temp
 	oneDesc.binding = 0

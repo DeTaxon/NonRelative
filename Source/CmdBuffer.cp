@@ -3,6 +3,8 @@
 CmdBuffer := class
 {
 	itCmdBuf := VkCommandBuffer
+	itPauseItm := VkSemaphore
+
 	
 	CreateBuffer := !() -> void
 	{
@@ -13,6 +15,9 @@ CmdBuffer := class
 		cmdBufC.commandBufferCount = 1
 		
 		vkFuncs.vkAllocateCommandBuffers(vkLogCard,cmdBufC,itCmdBuf&)
+
+		semInf := new VkSemaphoreCreateInfo() ; $temp
+		vkFuncs.vkCreateSemaphore(vkLogCard,semInf,null,itPauseItm&)
 	}
 
 	Reset := !() -> void
@@ -55,9 +60,10 @@ CmdBuffer := class
 		submInf.pWaitDstStageMask = waitMsk&->{void^}
 		submInf.commandBufferCount = 1
   		submInf.pCommandBuffers = itCmdBuf&;
-  		submInf.signalSemaphoreCount = 0;
+  		submInf.signalSemaphoreCount = 0
   		submInf.pSignalSemaphores = null
 
 		vkFuncs.vkQueueSubmit(vkQueue, 1, submInf, null)
+		vkFuncs.vkDeviceWaitIdle(vkLogCard)
 	}
 }

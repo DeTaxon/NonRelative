@@ -25,18 +25,22 @@ vModel := class
 
 		bufC := new VkBufferCreateInfo() ; $temp
 		bufC.size = vertSize
-		bufC.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT
+		bufC.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT or_b VK_BUFFER_USAGE_TRANSFER_DST_BIT
 		bufC.sharingMode = VK_SHARING_MODE_EXCLUSIVE
 
 		memInfo := VkMemoryRequirements
 
 		vkFuncs.vkCreateBuffer(vkLogCard,bufC,null,hndls[0]&)
 		vkFuncs.vkGetBufferMemoryRequirements(vkLogCard,hndls[0],memInfo&)
-		memObjs[0].CreateObject(vertSize)
+		memObjs[0].CreateObject(vertSize,true)
 		
 		vkFuncs.vkBindBufferMemory(vkLogCard,hndls[0],memObjs[0].Get(),0)
 
-		memPoint := memObjs[0].Map()
+		memO := memObjs[0]&
+		if gDoubleMem
+			memO = gStageMem
+
+		memPoint := memO.Map()
 
 		asFlt := memPoint->{float^}
 		vertCount := rFile.verts->len div 8
@@ -54,20 +58,27 @@ vModel := class
 			asFlt[i*8 + 7] = rFile.verts[i*8 + 7]
 		}
 
-		memObjs[0].Unmap()
-
+		memO.Unmap()
+		if gDoubleMem
+			vStageCpyToBuffer(hndls[0],vertSize)
 		indSize := rFile.inds->len*4
 		bufC.size = indSize
-		bufC.usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT
+		bufC.usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT or_b VK_BUFFER_USAGE_TRANSFER_DST_BIT
 		vkFuncs.vkCreateBuffer(vkLogCard,bufC,null,hndls[1]&)
 		vkFuncs.vkGetBufferMemoryRequirements(vkLogCard,hndls[1],memInfo&)
 
-		memObjs[1].CreateObject(indSize)
+		memObjs[1].CreateObject(indSize,false)
 
 		vkFuncs.vkBindBufferMemory(vkLogCard,hndls[1],memObjs[1].Get(),0)
-		memPoint = memObjs[1].Map()
+
+		memO2 := memObjs[1]&
+		if gDoubleMem
+			memO2 = gStageMem
+		memPoint = memO2.Map()
 		memcpy(memPoint,rFile.inds->{void^},indSize)
-		memObjs[1].Unmap()
+		memO2.Unmap()
+		if gDoubleMem
+			vStageCpyToBuffer(hndls[1],indSize)
 
 	}
 	AddToCmdBuffer := !(VkCommandBuffer cmdB) -> void

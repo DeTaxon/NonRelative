@@ -1,5 +1,6 @@
 #import "Model.cp"
 #import "Shader.cp"
+#Import "main.cp"
 
 vProp := class 
 {	

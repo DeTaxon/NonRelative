@@ -1,21 +1,26 @@
 #import "VulkanCore.cp"
 
 
-GetMemObj := !(int size) -> vMemObj
-{
-	
-}
-
 vMemObj := class
 {
 	memObj := VkDeviceMemory
 	objSize := int
+	gpuSide := bool
+	tempMem := VkDeviceMemory
 
-	CreateObject := !(int size) -> void
+	CreateObject := !(int size, bool gpuSideI) -> void
 	{
+		gpuSide = gpuSideI
+		if vkCpuMemId == vkGpuMemId or vkGpuMemId == -1
+			gpuSide = false
 		allc1 := new VkMemoryAllocateInfo() ; $temp
 		allc1.allocationSize =  size
-		allc1.memoryTypeIndex = 1
+		if gpuSide
+		{
+			allc1.memoryTypeIndex = vkGpuMemId
+		}else{
+			allc1.memoryTypeIndex = vkCpuMemId
+		}
 
 		vkFuncs.vkAllocateMemory(vkLogCard,allc1,null,memObj&)
 		objSize = size
@@ -23,10 +28,7 @@ vMemObj := class
 	Map := !() -> void^
 	{
 		memToRet := void^
-		memPoint := void^
-		vkFuncs.vkMapMemory(vkLogCard,memObj
-		,0,objSize,0,memToRet&)
-
+		vkFuncs.vkMapMemory(vkLogCard,memObj,0,objSize,0,memToRet&)
 		return memToRet
 		
 	}
