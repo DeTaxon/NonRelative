@@ -23,6 +23,8 @@ glfwGetTime := !() -> double declare
 
 glfwCreateWindowSurface := !(void^ instance,void^ windo, void^ allctr, void^ surf) -> int declare
 
+glfwSetWindowSizeCallback := !(void^ windo,void^ winResizeCall) -> void declare
+
 GLFW_KEY_0               :=    48
 GLFW_KEY_9               :=    57
 GLFW_KEY_A               :=    65

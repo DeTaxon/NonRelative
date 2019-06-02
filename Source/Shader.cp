@@ -7,7 +7,23 @@ vShader := class
 
 	ApplyShaderToQueue := !(VkCommandBuffer itBuf) -> void
 	{
+		vp := VkViewport 
+		vp.x = 0.0f
+		vp.y = 0.0f
+		vp.width = gWindowW->{float}
+		vp.height = gWindowH->{float}
+		vp.minDepth = 0.0f
+		vp.maxDepth = 1.0f
+
+		sc := VkRect2D
+		sc.offset.x = 0
+		sc.offset.y = 0
+		sc.extent.width = gWindowW
+		sc.extent.height = gWindowH
+
 		vkFuncs.vkCmdBindPipeline(itBuf,VK_PIPELINE_BIND_POINT_GRAPHICS,itPipe)
+		vkFuncs.vkCmdSetViewport(itBuf,0,1,vp&)
+		vkFuncs.vkCmdSetScissor(itBuf,0,1,sc&)
 	}
 	LoadShader := !(void^ vertPoint,int vertSize,void^ fragPoint,int fragSize) -> void
 	{
@@ -82,14 +98,22 @@ vShader := class
 		sc := VkRect2D
 		sc.offset.x = 0
 		sc.offset.y = 0
-		sc.extent.width = startW
-		sc.extent.height = startH
+		sc.extent.width = gWindowW
+		sc.extent.height = gWindowH
+
+		stts := VkDynamicState[2]
+		stts[0] = VK_DYNAMIC_STATE_VIEWPORT
+		stts[1] = VK_DYNAMIC_STATE_SCISSOR
+
+		dins := new VkPipelineDynamicStateCreateInfo() ; $temp
+		dins.dynamicStateCount = 2
+		dins.pDynamicStates = stts[0]&
 
 		pVSC := new VkPipelineViewportStateCreateInfo() ; $temp
 		pVSC.viewportCount = 1
-		pVSC.pViewports = vp&
+		pVSC.pViewports = null //vp&
 		pVSC.scissorCount = 1
-		pVSC.pScissors = sc&
+		pVSC.pScissors = null //sc&
 
 		rasterC := new VkPipelineRasterizationStateCreateInfo() ; $temp
 		rasterC.polygonMode = VK_POLYGON_MODE_FILL
@@ -173,6 +197,7 @@ vShader := class
 		gpC.renderPass = vkRenderPass
 		gpC.basePipelineIndex = -1
 		gpC.pDepthStencilState = dsC
+		gpC.pDynamicState = dins
 		//  nullptr,        const VkPipelineTessellationStateCreateInfo   *pTessellationState
 		//  nullptr,        const VkPipelineDynamicStateCreateInfo        *pDynamicState
 		//  0,              uint32_t                                       subpass

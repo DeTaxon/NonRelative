@@ -1,6 +1,7 @@
 
-startW := int
-startH := int
+gWindowW := int
+gWindowH := int
+gLastTimeResized := double
 
 glfwWindow := void^
 buttons := bool[256]
@@ -22,18 +23,24 @@ glfwKeyPressRes := !(void^ win,int key, int scancode,int action) -> void
 	if action == GLFW_RELEASE buttons[asCh] = false
 
 }
-
-CreateWindow := !() -> void
+glfwWinResized := !(void^ window, int newW, int newH) -> void
 {
+	gWindowW = newW
+	gWindowH = newH
+	gLastTimeResized = glfwGetTime()
+}
+
+CreateWindow := !(int newW,int newH) -> void
+{
+	gWindowW = newW
+	gWindowH = newH
 	glfwInit()
 
 	glfwWindowHint(GLFW_CLIENT_API,GLFW_NO_API)
-	glfwWindow = glfwCreateWindow(startW,startH,"Hi again",null,null)
+	glfwWindow = glfwCreateWindow(gWindowW,gWindowH,"Hi again",null,null)
 
 	glfwSetKeyCallback(glfwWindow,glfwKeyPressRes)
-}
-StartLoop := !() -> void
-{
+	glfwSetWindowSizeCallback(glfwWindow,glfwWinResized)
 }
 
 DestroyWindow := !() -> void

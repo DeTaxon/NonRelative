@@ -6,6 +6,7 @@ vCamera := class
 	upDownAng := float
 	leftRightAng := float
 	camPos := vec4f
+	camNear,camFar,camPOV := float
 
 	perspConsts := float[4]
 
@@ -37,17 +38,32 @@ vCamera := class
 	vkPerspMem := vMemObj
 	vkPerspBuffer := VkBuffer
 
-
-	SetPerspective := !(float w, float h, float near, float far, float pov) -> void
+	UpdatePerspective := !(float w, float h) -> void
 	{
 		aspect := w / h
-		fovTM := 1.0f / tanf(pov*0.5f)
-		range := far - near
+		fovTM := 1.0f / tanf(camPOV*0.5f)
+		range := camFar - camNear
 
 		perspConsts[0] = fovTM / aspect
 		perspConsts[1] = fovTM
-		perspConsts[2] = (near + far) / range
-		perspConsts[3] =  -(2.0f * far*near/range)
+		perspConsts[2] = (camNear + camFar) / range
+		perspConsts[3] =  -(2.0f * camFar*camNear/range)
+		
+		itMem := vkPerspMem&
+		if gDoubleMem
+			itMem = gStageMem
+		itMem2 := itMem.Map()
+		memcpy(itMem2,perspConsts[0]&,4*4)
+		itMem.Unmap()
+		if gDoubleMem
+			vStageCpyToBuffer(vkPerspBuffer,4*4)
+	}
+
+	SetPerspective := !(float w, float h, float near, float far, float pov) -> void
+	{
+		camNear = near
+		camFar = far
+		camPOV = pov
 
 		allc1 := new VkMemoryAllocateInfo() ; $temp
 		allc1.allocationSize =  4*4
@@ -56,35 +72,12 @@ vCamera := class
 		bufC := new VkBufferCreateInfo() ; $temp
 		bufC.size = allc1.allocationSize
 		bufC.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT or_b VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT or_b VK_BUFFER_USAGE_TRANSFER_DST_BIT
-		//bufC.sharingMode = VK_SHARING_MODE_EXCLUSIVE
 
 		memInfo := VkMemoryRequirements
 
 		vkFuncs.vkCreateBuffer(vkLogCard,bufC,null,vkPerspBuffer&)
 		vkFuncs.vkGetBufferMemoryRequirements(vkLogCard,vkPerspBuffer,memInfo&)
-		//vkFuncs.vkAllocateMemory(vkLogCard,allc1,null,vkPerspMem&)
-
-		
-		//memPoint := void^
-		//vkFuncs.vkMapMemory(vkLogCard,vkPerspMem,0,allc1.allocationSize,0,memPoint&)
-		//memcpy(memPoint,perspConsts[0]&,4*4)
-		//flushRange := new VkMappedMemoryRange() ; $temp
-		//flushRange.memory = vkPerspMem
-		//flushRange.offset = 0
-		//flushRange.size = allc1.allocationSize
-		//vkFuncs.vkFlushMappedMemoryRanges(vkLogCard,1,flushRange)
-		//vkFuncs.vkUnmapMemory(vkLogCard,vkPerspMem)
-
-		itMem := vkPerspMem&
-		if gDoubleMem
-			itMem = gStageMem
-
-		itMem2 := itMem.Map()
-		memcpy(itMem2,perspConsts[0]&,4*4)
-		itMem.Unmap()
-
 		vkFuncs.vkBindBufferMemory(vkLogCard,vkPerspBuffer,vkPerspMem.Get(),0)
-
 
 		bufInfo := new VkDescriptorBufferInfo ; $temp
 		bufInfo.buffer = vkPerspBuffer 
@@ -99,13 +92,13 @@ vCamera := class
 		someWrite.pBufferInfo = bufInfo->{void^}
 
 		vkFuncs.vkUpdateDescriptorSets(vkLogCard,1,someWrite,0,null)
-		if gDoubleMem
-			vStageCpyToBuffer(vkPerspBuffer,4*4)
+
+		UpdatePerspective(w,h)
 	}
 
 	addLocal := !(vec4f diffAdd) -> void
 	{
-		rotQ := quantfAt(0.0f,1.0f,0.0f,leftRightAng)<*>quantfAt(1.0f,0.0f,0.0f,upDownAng)
+		rotQ := quantfAt(-1.0f,0.0f,0.0f,90deg)<*>quantfAt(0.0f,1.0f,0.0f,leftRightAng)<*>quantfAt(1.0f,0.0f,0.0f,upDownAng)
 
 		oldW := camPos.w
 		camPos += (rotQ*diffAdd)* vec4f(-1.0f,-1.0f,-1.0f,0.0)
@@ -114,7 +107,7 @@ vCamera := class
 	ApplyCamera := !(centf propPos, centf posRes) -> void
 	{
 		tempCent := centf
-		tempCent.ang = quantfAt(0.0f,1.0f,0.0f,leftRightAng)<*>quantfAt(1.0f,0.0f,0.0f,upDownAng)
+		tempCent.ang = quantfAt(-1.0f,0.0f,0.0f,90deg)<*>quantfAt(0.0f,1.0f,0.0f,leftRightAng)<*>quantfAt(1.0f,0.0f,0.0f,upDownAng)
 		tempCent.pos = camPos
 
 		invC := tempCent.Inverse()

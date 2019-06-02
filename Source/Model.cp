@@ -9,6 +9,7 @@ vModel := class
 	hndls := VkBuffer[2]
 	indexCount := int
 	ReqShader := vShader^
+	ReqTexture := vTexture^
 
 	LoadFile := !(void^ fPoint,u64 fSize) -> bool
 	{
@@ -32,7 +33,7 @@ vModel := class
 
 		vkFuncs.vkCreateBuffer(vkLogCard,bufC,null,hndls[0]&)
 		vkFuncs.vkGetBufferMemoryRequirements(vkLogCard,hndls[0],memInfo&)
-		memObjs[0].CreateObject(vertSize,true)
+		memObjs[0].CreateObject(memInfo.size,true)
 		
 		vkFuncs.vkBindBufferMemory(vkLogCard,hndls[0],memObjs[0].Get(),0)
 
@@ -67,7 +68,7 @@ vModel := class
 		vkFuncs.vkCreateBuffer(vkLogCard,bufC,null,hndls[1]&)
 		vkFuncs.vkGetBufferMemoryRequirements(vkLogCard,hndls[1],memInfo&)
 
-		memObjs[1].CreateObject(indSize,false)
+		memObjs[1].CreateObject(memInfo.size,true)
 
 		vkFuncs.vkBindBufferMemory(vkLogCard,hndls[1],memObjs[1].Get(),0)
 

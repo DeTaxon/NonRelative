@@ -1,7 +1,8 @@
 #import "ZipFS.cp"
 #import "ObjectInfo.cp"
 #import "Shader.cp"
-#import "VulkanCOre.cp"
+#import "VulkanCore.cp"
+#import "VkTexture.cp"
 
 //VoidCore := class
 //{
@@ -18,6 +19,76 @@
 
 	gDoubleMem := bool
 
+	gObjectLayoutSets := VkDescriptorPool
+
+	gBadTexture := vTexture^
+
+	pVoidMP := AllocOnlyMP.{4096,true}^
+
+	gSamplerNearest := VkSampler
+	gSamplerLinear := VkSampler
+
+	vInit := !() -> void
+	{
+		gDoubleMem = true
+		if vkGpuMemId == vkCpuMemId or vkGpuMemId == -1
+			gDoubleMem = false
+
+		pVoidMP = new AllocOnlyMP.{4096,true}
+
+		itRepo.Init("./")
+		gStageMem = new vMemObj
+
+		stSize := 0x4c4c00
+		gStageMem.CreateObject(stSize,false)
+		bufC := new VkBufferCreateInfo() ; $temp
+		bufC.size = stSize
+		bufC.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT
+		bufC.sharingMode = VK_SHARING_MODE_EXCLUSIVE
+		vkFuncs.vkCreateBuffer(vkLogCard,bufC,null,gStageMemBuffer&)
+		vkFuncs.vkBindBufferMemory(vkLogCard,gStageMemBuffer,gStageMem.Get(),0)
+
+		gCam."this"()
+		gCam.SetPerspective(700.0f,700.0f,0.01f,100.0f,90deg)
+
+		poolSize := u32[2] 
+		poolSize[0] = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
+		poolSize[1] = 100 //TODO: size, add dynamicly
+
+		nPool := new VkDescriptorPoolCreateInfo() ; $temp
+		nPool.maxSets = 100
+		nPool.poolSizeCount = 1
+		nPool.pPoolSizes = poolSize&->{void^}
+
+		vkFuncs.vkCreateDescriptorPool(vkLogCard,nPool,null,gObjectLayoutSets&)
+
+		imV := new VkSamplerCreateInfo() ; $temp
+		imV.magFilter = VK_FILTER_NEAREST
+		imV.minFilter = VK_FILTER_NEAREST
+		imV.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST
+		imV.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE
+		imV.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE
+		imV.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE
+		//imV.mpLodBias = 0.0f
+		//imV.anisotropyEnable = VK_FALSE
+		imV.maxAnisotropy = 1.0f
+		imV.compareEnable = VK_FALSE
+		imV.compareOp = VK_COMPARE_OP_ALWAYS
+		imV.minLod = 0.0f
+		imV.maxLod = 0.0f
+		imV.borderColor = VK_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK
+		//imV.unnormalizedCoordinates = VK_FALSE
+
+		vkFuncs.vkCreateSampler(vkLogCard,imV,null,gSamplerNearest&)
+		imV.magFilter = VK_FILTER_LINEAR
+		imV.minFilter = VK_FILTER_LINEAR
+		vkFuncs.vkCreateSampler(vkLogCard,imV,null,gSamplerLinear&)
+
+		gBadTexture = new vTexture
+		gBadTexture.CreateObject(64,64)
+		gBadTexture.LoadNotFound()
+
+	}
 	vStageCpyToBuffer := !(VkBuffer tCpy,int nSize) -> void
 	{
 		cpyCmd := new VkBufferCopy ; $temp
@@ -41,32 +112,84 @@
 		mainCmd.Submit()
 
 	}
-	vInit := !() -> void
+	vStageCpyToImage := !(VkImage tCpy,int w, int h) -> void
 	{
-		gDoubleMem = true
-		if vkGpuMemId == vkCpuMemId or vkGpuMemId == -1
-			gDoubleMem = false
+		mainCmd.Reset()
+		mainCmd.Start()
 
-		itRepo.Init("./")
-		gStageMem = new vMemObj
+		//isr := new VkImageSubresourceRange ; $temp
+		//isr.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT
+		//isr.levelCount = 1
+		//isr.layerCount = 1
 
-		stSize := 0x4c4c00
-		gStageMem.CreateObject(stSize,false)
-		bufC := new VkBufferCreateInfo() ; $temp
-		bufC.size = stSize
-		bufC.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT
-		bufC.sharingMode = VK_SHARING_MODE_EXCLUSIVE
-		vkFuncs.vkCreateBuffer(vkLogCard,bufC,null,gStageMemBuffer&)
-		vkFuncs.vkBindBufferMemory(vkLogCard,gStageMemBuffer,gStageMem.Get(),0)
+		stg1 := new VkImageMemoryBarrier() ; $temp
 
-		gCam."this"()
-		gCam.SetPerspective(700.0f,700.0f,0.01f,100.0f,90deg)
+		stg1.srcAccessMask = 0
+		stg1.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT
+		stg1.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED
+		stg1.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
+		stg1.srcQueueFamilyIndex = 0
+		stg1.srcQueueFamilyIndex = not_b stg1.srcQueueFamilyIndex
+		stg1.dstQueueFamilyIndex = stg1.srcQueueFamilyIndex
+		stg1.image = tCpy
+		stg1.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT
+		stg1.subresourceRange.levelCount = 1
+		stg1.subresourceRange.layerCount = 1
 
+
+		vkFuncs.vkCmdPipelineBarrier(mainCmd.Get(),VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+			VK_PIPELINE_STAGE_TRANSFER_BIT,0,0,null,0,null,1,stg1)
+
+		cpyCmd := new VkBufferImageCopy ; $temp
+		cpyCmd.imageSubresource.layerCount = 1
+		cpyCmd.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT
+		cpyCmd.imageExtent.width = w
+		cpyCmd.imageExtent.height = h
+		cpyCmd.imageExtent.depth = 1
+
+		vkFuncs.vkCmdCopyBufferToImage(mainCmd.Get(),gStageMemBuffer,tCpy,VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,1,cpyCmd)
+
+		stg2 := new VkImageMemoryBarrier() ; $temp
+		stg2.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT
+		stg2.dstAccessMask = VK_ACCESS_SHADER_READ_BIT
+		stg2.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
+		stg2.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+		stg2.srcQueueFamilyIndex = 0
+		stg2.srcQueueFamilyIndex = not_b stg2.srcQueueFamilyIndex
+		stg2.dstQueueFamilyIndex = stg2.srcQueueFamilyIndex
+		stg2.image = tCpy
+		stg2.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT
+		stg2.subresourceRange.levelCount = 1
+		stg2.subresourceRange.layerCount = 1
+
+		vkFuncs.vkCmdPipelineBarrier(mainCmd.Get(),VK_PIPELINE_STAGE_TRANSFER_BIT,VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,0,0,null,0,null,1,stg2)
+
+		mainCmd.Stop()
+		mainCmd.Submit()
+	}
+	vSetTexture := !(VkDescriptorSet toSet,vTexture^ donor,VkSampler smSampler) -> void
+	{
+		imgI := new VkDescriptorImageInfo ; $temp
+		imgI.sampler = smSampler
+		imgI.imageView = donor.itImgView
+		imgI.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+
+		wrT := new VkWriteDescriptorSet() ; $temp
+		wrT.descriptorCount = 1
+		wrT.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
+		wrT.pImageInfo = imgI->{void^}
+		wrT.dstSet = toSet
+
+		vkFuncs.vkUpdateDescriptorSets(vkLogCard,1,wrT,0,null)
 	}
 	vGetModel := !(char^ sName) -> vModel^
 	{
 		if itModels.Contain(sName)
 			return itModels[sName]&
+
+		pVoidMP.Push()
+		defer pVoidMP.Pop()
+
 		flName := char^
 		stB := "Models/"sbt
 		stB << sName
@@ -75,15 +198,19 @@
 		asF := itRepo.GetFile(stB)
 
 		if asF == null
+		{
+			printf("failed to load %s\n",stB.Str()) ; $temp
 			return null
+		}
 
 		heh := asF.Map()
 		defer asF.Unmap()
 
 		cc := ParseInfo(heh,asF.Size())
 
-		itMd := ref itModels[StrCopy(sName)]
+		itMd := ref itModels[StrCopy(sName)] ; $pool
 		reqShader := vShader^()
+		itMd.ReqTexture = gBadTexture
 		switch cc.SubList[^].Name
 		{
 			case "model"
@@ -114,19 +241,37 @@
 				//TODO
 			}
 			case "texture"
+			if it.IsValue()
+			{
+				//TODO
+			}else{
+				itMd.ReqTexture = vGenTexture(it,asF)
+			}
 		}
 		itMd.ReqShader = reqShader
+
 
 		return itMd&
 	}
 	vAddProp := !(char^ modelName) -> vProp^
 	{
-		itProps.Emplace()
+		pVoidMP.Push()
+		defer pVoidMP.Pop()
+
+		itProps.Emplace() ; $pool
 		newPr := ref itProps.Back()
 		newPr.modelPtr = vGetModel(modelName)
 		newPr.modelShader = newPr.modelPtr.ReqShader
 		newPr.modelPos.ang = quantf(0.0f,1.0f,0.0f,0.0f)
 		newPr.modelPos.pos = vec4f(0.0f,0.0f,0.0f,1.0f)
+
+		newSetCR := new VkDescriptorSetAllocateInfo() ; $temp
+		newSetCR.descriptorPool = gObjectLayoutSets
+		newSetCR.descriptorSetCount = 1
+		newSetCR.pSetLayouts = vkPerObjectLayout&
+
+		vkFuncs.vkAllocateDescriptorSets(vkLogCard,newSetCR,newPr.modelTextureSet&)
+		vSetTexture(newPr.modelTextureSet,newPr.modelPtr.ReqTexture,gSamplerNearest)
 		return newPr&
 	}
 	vDraw := !() -> void
@@ -141,6 +286,10 @@
 	{
 		if itShaders.Contain(sName)
 			return itShaders[sName]&
+
+		pVoidMP.Push()
+		defer pVoidMP.Pop()
+
 		flName := char^
 		stB := "Shaders/"sbt
 		stB << sName
@@ -192,7 +341,8 @@
 			if fragFile == null
 				return null
 		}
-		itSh := ref itShaders[StrCopy(sName)]
+
+		itSh := ref itShaders[StrCopy(sName)] ; $pool
 
 		itSh.LoadShader(vertFile.Map(),vertFile.Size(),fragFile.Map(),fragFile.Size())
 		vertFile.Unmap()
@@ -200,5 +350,27 @@
 
 
 		return itSh&
+	}
+	vGenTexture := !(ObjInfo^ itObj,vRepoFile^ itFile) -> vTexture^
+	{
+
+		preRes := gBadTexture
+		switch itObj.SubList[^].Name
+		{
+			case "file"
+				nFile := itFile.GetFile(it.ValueStr)
+				if nFile == null
+					return gBadTexture
+				preRes = new vTexture ; $pool
+				preRes.CreateTexture(nFile)
+		}
+		return preRes
+	}
+	vGetTexture := !(char^ fileName) -> vTexture^
+	{
+		temp := new vTexture
+		temp.CreateObject(64,64)
+		temp.LoadNotFound()
+		return temp
 	}
 //}

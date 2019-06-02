@@ -29,7 +29,9 @@ vkLayout := VkPipelineLayout
 vkGraphPipe := VkPipeline
 
 vkPerspLayout := VkDescriptorSetLayout
+vkPerObjectLayout := VkDescriptorSetLayout
 vkDescPool := VkDescriptorPool
+
 vkPerspSet := VkDescriptorSet
 
 mainCmd := CmdBuffer
@@ -40,6 +42,10 @@ depthMemory := vMemObj
 
 vkCpuMemId := int
 vkGpuMemId := int
+
+SwapImageFormat := int
+SwapImageColorSpace := int
+SwapImageMode := int
 
 InitVulkan := !() -> bool
 {
@@ -286,7 +292,7 @@ InitVulkan := !() -> bool
 
 	for i : (memReq.memoryTypeCount)&->{int^}^
 	{
-		printf("mem info %i\n",i)
+		printf("mem info %i %X\n",i,memReq.memoryTypes[i]&->{int^}^)
 		if (memReq.memoryTypes[i]&->{int^}^ 
 			and_b VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) != 0
 			{
@@ -309,15 +315,109 @@ InitVulkan := !() -> bool
 	//vkCpuMemId = 1
 	//vkGpuMemId = 1
 
+	SwapImageFormat = formts[0].format
+	SwapImageColorSpace = formts[0].colorSpace
+	SwapImageMode = reqMod
+	CreateSwapchain(gWindowW,gWindowH)
+
+	vkFuncs.vkGetDeviceQueue(vkLogCard,0,0,vkQueue&)
+
+	cmdPoolC := new VkCommandPoolCreateInfo() ; $temp
+	cmdPoolC.queueFamilyIndex = 0
+	cmdPoolC.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT
+	vkFuncs.vkCreateCommandPool(vkLogCard,cmdPoolC,null,vkCmdPool&)
+
+	vkFuncs.vkResetCommandPool(vkLogCard,vkCmdPool,VK_COMMAND_POOL_RESET_RELEASE_RESOURCES_BIT)
+
+	cmdBufC := new VkCommandBufferAllocateInfo() ; $temp
+
+	crtFence := new VkFenceCreateInfo() ; $temp
+	vkFuncs.vkCreateFence(vkLogCard,crtFence,null,vkFence&)
+
+	
+
+	oneDesc := new VkDescriptorSetLayoutBinding ; $temp
+	oneDesc.binding = 0
+	oneDesc.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
+	oneDesc.descriptorCount = 1
+	oneDesc.stageFlags = VK_SHADER_STAGE_VERTEX_BIT
+	oneDesc.pImmutableSamplers = null
+
+	setDesc := new VkDescriptorSetLayoutCreateInfo() ; $temp
+	setDesc.bindingCount = 1
+	setDesc.pBindings = oneDesc->{void^}
+
+	twoDesc := new VkDescriptorSetLayoutBinding ; $temp
+	twoDesc.binding = 0
+	twoDesc.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
+	twoDesc.descriptorCount = 1
+	twoDesc.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT
+	twoDesc.pImmutableSamplers = null
+
+	set2Desc := new VkDescriptorSetLayoutCreateInfo() ; $temp
+	set2Desc.bindingCount = 1
+	set2Desc.pBindings = twoDesc->{void^}
+
+	vkFuncs.vkCreateDescriptorSetLayout(vkLogCard,setDesc,null,vkPerspLayout&)
+	vkFuncs.vkCreateDescriptorSetLayout(vkLogCard,set2Desc,null,vkPerObjectLayout&)
+
+	layouts := new void^[2] ; $temp
+	layouts[0] = vkPerspLayout
+	layouts[1] = vkPerObjectLayout
+
+	pcrC := new VkPushConstantRange ; $temp
+	pcrC.stageFlags = VK_SHADER_STAGE_VERTEX_BIT
+	pcrC.offset = 0
+	pcrC.size = 2*4*4
+	ppC := new VkPipelineLayoutCreateInfo() ; $temp
+	ppC.pushConstantRangeCount = 1
+	ppC.pPushConstantRanges = pcrC->{void^}
+	ppC.setLayoutCount = 2
+	ppC.pSetLayouts = layouts->{void^}
+
+	vkFuncs.vkCreatePipelineLayout(vkLogCard,ppC,null,vkLayout&)
+	mainCmd.CreateBuffer()
+	
+	descPoolSize := new VkDescriptorPoolSize ; $temp
+	descPoolSize.descriptorCount = 10
+	descPoolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
+
+	test := u32[2]
+	test[0] = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
+	test[1] = 1 //count
+
+
+	descPoolC := new VkDescriptorPoolCreateInfo() ; $temp
+	descPoolC.maxSets = 1
+	descPoolC.poolSizeCount = 1
+	descPoolC.pPoolSizes = test[0]&->{void^}//descPoolSize
+
+	vkFuncs.vkCreateDescriptorPool(vkLogCard,descPoolC,null,vkDescPool&)
+
+	allDesc := new VkDescriptorSetAllocateInfo() ; $temp
+	allDesc.descriptorPool = vkDescPool
+	allDesc.descriptorSetCount = 1
+	allDesc.pSetLayouts = vkPerspLayout&
+
+	vkFuncs.vkAllocateDescriptorSets(vkLogCard,allDesc,vkPerspSet&)
+
+	printf("finished\n")
+
+	return 0
+}
+
+CreateSwapchain := !(int inW,int inH) -> void
+{
+	oldSwapchain := VkSwapchainKHR()
 
 	crtSwap := new VkSwapchainCreateInfoKHR ; $temp
 	crtSwap.sType = 1000001000
 	crtSwap.surface = vkSurface
 	crtSwap.minImageCount = 3
-	crtSwap.imageFormat = formts[0].format
-	crtSwap.imageColorSpace = formts[0].colorSpace
-	crtSwap.imageExtent.width = startW
-	crtSwap.imageExtent.height = startH
+	crtSwap.imageFormat = SwapImageFormat
+	crtSwap.imageColorSpace = SwapImageColorSpace
+	crtSwap.imageExtent.width = inW
+	crtSwap.imageExtent.height = inH
 	crtSwap.imageArrayLayers = 1
 	crtSwap.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT
 	crtSwap.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE
@@ -325,19 +425,29 @@ InitVulkan := !() -> bool
 	crtSwap.pQueueFamilyIndices = null
 	crtSwap.preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR
 	crtSwap.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR
-	crtSwap.presentMode = reqMod
+	crtSwap.presentMode = SwapImageMode
 	crtSwap.clipped = 0
-	crtSwap.oldSwapchain = null
+	crtSwap.oldSwapchain = oldSwapchain&
 	
 	vkFuncs.vkCreateSwapchainKHR(vkLogCard,crtSwap,null,vkSwapchain&)
 
+	if oldSwapchain != null
+	{
+		vkFuncs.vkDestroySwapchainKHR(vkLogCard,oldSwapchain,null)
+	}
+
+	if depthImage != null
+	{
+		vkFuncs.vkDestroyImage(vkLogCard,depthImage,null)
+		depthImage = null
+	}
 
 	//create deth
 	imgDC := new VkImageCreateInfo() ; $temp
 	imgDC.imageType = VK_IMAGE_TYPE_2D
 	imgDC.format = VK_FORMAT_D16_UNORM
-	imgDC.extent.width = 700
-	imgDC.extent.height = 700
+	imgDC.extent.width = inW
+	imgDC.extent.height = inH
 	imgDC.extent.depth = 1
 	imgDC.mipLevels = 1
 	imgDC.arrayLayers = 1
@@ -380,7 +490,7 @@ InitVulkan := !() -> bool
 	vkFuncs.vkGetSwapchainImagesKHR(vkLogCard,vkSwapchain,imgCount&,vkImages)
 
 	attmDesc := new VkAttachmentDescription[2] ; $temp
-	attmDesc[0].format = formts[0].format
+	attmDesc[0].format = SwapImageFormat
 	attmDesc[0].samples = VK_SAMPLE_COUNT_1_BIT
 	attmDesc[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR
 	attmDesc[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE
@@ -433,7 +543,7 @@ InitVulkan := !() -> bool
 		imgViewC := new VkImageViewCreateInfo() ; $temp
 		imgViewC.image = it
 		imgViewC.viewType = VK_IMAGE_VIEW_TYPE_2D
-		imgViewC.format = formts[0].format
+		imgViewC.format = SwapImageFormat
 		imgViewC.components.r = VK_COMPONENT_SWIZZLE_R
 		imgViewC.components.g = VK_COMPONENT_SWIZZLE_G
 		imgViewC.components.b = VK_COMPONENT_SWIZZLE_B
@@ -454,88 +564,23 @@ InitVulkan := !() -> bool
 		fbC.renderPass = vkRenderPass
 		fbC.attachmentCount = 2
 		fbC.pAttachments = extrV[0]&
-		fbC.width = surfAb.currentExtent.width
-		fbC.height = surfAb.currentExtent.height
+		fbC.width = inW
+		fbC.height = inH
 		fbC.layers = 1
 
 		vkFuncs.vkCreateFramebuffer(vkLogCard,fbC,null,vkFramebuffers[i]&)
 	}
-
-	vkFuncs.vkGetDeviceQueue(vkLogCard,0,0,vkQueue&)
-
-	cmdPoolC := new VkCommandPoolCreateInfo() ; $temp
-	cmdPoolC.queueFamilyIndex = 0
-	cmdPoolC.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT
-	vkFuncs.vkCreateCommandPool(vkLogCard,cmdPoolC,null,vkCmdPool&)
-
-	vkFuncs.vkResetCommandPool(vkLogCard,vkCmdPool,VK_COMMAND_POOL_RESET_RELEASE_RESOURCES_BIT)
-
-	cmdBufC := new VkCommandBufferAllocateInfo() ; $temp
-
-	crtFence := new VkFenceCreateInfo() ; $temp
-	vkFuncs.vkCreateFence(vkLogCard,crtFence,null,vkFence&)
-
-	
-
-	oneDesc := new VkDescriptorSetLayoutBinding ; $temp
-	oneDesc.binding = 0
-	oneDesc.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
-	oneDesc.descriptorCount = 1
-	oneDesc.stageFlags = VK_SHADER_STAGE_VERTEX_BIT
-	oneDesc.pImmutableSamplers = null
-
-	setDesc := new VkDescriptorSetLayoutCreateInfo() ; $temp
-	setDesc.bindingCount = 1
-	setDesc.pBindings = oneDesc->{void^}
-
-	vkFuncs.vkCreateDescriptorSetLayout(vkLogCard,setDesc,null,vkPerspLayout&)
-
-	pcrC := new VkPushConstantRange ; $temp
-	pcrC.stageFlags = VK_SHADER_STAGE_VERTEX_BIT
-	pcrC.offset = 0
-	pcrC.size = 2*4*4
-	ppC := new VkPipelineLayoutCreateInfo() ; $temp
-	ppC.pushConstantRangeCount = 1
-	ppC.pPushConstantRanges = pcrC->{void^}
-	ppC.setLayoutCount = 1
-	ppC.pSetLayouts = vkPerspLayout&->{void^}
-
-	vkFuncs.vkCreatePipelineLayout(vkLogCard,ppC,null,vkLayout&)
-	mainCmd.CreateBuffer()
-	
-	descPoolSize := new VkDescriptorPoolSize ; $temp
-	descPoolSize.descriptorCount = 10
-	descPoolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
-
-	test := u32[2]
-	test[0] = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
-	test[1] = 1 //count
-
-
-	descPoolC := new VkDescriptorPoolCreateInfo() ; $temp
-	descPoolC.maxSets = 1
-	descPoolC.poolSizeCount = 1
-	descPoolC.pPoolSizes = test[0]&->{void^}//descPoolSize
-
-	vkFuncs.vkCreateDescriptorPool(vkLogCard,descPoolC,null,vkDescPool&)
-
-	allDesc := new VkDescriptorSetAllocateInfo() ; $temp
-	allDesc.descriptorPool = vkDescPool
-	allDesc.descriptorSetCount = 1
-	allDesc.pSetLayouts = vkPerspLayout&
-
-	vkFuncs.vkAllocateDescriptorSets(vkLogCard,allDesc,vkPerspSet&)
-
-	printf("finished\n")
-
-	return 0
 }
 nowImg := int
-StartDraw := !() -> void
+StartDraw := !() -> bool
 {
 	vkFuncs.vkResetFences(vkLogCard,1,vkFence&)
-	vkFuncs.vkAcquireNextImageKHR(vkLogCard,vkSwapchain,10000000,null,vkFence,nowImg&)
+	resAq := vkFuncs.vkAcquireNextImageKHR(vkLogCard,vkSwapchain,10000000,null,vkFence,nowImg&)
 	vkFuncs.vkWaitForFences(vkLogCard,1,vkFence&,1,10000000)
+	if resAq ==  -1000001004//VK_ERROR_OUT_OF_DATE_KHR 
+	{
+		return false
+	}
 
 	mainCmd.Reset()
 	mainCmd.Start()
@@ -553,13 +598,13 @@ StartDraw := !() -> void
 
 	rpC.renderPass = vkRenderPass
 	rpC.framebuffer = vkFramebuffers[nowImg]
-	rpC.renderArea.extent.width = 700 //surfAb.currentExtent.width
-	rpC.renderArea.extent.height = 700 //surfAb.currentExtent.height
+	rpC.renderArea.extent.width = gWindowW //surfAb.currentExtent.width
+	rpC.renderArea.extent.height = gWindowH //surfAb.currentExtent.height
 	rpC.clearValueCount = 2
 	rpC.pClearValues = clrValues->{void^}
 	
 	vkFuncs.vkCmdBeginRenderPass(mainCmd.Get(),rpC,VK_SUBPASS_CONTENTS_INLINE)
-	
+	return true
 }
 StopDraw := !() -> void
 {

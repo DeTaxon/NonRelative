@@ -1,3 +1,5 @@
 Objs/*
 engi
 wengi.exe
+Shaders/*.vert
+Shaders/*.frag

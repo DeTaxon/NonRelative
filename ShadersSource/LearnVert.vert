@@ -10,7 +10,6 @@ layout(push_constant) uniform PushConsts{
 }consts;
 
 layout(location = 0) out vec2 o_uv;
-layout(location = 1) out vec4 o_Color;
 
 layout(set = 0,binding = 0) uniform perspInfo
 {
@@ -46,6 +45,5 @@ void main() {
 	gl_Position.y = prePosition.y*prespData.y;
 	gl_Position.z = prePosition.z*prespData.z + prespData.w;
 	gl_Position.w = prePosition.z;
-	o_Color = vec4(i_Normal.xyz,1.0);
 	o_uv = vec2(i_Position.w,i_Normal.w);
 }
