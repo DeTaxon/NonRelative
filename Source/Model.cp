@@ -33,12 +33,13 @@ vModel := class
 
 		vkFuncs.vkCreateBuffer(vkLogCard,bufC,null,hndls[0]&)
 		vkFuncs.vkGetBufferMemoryRequirements(vkLogCard,hndls[0],memInfo&)
-		memObjs[0].CreateObject(memInfo.size,true)
+		isVertGpu := bool
+		memObjs[0].CreateObject(memInfo.size,memInfo.memoryTypeBits,isVertGpu&)
 		
 		vkFuncs.vkBindBufferMemory(vkLogCard,hndls[0],memObjs[0].Get(),0)
 
 		memO := memObjs[0]&
-		if gDoubleMem
+		if isVertGpu
 			memO = gStageMem
 
 		memPoint := memO.Map()
@@ -60,7 +61,7 @@ vModel := class
 		}
 
 		memO.Unmap()
-		if gDoubleMem
+		if isVertGpu
 			vStageCpyToBuffer(hndls[0],vertSize)
 		indSize := rFile.inds->len*4
 		bufC.size = indSize
@@ -68,17 +69,18 @@ vModel := class
 		vkFuncs.vkCreateBuffer(vkLogCard,bufC,null,hndls[1]&)
 		vkFuncs.vkGetBufferMemoryRequirements(vkLogCard,hndls[1],memInfo&)
 
-		memObjs[1].CreateObject(memInfo.size,true)
+		isIndGpu := bool
+		memObjs[1].CreateObject(memInfo.size,memInfo.memoryTypeBits,isIndGpu&)
 
 		vkFuncs.vkBindBufferMemory(vkLogCard,hndls[1],memObjs[1].Get(),0)
 
 		memO2 := memObjs[1]&
-		if gDoubleMem
+		if isIndGpu
 			memO2 = gStageMem
 		memPoint = memO2.Map()
 		memcpy(memPoint,rFile.inds->{void^},indSize)
 		memO2.Unmap()
-		if gDoubleMem
+		if isIndGpu
 			vStageCpyToBuffer(hndls[1],indSize)
 
 	}

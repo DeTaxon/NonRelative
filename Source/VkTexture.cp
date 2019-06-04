@@ -9,7 +9,7 @@ vTexture := class
 	itImgView := VkImageView
 	itW,itH := int
 
-	CreateObject := !(int w, int h) -> void
+	CreateObject := !(int w, int h) -> int
 	{
 		itW = w
 		itH = h
@@ -32,7 +32,7 @@ vTexture := class
 		vkFuncs.vkCreateImage(vkLogCard,newImg,null,itImg&)
 		vkFuncs.vkGetImageMemoryRequirements(vkLogCard,itImg,memInfp&)
 
-		memObj.CreateObject(memInfp.size,true)
+		memObj.CreateObject(memInfp.size,memInfp.memoryTypeBits,null)
 
 		vkFuncs.vkBindImageMemory(vkLogCard,itImg,memObj.Get(),0)
 
@@ -47,7 +47,7 @@ vTexture := class
 
 		vkFuncs.vkCreateImageView(vkLogCard,vi,null,itImgView&)
 
-
+		return memInfp.memoryTypeBits
 	}
 	CreateTexture := !(vRepoFile^ itFile) -> void
 	{	
@@ -69,7 +69,7 @@ vTexture := class
 		itW = imgH.itW&->{int^}^
 		itH = imgH.itH&->{int^}^
 
-		CreateObject(itW,itH)
+		memTyp := CreateObject(itW,itH)
 		ptrToSet := gStageMem.Map()->{u8^}
 		if imgH.bitsPerPixel == 24
 		{
@@ -96,8 +96,6 @@ vTexture := class
 		gStageMem.Unmap()
 		vStageCpyToImage(itImg,itW,itH)
 		}
-		
-
 
 	}
 	LoadNotFound := !() -> void

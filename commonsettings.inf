@@ -1,0 +1,5 @@
+present_priority:
+	mode: FIFO
+	mode: MAILBOX
+	mode: IMMEDIATE
+	mode: FIFO_RELAXED

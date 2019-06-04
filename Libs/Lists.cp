@@ -121,6 +121,12 @@ List := class .{@T}
 
 		return this
 	}
+	"in" := !(T toCmp) .{} -> bool
+	{
+		if this[^] == toCmp
+			return true
+		return false
+	}
 	PushFront := !(T toAdd) .{} -> void
 	{
 

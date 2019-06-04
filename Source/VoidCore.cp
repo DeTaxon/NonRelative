@@ -28,6 +28,49 @@
 	gSamplerNearest := VkSampler
 	gSamplerLinear := VkSampler
 
+
+	pLoadCommonSettings := !() -> void
+	{
+		itSet := itRepo.GetFile("commonsettings.inf")
+
+		if itSet == null
+			return void
+		
+		ptrToFl := itSet.Map()
+		if ptrToFl == null
+			return void
+		defer itSet.Unmap()
+		itInf := ParseInfo(ptrToFl,itSet.Size()) ; $temp
+
+		for sets : itInf.SubList
+		{
+			switch sets.Name
+			{
+				case "present_priority"
+					switch sets.SubList[^].ValueStr
+					{
+						case "FIFO"
+							gUserModes.PushFront(VK_PRESENT_MODE_FIFO_KHR)
+						case "FIFO_RELAXED"
+							gUserModes.PushFront(VK_PRESENT_MODE_FIFO_RELAXED_KHR)
+						case "MAILBOX"
+							gUserModes.PushFront(VK_PRESENT_MODE_MAILBOX_KHR)
+						case "IMMEDIATE"
+							gUserModes.PushFront(VK_PRESENT_MODE_IMMEDIATE_KHR)
+					}
+			}
+		}
+		gUserModes.PushFront(VK_PRESENT_MODE_MAILBOX_KHR) ; $uniq
+		gUserModes.PushFront(VK_PRESENT_MODE_FIFO_KHR) ; $uniq
+		gUserModes.PushFront(VK_PRESENT_MODE_FIFO_RELAXED_KHR) ; $uniq
+		gUserModes.PushFront(VK_PRESENT_MODE_IMMEDIATE_KHR) ; $uniq
+
+	}
+	vPreInit := !() -> void
+	{
+		itRepo.Init("./")
+		pLoadCommonSettings()
+	}
 	vInit := !() -> void
 	{
 		gDoubleMem = true
@@ -36,11 +79,10 @@
 
 		pVoidMP = new AllocOnlyMP.{4096,true}
 
-		itRepo.Init("./")
 		gStageMem = new vMemObj
 
 		stSize := 0x4c4c00
-		gStageMem.CreateObject(stSize,false)
+		gStageMem.CreateObject(stSize,0,null)
 		bufC := new VkBufferCreateInfo() ; $temp
 		bufC.size = stSize
 		bufC.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT
@@ -206,7 +248,7 @@
 		heh := asF.Map()
 		defer asF.Unmap()
 
-		cc := ParseInfo(heh,asF.Size())
+		cc := ParseInfo(heh,asF.Size()) ; $temp
 
 		itMd := ref itModels[StrCopy(sName)] ; $pool
 		reqShader := vShader^()
@@ -307,7 +349,7 @@
 			return null
 		defer fl.Unmap()
 
-		cc := ParseInfo(fl.Map(),fl.Size())
+		cc := ParseInfo(fl.Map(),fl.Size()) ; $temp
 	
 		fndSh := false
 		vertName := StringSpan()

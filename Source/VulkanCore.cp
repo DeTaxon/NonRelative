@@ -47,6 +47,14 @@ SwapImageFormat := int
 SwapImageColorSpace := int
 SwapImageMode := int
 
+gVulkanWindowW := int
+gVulkanWindowH := int
+
+gUserModes := List.{int}
+
+gDeviceMem := List.{int}
+gHostMem := List.{int}
+
 InitVulkan := !() -> bool
 {
 	vkGpuMemId = -1
@@ -262,6 +270,7 @@ InitVulkan := !() -> bool
 	vkFuncs.vkGetPhysicalDeviceSurfacePresentModesKHR(vkPhysCard,vkSurface,presMods&,pMods)
 
 	printf("supported mods\n")
+
 	for pMods
 	{
 		switch it
@@ -279,13 +288,10 @@ InitVulkan := !() -> bool
 		}
 	}
 	reqMod := VK_PRESENT_MODE_IMMEDIATE_KHR
-	if pMods[^] == VK_PRESENT_MODE_FIFO_KHR
+	for gUserModes
 	{
-		reqMod = it
-	}
-	if pMods[^] == VK_PRESENT_MODE_MAILBOX_KHR
-	{
-		reqMod = it
+		if it in pMods
+			reqMod = it
 	}
 	memReq := new VkPhysicalDeviceMemoryProperties ; $temp
 	vkFuncs.vkGetPhysicalDeviceMemoryProperties(vkPhysCard,memReq)
@@ -299,6 +305,7 @@ InitVulkan := !() -> bool
 				printf("VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT\n")
 				if vkCpuMemId == -1
 					vkCpuMemId = i
+				gHostMem << i
 			}
 		if (memReq.memoryTypes[i]&->{int^}^ 
 			and_b VK_MEMORY_PROPERTY_HOST_COHERENT_BIT) != 0 
@@ -308,6 +315,8 @@ InitVulkan := !() -> bool
 			{	
 				if vkGpuMemId == -1
 					vkGpuMemId = i
+				//if (memReq.memoryTypes[i]&->{int^}^ and_b VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) != 0
+					gDeviceMem << i
 				printf("VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT\n")
 			}
 	}
@@ -408,7 +417,13 @@ InitVulkan := !() -> bool
 
 CreateSwapchain := !(int inW,int inH) -> void
 {
-	oldSwapchain := VkSwapchainKHR()
+	oldSwapchain := vkSwapchain
+
+	gVulkanWindowW = inW
+	gVulkanWindowH = inH
+
+	surfAb := new VkSurfaceCapabilitiesKHR ; $temp
+	vkFuncs.vkGetPhysicalDeviceSurfaceCapabilitiesKHR(vkPhysCard,vkSurface,surfAb)
 
 	crtSwap := new VkSwapchainCreateInfoKHR ; $temp
 	crtSwap.sType = 1000001000
@@ -427,7 +442,7 @@ CreateSwapchain := !(int inW,int inH) -> void
 	crtSwap.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR
 	crtSwap.presentMode = SwapImageMode
 	crtSwap.clipped = 0
-	crtSwap.oldSwapchain = oldSwapchain&
+	crtSwap.oldSwapchain = null
 	
 	vkFuncs.vkCreateSwapchainKHR(vkLogCard,crtSwap,null,vkSwapchain&)
 
@@ -462,8 +477,8 @@ CreateSwapchain := !(int inW,int inH) -> void
 
 	memReq := VkMemoryRequirements
 	vkFuncs.vkGetImageMemoryRequirements(vkLogCard,depthImage,memReq&)
-
-	depthMemory.CreateObject(memReq.size->{int},true)
+	
+	depthMemory.CreateObject(memReq.size->{int},memReq.memoryTypeBits->{int},null)
 
 	vkFuncs.vkBindImageMemory(vkLogCard,depthImage,depthMemory.Get(),0)
 
@@ -575,12 +590,13 @@ nowImg := int
 StartDraw := !() -> bool
 {
 	vkFuncs.vkResetFences(vkLogCard,1,vkFence&)
-	resAq := vkFuncs.vkAcquireNextImageKHR(vkLogCard,vkSwapchain,10000000,null,vkFence,nowImg&)
-	vkFuncs.vkWaitForFences(vkLogCard,1,vkFence&,1,10000000)
+	resAq := vkFuncs.vkAcquireNextImageKHR(vkLogCard,vkSwapchain,not_b 0U,null,vkFence,nowImg&)
 	if resAq ==  -1000001004//VK_ERROR_OUT_OF_DATE_KHR 
 	{
 		return false
 	}
+
+	vkFuncs.vkWaitForFences(vkLogCard,1,vkFence&,1,10000000)
 
 	mainCmd.Reset()
 	mainCmd.Start()
@@ -598,8 +614,8 @@ StartDraw := !() -> bool
 
 	rpC.renderPass = vkRenderPass
 	rpC.framebuffer = vkFramebuffers[nowImg]
-	rpC.renderArea.extent.width = gWindowW //surfAb.currentExtent.width
-	rpC.renderArea.extent.height = gWindowH //surfAb.currentExtent.height
+	rpC.renderArea.extent.width = gVulkanWindowW //surfAb.currentExtent.width
+	rpC.renderArea.extent.height = gVulkanWindowH //surfAb.currentExtent.height
 	rpC.clearValueCount = 2
 	rpC.pClearValues = clrValues->{void^}
 	

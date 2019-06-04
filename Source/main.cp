@@ -14,7 +14,7 @@ main := !(int argc, char^^ argv) -> int
 	CreateWindow(700,700)
 	defer DestroyWindow() 
 
-
+	vPreInit()
 	InitVulkan()
 	defer DestroyVulkan()
 
@@ -22,11 +22,11 @@ main := !(int argc, char^^ argv) -> int
 
 	prp := vAddProp("Snooker/SnookerTable")
 	prp.modelPos.ang = quantfAt(1.0f,0.0f,0.0f,0deg)
-	prp.modelPos.pos = vec4f(0.0f,0.0f,0.0f,0.4f)
+	prp.modelPos.pos = vec4f(0.0f,0.0f,0.0f,1.0f)
 
-	//nn := vAddProp("HiResBox")
-	//nn.modelPos.ang = quantfAt(1.0f,0.0f,0.0f,0.0f)
-	//nn.modelPos.pos = vec4f(5.0f,0.0f,3.0f,1.0f)
+	nn := vAddProp("HiResBox")
+	nn.modelPos.ang = quantfAt(1.0f,0.0f,0.0f,0.0f)
+	nn.modelPos.pos = vec4f(0.3f,0.0f,0.0f,0.1f)
 
 	//pln := vAddProp("Plane/Plane")
 	//pln.modelPos.ang = quantfAt(1.0f,0.0f,0.0f,0deg)
@@ -36,6 +36,9 @@ main := !(int argc, char^^ argv) -> int
 	walkM := 0.5f
 
 	resizeState := false
+
+	fpsCounter := 0
+	lastCheckedTime := 0.0
 
 
 	while not glfwWindowShouldClose(glfwWindow)
@@ -56,6 +59,13 @@ main := !(int argc, char^^ argv) -> int
 				//sleep
 				continue
 			}
+		}
+
+		if nowTime - lastCheckedTime > 1.0
+		{
+			glfwSetWindowTitle(glfwWindow,"Hi again! fps = "sbt + fpsCounter)
+			fpsCounter = 0
+			lastCheckedTime = nowTime
 		}
 
 
@@ -84,6 +94,7 @@ main := !(int argc, char^^ argv) -> int
 		vDraw()
 
 		StopDraw()
+		fpsCounter++
 	}
 		
 	return 0

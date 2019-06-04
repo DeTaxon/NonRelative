@@ -8,22 +8,46 @@ vMemObj := class
 	gpuSide := bool
 	tempMem := VkDeviceMemory
 
-	CreateObject := !(int size, bool gpuSideI) -> void
+	CreateObject := !(int size,int memType, bool^ gpuSideI) -> bool
 	{
-		gpuSide = gpuSideI
-		if vkCpuMemId == vkGpuMemId or vkGpuMemId == -1
+
+		memId := -1
+		if(memType == 0)
+		{
+			memId = gHostMem[0]
 			gpuSide = false
+		}else
+		{
+			if ((1 << gDeviceMem[^]) and_b memType) != 0
+			{
+				memId = it
+				break
+			}
+			if memId == -1
+			{
+				if ((1 << gHostMem[^]) and_b memType) != 0
+				{
+					memId = it
+					break
+				}
+			}
+			gpuSide = true
+			if gHostMem[^] == memId
+			{
+				gpuSide = false
+				break
+			}
+		}
+		if gpuSideI != null
+			gpuSideI^ = false
+
 		allc1 := new VkMemoryAllocateInfo() ; $temp
 		allc1.allocationSize =  size
-		if gpuSide
-		{
-			allc1.memoryTypeIndex = vkGpuMemId
-		}else{
-			allc1.memoryTypeIndex = vkCpuMemId
-		}
+		allc1.memoryTypeIndex = memId
 
 		vkFuncs.vkAllocateMemory(vkLogCard,allc1,null,memObj&)
 		objSize = size
+		return true
 	}
 	Map := !() -> void^
 	{

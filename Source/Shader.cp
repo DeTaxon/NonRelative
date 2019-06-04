@@ -10,16 +10,16 @@ vShader := class
 		vp := VkViewport 
 		vp.x = 0.0f
 		vp.y = 0.0f
-		vp.width = gWindowW->{float}
-		vp.height = gWindowH->{float}
+		vp.width = gVulkanWindowW->{float}
+		vp.height = gVulkanWindowH->{float}
 		vp.minDepth = 0.0f
 		vp.maxDepth = 1.0f
 
 		sc := VkRect2D
 		sc.offset.x = 0
 		sc.offset.y = 0
-		sc.extent.width = gWindowW
-		sc.extent.height = gWindowH
+		sc.extent.width = gVulkanWindowW
+		sc.extent.height = gVulkanWindowH
 
 		vkFuncs.vkCmdBindPipeline(itBuf,VK_PIPELINE_BIND_POINT_GRAPHICS,itPipe)
 		vkFuncs.vkCmdSetViewport(itBuf,0,1,vp&)
@@ -86,20 +86,6 @@ vShader := class
 
 		paC1 := new VkPipelineInputAssemblyStateCreateInfo() ; $temp
 		paC1.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST
-
-		vp := VkViewport 
-		vp.x = 0.0f
-		vp.y = 0.0f
-		vp.width = 700.0f
-		vp.height = 700.0f
-		vp.minDepth = 0.0f
-		vp.maxDepth = 1.0f
-
-		sc := VkRect2D
-		sc.offset.x = 0
-		sc.offset.y = 0
-		sc.extent.width = gWindowW
-		sc.extent.height = gWindowH
 
 		stts := VkDynamicState[2]
 		stts[0] = VK_DYNAMIC_STATE_VIEWPORT
