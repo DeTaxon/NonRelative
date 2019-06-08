@@ -82,12 +82,14 @@
 		gStageMem = new vMemObj
 
 		stSize := 0x4c4c00
-		gStageMem.CreateObject(stSize,0,null)
 		bufC := new VkBufferCreateInfo() ; $temp
 		bufC.size = stSize
 		bufC.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT
 		bufC.sharingMode = VK_SHARING_MODE_EXCLUSIVE
 		vkFuncs.vkCreateBuffer(vkLogCard,bufC,null,gStageMemBuffer&)
+		memInfo := VkMemoryRequirements
+		vkFuncs.vkGetBufferMemoryRequirements(vkLogCard,gStageMemBuffer,memInfo&)
+		gStageMem.CreateObject(stSize,memInfo.memoryTypeBits,null)
 		vkFuncs.vkBindBufferMemory(vkLogCard,gStageMemBuffer,gStageMem.Get(),0)
 
 		gCam."this"()

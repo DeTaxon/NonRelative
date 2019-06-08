@@ -10,7 +10,6 @@ vMemObj := class
 
 	CreateObject := !(int size,int memType, bool^ gpuSideI) -> bool
 	{
-
 		memId := -1
 		if(memType == 0)
 		{
@@ -18,14 +17,14 @@ vMemObj := class
 			gpuSide = false
 		}else
 		{
-			if ((1 << gDeviceMem[^]) and_b memType) != 0
+			if ((1 << gHostMem[^]) and_b memType) != 0
 			{
 				memId = it
 				break
 			}
 			if memId == -1
 			{
-				if ((1 << gHostMem[^]) and_b memType) != 0
+				if ((1 << gDeviceMem[^]) and_b memType) != 0
 				{
 					memId = it
 					break
@@ -39,7 +38,7 @@ vMemObj := class
 			}
 		}
 		if gpuSideI != null
-			gpuSideI^ = false
+			gpuSideI^ = gpuSide
 
 		allc1 := new VkMemoryAllocateInfo() ; $temp
 		allc1.allocationSize =  size

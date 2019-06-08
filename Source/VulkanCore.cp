@@ -203,16 +203,21 @@ InitVulkan := !() -> bool
 	}
 	vkPhysCard = devs[0]
 
-	//devExtsCount := 0
-	//vkFuncs.vkEnumerateDeviceExtensionProperties(vkPhysCard,null,devExtsCount&,null)
-	//devExts := new VkExtensionProperties[devExtsCount] ; $temp
-	//vkFuncs.vkEnumerateDeviceExtensionProperties(vkPhysCard,null,devExts&,devExts)
+	devExtsCount := 0
+	vkFuncs.vkEnumerateDeviceExtensionProperties(vkPhysCard,null,devExtsCount&,null)
+	if devExtsCount != 0
+	{
+		devExts := new VkExtensionProperties[devExtsCount] ; $temp
+		vkFuncs.vkEnumerateDeviceExtensionProperties(vkPhysCard,null,devExtsCount&,devExts)
 
-	//printf("dev extensions\n")
-	//for 5
-	//{
-	//	printf("- %s\n",devExts[it]&)
-	//}
+		printf("dev extensions\n")
+		for devExtsCount
+		{
+			printf("- %s\n",devExts[it].extensionName&)
+		}
+	}else{
+		printf("no device extensions found\n")
+	}
 
 	physExts := List.{string}() ; $temp
 	physExts << "VK_KHR_swapchain"
@@ -320,9 +325,6 @@ InitVulkan := !() -> bool
 				printf("VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT\n")
 			}
 	}
-	printf("mem result cpu=%i gpu=%i\n",vkCpuMemId,vkGpuMemId)
-	//vkCpuMemId = 1
-	//vkGpuMemId = 1
 
 	SwapImageFormat = formts[0].format
 	SwapImageColorSpace = formts[0].colorSpace
