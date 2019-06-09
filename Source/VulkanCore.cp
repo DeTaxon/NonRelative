@@ -59,7 +59,7 @@ InitVulkan := !() -> bool
 {
 	vkGpuMemId = -1
 	vkCpuMemId = -1
-	vkDllHandle = OpenLib("libvulkan.so.1",gMallocTemporary)
+	vkDllHandle = OpenLib("libvulkan.so",gMallocTemporary)
 
 	if vkDllHandle == 0
 	{

@@ -1,6 +1,55 @@
 #import "ZipSpec.cp"
 #import "DeflateEncoder.cp"
 
+
+
+z_stream := class
+{
+	next_in := void^
+	avail_in := u32
+	total_in := u64
+
+	next_out := void^
+	avail_out := u32
+	total_out := u64
+
+	msg := char^
+	state := void^
+
+	zalloc := void^
+	zfree := void^
+	opaque := void^
+
+	data_type := int
+	adler := u64
+	reserved := u64
+}
+
+prvtInitStream := !(z_stream^,int,char^,u64)^ -> int
+prvtInflate := !(z_stream^,int)^ -> int
+prvtInflateEnd := !(z_stream^)^ -> int
+
+prvtZipInited := bool
+prvtInitZip := !() -> void
+{
+	if prvtZipInited
+		return void
+	prvtZipInited = true
+
+	dllHandle := OpenLib("libz.so",gMallocTemporary)
+
+	if dllHandle == 0
+		dllHandle = OpenLib("zlib1.dll",gMallocTemporary)
+	if dllHandle == 0
+	{
+		return void
+	}
+
+	prvtInitStream = LoadFuncLib(dllHandle,"inflateInit2_")
+	prvtInflate = LoadFuncLib(dllHandle,"inflate")
+	prvtInflateEnd = LoadFuncLib(dllHandle,"inflateEnd")
+}
+
 vZipEntry := class
 {
 	ptrToObj := vZipObject^
@@ -10,6 +59,7 @@ vZipEntry := class
 	objName := StringSpan
 	comprType := int
 	subFolders := List.{vZipEntry}
+	compressedPointer := void^
 
 	"this" := !() -> void {}
 
@@ -20,15 +70,37 @@ vZipEntry := class
 	Map := !() -> void^
 	{
 		ptrToObj.AddUser()
+		if comprType == 8
+		{
+			if not prvtZipInited
+				prvtInitZip()
+			compressedPointer = malloc(realSize)
+
+			resPtr := ptrToObj.asMapped.Get()[offset]&
+	
+			sStream := z_stream
+			memset(sStream&,0,z_stream->TypeSize)
+			sStream.avail_in = zipSize
+			sStream.avail_out = realSize
+			sStream.next_in = resPtr
+			sStream.next_out = compressedPointer
+
+			prvtInitStream(sStream&,-15,"1.2.11",z_stream->TypeSize)
+			prvtInflate(sStream&,0)
+			prvtInflateEnd(sStream&)
+
+			return compressedPointer
+		}
 		resPtr := ptrToObj.asMapped.Get()[offset]&
-		//printf("hoh %i %i\n",zipSize,realSize)
-		//resMap := malloc(realSize + 3)
-		//DeflateEncode(resPtr,zipSize,resMap,realSize)
 
 		return resPtr
 	}
 	Unmap := !() -> void
 	{
+		if comprType == 8
+		{
+			free(compressedPointer)
+		}
 		ptrToObj.DecUser()
 	}
 
@@ -117,6 +189,7 @@ vZipObject := class
 					{
 						nI.realSize = cdTable.realSize
 						nI.zipSize = cdTable.compressedSize
+						nI.comprType = cdTable.compressionMethod
 
 						ptTH := ptrToFl[cdTable.offsetToFileHeader]&->{zipFileHeader^}
 
