@@ -25,30 +25,36 @@ z_stream := class
 	reserved := u64
 }
 
-prvtInitStream := !(z_stream^,int,char^,u64)^ -> int
-prvtInflate := !(z_stream^,int)^ -> int
-prvtInflateEnd := !(z_stream^)^ -> int
+//prvtInitStream := !(z_stream^,int,char^,u64)^ -> int
+//prvtInflate := !(z_stream^,int)^ -> int
+//prvtInflateEnd := !(z_stream^)^ -> int
+//
+//prvtZipInited := bool
+//prvtInitZip := !() -> void
+//{
+//	if prvtZipInited
+//		return void
+//	prvtZipInited = true
+//
+//	dllHandle := OpenLib("libz.so",gMallocTemporary)
+//
+//	if dllHandle == 0
+//		dllHandle = OpenLib("zlib1.dll",gMallocTemporary)
+//	if dllHandle == 0
+//	{
+//		return void
+//	}
+//
+//	prvtInitStream = LoadFuncLib(dllHandle,"inflateInit2_")
+//	prvtInflate = LoadFuncLib(dllHandle,"inflate")
+//	prvtInflateEnd = LoadFuncLib(dllHandle,"inflateEnd")
+//}
 
-prvtZipInited := bool
-prvtInitZip := !() -> void
-{
-	if prvtZipInited
-		return void
-	prvtZipInited = true
+inflateInit2_ := !(z_stream^ a,int b,char^ c,u64 d) -> int declare
+inflate := !(z_stream^ a,int b) -> int declare
+inflateEnd := !(z_stream^ a) -> int declare
 
-	dllHandle := OpenLib("libz.so",gMallocTemporary)
-
-	if dllHandle == 0
-		dllHandle = OpenLib("zlib1.dll",gMallocTemporary)
-	if dllHandle == 0
-	{
-		return void
-	}
-
-	prvtInitStream = LoadFuncLib(dllHandle,"inflateInit2_")
-	prvtInflate = LoadFuncLib(dllHandle,"inflate")
-	prvtInflateEnd = LoadFuncLib(dllHandle,"inflateEnd")
-}
+prvtDeflateInflate := !(void^ inD,u64 inpSize, void^ outD, u64 outSize) -> int declare
 
 vZipEntry := class
 {
@@ -72,8 +78,8 @@ vZipEntry := class
 		ptrToObj.AddUser()
 		if comprType == 8
 		{
-			if not prvtZipInited
-				prvtInitZip()
+			//if not prvtZipInited
+			//	prvtInitZip()
 			compressedPointer = malloc(realSize)
 
 			resPtr := ptrToObj.asMapped.Get()[offset]&
@@ -84,10 +90,16 @@ vZipEntry := class
 			sStream.avail_out = realSize
 			sStream.next_in = resPtr
 			sStream.next_out = compressedPointer
+			prvtDeflateInflate(resPtr,zipSize,compressedPointer,realSize)
 
-			prvtInitStream(sStream&,-15,"1.2.11",z_stream->TypeSize)
-			prvtInflate(sStream&,0)
-			prvtInflateEnd(sStream&)
+			//prvtInitStream(sStream&,-15,"1.2.11",z_stream->TypeSize)
+			//prvtInflate(sStream&,0)
+			//prvtInflateEnd(sStream&)
+			//aa := inflateInit2_(sStream&,-15,"1.2.11",z_stream->TypeSize)
+			//bb := inflate(sStream&,0)
+			//cc := inflateEnd(sStream&)
+			//printf("test %i %i %i\n",aa,bb,cc)
+			//printf("hoh %i\n",z_stream->TypeSize)
 
 			return compressedPointer
 		}

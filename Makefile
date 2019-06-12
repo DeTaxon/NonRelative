@@ -4,14 +4,16 @@ Libs := -ldl -lpthread
 
 glComp := /media/Docs/VulkanSDK/1.0.39.1/x86_64/bin/glslangValidator -V100 -e main
 
+WinCompiler := x86_64-w64-mingw32-gcc 
+WinCompiler := wine "c:/mingw/mingw64/bin/g++.exe"
 
 FLibs := -f FLibs/glfw.cp  
 
 engi: Objs/engi.o
-	clang++ LinuxLibs/OSDep.cpp Objs/engi.o $(Libs)  -lglfw -o engi
+	clang++ LinuxLibs/OSDep.cpp Objs/engi.o -IFLibs $(Libs) LinuxLibs/Deflate.cpp LinuxLibs/libz.a  -lglfw -o engi
 
 wengi: Objs/wengi.o
-	x86_64-w64-mingw32-gcc WinLibs/OSDep.cpp  Objs/wengi.o -L WinLibs -lglfw3dll -o wengi
+	$(WinCompiler) WinLibs/OSDep.cpp  Objs/wengi.o -IFLibs LinuxLibs/Deflate.cpp WinLibs/libz.a -L WinLibs -lglfw3dll -o wengi
 
 Objs/engi.o: Objs/engi.ll
 	clang Objs/engi.ll -c -o Objs/engi.o
