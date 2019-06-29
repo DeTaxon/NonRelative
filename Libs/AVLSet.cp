@@ -3,21 +3,68 @@
 
 AVLSetIterator := class .{@DATA}
 {
-	miniStack := FatArray.{AVLTreeNode.{DATA}^,32}
+	miniStack := List.{Tuple.{AVLTreeNode.{DATA}^,bool}}
+	nNode := AVLTreeNode.{DATA}^
 
-	this := !(AVLTreeNode.{DATA}^ nd) -> void
+	this := !(AVLTreeNode.{DATA}^ nd) .{} -> void
 	{
 		miniStack."this"()
+		nNode = nd
 		if nd != null{
-			miniStack.Push(nd)
+			if $reverse
+			{
+				DoAMoveRight()
+			}else{
+				DoAMoveLeft()
+			}
 		}
 	}
-	IsEnd := !() -> bool { return miniStack.IsEmpty() }
-	"^" := !() -> ref DATA { return miniStack.Back().data }
-	Inc := !() -> void { 
-		nowNod := miniStack.Pop()
-		if nowNod.Left != null miniStack.Push(nowNod.Left)
-		if nowNod.Right != null miniStack.Push(nowNod.Right)
+	IsEnd := !() -> bool { return nNode == null }
+	"^" := !() -> ref DATA { return nNode.data }
+	Inc := !() .{} -> void { 
+		if miniStack.Empty()
+		{
+			nNode = null
+			return void
+		}
+		nNode = miniStack.Front().0
+		part := miniStack.Front().1
+		miniStack.Pop()
+
+		if part
+		{
+			if $reverse
+			{
+				DoAMoveRight()
+			}else{
+				DoAMoveLeft()
+			}
+		}else{
+		}
+	}
+	DoAMoveRight := !() -> void
+	{
+		while nNode.Right != null
+		{
+			if nNode.Left != null
+				miniStack.Emplace(nNode.Left,true) ; $temp
+			miniStack.Emplace(nNode,false) ; $temp
+			nNode = nNode.Right
+		}
+		if nNode.Left != null
+			miniStack.Emplace(nNode.Left,false) ; $temp
+	}
+	DoAMoveLeft := !() -> void
+	{
+		while nNode.Left != null
+		{
+			if nNode.Right != null
+				miniStack.Emplace(nNode.Right,true) ; $temp
+			miniStack.Emplace(nNode,false) ; $temp
+			nNode = nNode.Left
+		}
+		if nNode.Right != null
+			miniStack.Emplace(nNode.Right,false) ; $temp
 	}
 }
 
@@ -56,7 +103,7 @@ AVLSet := class .{@DATA}
 		resl := itTree.FindNode(dat)
 		return resl != null
 	}
-	"~For" := !() -> AVLSetIterator.{DATA}
+	"~For" := !() .{} -> AVLSetIterator.{DATA}
 	{
 		return AVLSetIterator.{DATA}(itTree.Start)
 	}

@@ -3,24 +3,71 @@
 
 AVLMapIterator := class .{@DATA,@KEY,@VALUE}
 {
-	miniStack := List.{AVLTreeNode.{DATA}^,32}
+	miniStack := List.{Tuple.{AVLTreeNode.{DATA}^,bool}}
+	nNode := AVLTreeNode.{DATA}^
 
-	this := !(AVLTreeNode.{DATA}^ nd) -> void
+	this := !(AVLTreeNode.{DATA}^ nd) .{} -> void
 	{
 		miniStack."this"()
+		nNode = nd
 		if nd != null{
-			miniStack.Push(nd)
+			if $reverse
+			{
+				DoAMoveRight()
+			}else{
+				DoAMoveLeft()
+			}
 		}
 	}
-	IsEnd := !() -> bool { return miniStack.Size() == 0 }
-	"^" := !() -> ref VALUE { return miniStack.Front().data.second }
-	Ind := !() -> ref KEY { return miniStack.Front().data.first}
-	Inc := !() -> void { 
-		nowNod := miniStack.Pop()
-		if nowNod.Left != null miniStack.Push(nowNod.Left)
-		if nowNod.Right != null miniStack.Push(nowNod.Right)
+	IsEnd := !() -> bool { return nNode == null }
+	"^" := !() -> ref VALUE { return nNode.data.second }
+	Ind := !() -> ref KEY { return nNode.data.first}
+	Inc := !() .{} -> void {
+		if miniStack.Empty()
+		{
+			nNode = null
+			return void
+		}
+		nNode = miniStack.Front().0
+		part := miniStack.Front().1
+		miniStack.Pop()
+
+		if part
+		{
+			if $reverse
+			{
+				DoAMoveRight()
+			}else{
+				DoAMoveLeft()
+			}
+		}else{
+		}
 	}
-}p
+	DoAMoveRight := !() -> void
+	{
+		while nNode.Right != null
+		{
+			if nNode.Left != null
+				miniStack.Emplace(nNode.Left,true) ; $temp
+			miniStack.Emplace(nNode,false) ; $temp
+			nNode = nNode.Right
+		}
+		if nNode.Left != null
+			miniStack.Emplace(nNode.Left,false) ; $temp
+	}
+	DoAMoveLeft := !() -> void
+	{
+		while nNode.Left != null
+		{
+			if nNode.Right != null
+				miniStack.Emplace(nNode.Right,true) ; $temp
+			miniStack.Emplace(nNode,false) ; $temp
+			nNode = nNode.Left
+		}
+		if nNode.Right != null
+			miniStack.Emplace(nNode.Right,false) ; $temp
+	}
+}
 
 BadPair := class .{@A,@B}
 {
@@ -67,7 +114,7 @@ AVLMap := class .{@KEY,@VALUE}
 		if resl == null return null
 		return resl.data.second&
 	}
-	"~For" := !() -> AVLMapIterator.{BadPair.{KEY,VALUE},KEY,VALUE}
+	"~For" := !() .{} -> AVLMapIterator.{BadPair.{KEY,VALUE},KEY,VALUE}
 	{
 		return AVLMapIterator.{BadPair.{KEY,VALUE},KEY,VALUE}(itTree.Start)
 	}
