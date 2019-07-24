@@ -1,7 +1,3 @@
-#import "lib.cp"
-#import "MappedFile.cp"
-#import "arrs.cp"
-
 MODEL_NONE := 0
 MODEL_LOADED := 1
 MODEL_INVRAM := 2

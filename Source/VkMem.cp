@@ -1,6 +1,3 @@
-#import "VulkanCore.cp"
-
-
 vMemObj := class
 {
 	memObj := VkDeviceMemory

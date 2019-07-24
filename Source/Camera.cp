@@ -1,6 +1,3 @@
-#import "VulkanCore.cp"
-#import "Camera.cp"
-
 vCamera := class
 {
 	upDownAng := float

@@ -1,7 +1,3 @@
-#import "ZipSpec.cp"
-#import "DeflateEncoder.cp"
-
-
 
 z_stream := class
 {
@@ -286,8 +282,6 @@ vRepoFile := class extend vRepoObject
 
 		mFile.Open(GetPath())
 
-		if mFile.IsInvalid()
-			return null->{u8^}
 		return mFile.point->{u8^}
 
 	}

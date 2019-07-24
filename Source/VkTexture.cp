@@ -1,7 +1,3 @@
-#import "VoidCore.cp"
-#import "VulkanCore.cp"
-#import "PictureSpecs.cp"
-
 vTexture := class
 {
 	memObj := vMemObj

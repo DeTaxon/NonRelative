@@ -38,9 +38,28 @@ close := !(int fd) -> void declare
 
 sleep := !(int seconds) -> int declare
 
-ftruncate := !(int fd,s64 size) -> int declare
+ftruncate := !(int fd,u64 size) -> int declare
 
-mmap := !(void^ addt,s64 len,int prot, int flags, int fd, void^ offset) -> void^ declare
+mmap := !(void^ addt,u64 len,int prot, int flags, int fd, void^ offset) -> void^ declare
 munmap := !(void^ addt,s64 len) -> int declare
 
 fstat := !(int fd,char^ st) -> int declare
+
+posixGetFileSize := !(int fd,u64^ size) -> bool
+{
+	dataD := char[144]
+	val := fstat(fd,dataD->{char^})
+	if val == -1 return false
+	asNeed1 := dataD->{char^}[48]&
+	asNeed2 := asNeed1->{u64^}
+	size^ = asNeed2^
+	return true
+}
+
+
+realpath := !(char^ inp, char^ outp) -> char^ declare
+
+opendir := !(char^ inp) -> void^ declare
+closedir := !(void^ dirFd) ->int declare
+readdir := !(void^ dirFd) -> void^ declare
+stat := !(char^ pth, void^ outStat) ->int declare

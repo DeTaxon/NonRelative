@@ -1,8 +1,3 @@
-#import "main.cp"
-#import "CmdBuffer.cp"
-#import "VkMem.cp"
-
-
 vkLoadAddr := PFN_vkGetInstanceProcAddr
 vkEnumerateInstanceExtensionProperties := PFN_vkEnumerateInstanceExtensionProperties
 vkEnumerateInstanceLayerProperties := PFN_vkEnumerateInstanceLayerProperties

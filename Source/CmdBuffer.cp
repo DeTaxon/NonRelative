@@ -1,5 +1,3 @@
-#import "VulkanCore.cp"
-
 CmdBuffer := class
 {
 	itCmdBuf := VkCommandBuffer

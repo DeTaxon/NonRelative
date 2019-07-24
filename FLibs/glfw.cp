@@ -1,5 +1,3 @@
-#import "lib.cp"
-
 glfwInit := !() -> int declare
 glfwTerminate := !() -> void declare
 

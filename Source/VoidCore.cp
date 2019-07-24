@@ -1,9 +1,3 @@
-#import "ZipFS.cp"
-#import "ObjectInfo.cp"
-#import "Shader.cp"
-#import "VulkanCore.cp"
-#import "VkTexture.cp"
-
 //VoidCore := class
 //{
 	itRepo := vRepo

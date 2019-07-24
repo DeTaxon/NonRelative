@@ -1,14 +1,3 @@
-#import "VulkanCore.cp"
-#import "Model.cp"
-#import "CmdBuffer.cp"
-#import "Shader.cp"
-#import "Prop.cp"
-#import "Window.cp"
-#import "Camera.cp"
-#import "ZipFS.cp"
-#import "VoidCore.cp"
-#import "ObjectInfo.cp"
-
 main := !(int argc, char^^ argv) -> int
 {
 	CreateWindow(700,700)

@@ -1,8 +1,3 @@
-#import "VulkanCore.cp"
-#import "RawModel.cp"
-#import "VkMem.cp"
-#import "Shader.cp"
-
 vModel := class 
 {
 	memObjs := vMemObj[2]

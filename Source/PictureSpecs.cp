@@ -1,6 +1,4 @@
 
-
-
 BMPMainHeader := packed_class
 {
 	bmpMagic := u16

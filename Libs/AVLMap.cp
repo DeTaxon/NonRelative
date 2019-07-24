@@ -1,6 +1,3 @@
-#import "AVLTree.cp"
-#import "arrs.cp"
-
 AVLMapIterator := class .{@DATA,@KEY,@VALUE}
 {
 	miniStack := List.{Tuple.{AVLTreeNode.{DATA}^,bool}}

@@ -1,0 +1,250 @@
+
+GetDirectoryName := !(void^ dirFd) -> char^
+{
+	itAsChar := dirFd->{char^}
+	return itAsChar[19]&
+}
+//st_mode 24 size = 144
+
+DirectoryIterator2 := class
+{
+	dirFd := void^
+	nowEntry := void^
+	nowPath := Path
+	buff := char^
+	addToBuff := int
+	wildCard := char^
+	this := !(char^ tu, bool isWildcard) -> void
+	{
+		wildCard = null
+		buff = new char[1024] ; $temp
+		strL := strlen(tu)
+
+		buff[u] = tu[^u]
+		buff[strL] = 0
+
+		dirL := strL - 1
+
+		while dirL >= 0
+		{
+			if buff[dirL] in "/\\"
+				break
+			dirL--
+		}
+		dirL++
+		addToBuff = dirL
+		if isWildcard
+		{
+			wildCard = new char[strL - dirL] ; $temp
+			for i,j : dirL..(strL-1)
+			{
+				wildCard[j] = buff[i]
+				buff[i] = 0
+			}
+			if dirL == 0
+			{
+				buff[0] = '.'
+				buff[1] = '/'
+				buff[2] = 0
+				addToBuff = 2
+			}
+
+			wildCard[strL - dirL] = 0
+		}
+
+		dirFd = opendir(buff)
+		if dirFd == null
+		{
+			throw new Exception(199,"folder not found")
+		}
+		Inc()
+		nowPath.itStr = buff
+	}
+	"^" := !() -> ref Path
+	{
+		return nowPath
+	}
+	Inc := !() -> void
+	{
+		nowEntry = readdir(dirFd)
+		while nowEntry != null
+		{
+			newName := GetDirectoryName(nowEntry)
+
+			if wildCard != null and not IsInWildcard(newName)
+			{
+				nowEntry = readdir(dirFd)
+				continue
+			}
+			if newName == "." or newName == ".."
+			{
+				nowEntry = readdir(dirFd)
+				continue
+			}
+
+			preSet := this.addToBuff
+			for c : newName
+			{
+				buff[preSet] = c
+				preSet++
+			}
+			buff[preSet] = 0
+
+			break
+
+		}
+	}
+	IsInWildcard := !(char^ str) -> bool
+	{
+		return CmpNameAndWildcard(str,wildCard[0]&)
+	}
+	IsEnd := !() -> bool
+	{
+		return nowEntry == null
+	}
+}
+
+
+Path := class
+{
+	itStr := string
+	this := !() -> void
+	{
+		itStr = null
+	}
+	this := !(string st) -> void
+	{
+		itStr = st
+	}
+	this := !(Path st) -> void
+	{
+		itStr = st.itStr
+	}
+	Get := !() -> char^
+	{
+		return itStr
+	}
+	"==" := !(Path pt2) -> bool
+	{
+		idX := u64
+		idY := u64
+		if prvtGetFileInfo(itStr,null,null,idX&,null,gMallocTemporary) == 0
+			return false
+		if prvtGetFileInfo(pt2.itStr,null,null,idY&,null,gMallocTemporary) == 0
+			return false
+		return idX == idY
+	}
+	IsExist := !() -> bool
+	{
+		fInd := u64
+		return prvtGetFileInfo(pt2.itStr,null,null,fInd&,null,gMallocTemporary) == 1
+	}
+
+	FullPath := !() -> Path
+	{
+		newLine := char^
+		if(prvtGetFileInfo(itStr,newLine&,null,null,null,gMallocTemporary) == 0)
+			return Path("")
+		if newLine == null return Path("")
+		return Path(newLine)
+	}
+	"~For" := !() -> DirectoryIterator2
+	{
+		return DirectoryIterator2(itStr,false)
+	}
+	IsFolder := !() -> bool
+	{
+		isF := int
+		if prvtGetFileInfo(itStr,null,null,null,isF&,gMallocTemporary) == 0
+			return false
+		return isF == 1
+	}
+	"=" := !(Path pt) -> void
+	{
+		itStr = pt.itStr
+	}
+	"=" := !(string pt) -> void
+	{
+		itStr = pt
+	}
+	"/=" := !(string str) -> void
+	{
+		itStr = itStr + "/" + str
+	}
+	"/" := !(string pt2) -> Path
+	{
+		ToRet.itStr = this.itStr + "/" + pt2
+	}
+	"/" := !(Path pt2) -> Path
+	{
+		return Path(itStr + "/" + pt2.itStr)
+	}
+	Ext := !() -> StringSpan
+	{
+		size := StrSize(itStr)
+		pos := size - 1
+		if size == 0 return StringSpan("",0)
+
+		while pos >= 0 and itStr[pos] != '.' {
+			if itStr[pos] in "/\\"  return StringSpan("",0)
+			pos--
+		}
+		if pos < 0 return StringSpan("",0)
+
+		return StringSpan(itStr[pos]&, size - pos)
+	}
+	Name := !() -> StringSpan
+	{
+		size := StrSize(itStr)
+		pos := size - 1
+		if size == 0 return StringSpan("",0)
+
+		while pos >= 0 {
+			if itStr[pos] in "/\\"  break
+			pos--
+		}
+		if pos < 0 return StringSpan("",0)
+		if size - pos == 1 return StringSpan("",0)
+
+		return StringSpan(itStr[pos + 1]&, size - pos - 1)
+	}
+	Size := !() -> u64
+	{
+		preRes := u64
+		prvtGetFileInfo(itStr,null,preRes&,null,null,gMallocTemporary)
+		return preRes
+	}
+	FolderName := !() -> string
+	{
+		size := StrSize(itStr)
+		pos := size - 1
+		if size == 0 return ""
+
+		while pos >= 0 {
+			if itStr[pos] in "/\\"  break
+			pos--
+		}
+		if pos < 0 return ""
+		if size - pos == 1 return ""
+		pos++
+		newStr :=  malloc(pos + 1)->{char^}
+
+		for i : pos newStr[i] = itStr[i]
+		newStr[pos] = 0
+
+		return newStr
+	}
+	JustName := !() -> StringSpan
+	{
+		itName := this.Name()
+		if itName == "" return StringSpan("",0)
+		
+		itSize := itName.Size()
+		pos := itSize - 1
+
+		while pos >= 0 and itName[pos] != '.' pos--
+
+		if pos < 0 return itName
+		return StringSpan(itName.Get(),pos)
+	}
+}

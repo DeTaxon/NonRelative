@@ -50,10 +50,13 @@ List := class .{@T}
 	{
 		newNode := ListNode.{T}^()
 
-		if $keep and CreatedNodes != null
+		if $keep 
 		{
-			newNode = CreatedNodes
-			CreatedNodes = CreatedNodes.Next
+			if CreatedNodes != null
+			{
+				newNode = CreatedNodes
+				CreatedNodes = CreatedNodes.Next
+			}
 		}
 		if newNode == null
 		{
@@ -96,10 +99,13 @@ List := class .{@T}
 
 		newNode := ListNode.{T}^()
 
-		if $keep and CreatedNodes != null
+		if $keep
 		{
-			newNode = CreatedNodes
-			CreatedNodes = CreatedNodes.Next
+			if CreatedNodes != null
+			{
+				newNode = CreatedNodes
+				CreatedNodes = CreatedNodes.Next
+			}
 		}
 		if newNode == null
 		{
@@ -138,10 +144,13 @@ List := class .{@T}
 
 		newNode := ListNode.{T}^()
 
-		if $keep and CreatedNodes != null
+		if $keep
 		{
-			newNode = CreatedNodes
-			CreatedNodes = CreatedNodes.Next
+			if CreatedNodes != null
+			{
+				newNode = CreatedNodes
+				CreatedNodes = CreatedNodes.Next
+			}
 		}
 		if newNode == null
 		{

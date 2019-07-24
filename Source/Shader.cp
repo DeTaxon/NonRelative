@@ -1,5 +1,3 @@
-#import "VulkanCore.cp"
-
 vShader := class 
 {
 	itPipe := VkPipeline

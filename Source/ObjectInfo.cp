@@ -1,4 +1,3 @@
-
 ObjInfo := class
 {
 	isValue := bool
