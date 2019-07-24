@@ -32,7 +32,6 @@ DirectoryIterator2 := class
 			dirL--
 		}
 		dirL++
-		addToBuff = dirL
 		if isWildcard
 		{
 			wildCard = new char[strL - dirL] ; $temp
@@ -41,6 +40,7 @@ DirectoryIterator2 := class
 				wildCard[j] = buff[i]
 				buff[i] = 0
 			}
+			addToBuff = dirL
 			if dirL == 0
 			{
 				buff[0] = '.'
@@ -50,6 +50,16 @@ DirectoryIterator2 := class
 			}
 
 			wildCard[strL - dirL] = 0
+		}else{
+			if not buff[strL - 1] in "/\\"
+			{
+				buff[strL] = '/'
+				buff[strL + 1] = 0
+				addToBuff = strL + 1
+			}else
+			{
+				addToBuff = strL
+			}
 		}
 
 		dirFd = opendir(buff)

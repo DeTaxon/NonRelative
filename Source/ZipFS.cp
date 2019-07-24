@@ -355,7 +355,7 @@ vRepo := class
 		for cheks,i : itms
 		{
 			if i == 0 and cheks == "." continue
-
+			
 			if not iterFolder.examined
 			{
 				iterFolder.examined = true
@@ -388,9 +388,6 @@ vRepo := class
 							{
 								zips << StrCopy(subF.Get()) ; $temp
 							}else{
-								
-
-									
 								newStr := subF.Name().Str() ; $pool
 								newObj := new vRepoFile ; $pool
 								newObj.upFolder = iterFolder
