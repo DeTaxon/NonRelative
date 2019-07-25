@@ -1,3 +1,67 @@
 
+MAX_PATH := 260
+
+CP_UTF8 := 65001
+MB_PRECOMPOSED := 1
+WC_COMPOSITECHECK := 512
+
+MultiByteToWideChar := !(int abc1,int flags,char^ inpStr,int inpSize,u16^ outStr,int outSize) -> int declare
+WideCharToMultiByte := !(int abc1,int flags,u16^ inpStr,int inpSize,char^ outStr,int outSize,void^ defChar,void^ usedDef) -> int declare
+
+FILE_SHARE_READ := 1
+FILE_SHARE_WRITE := 2
+FILE_SHARE_DELETE := 4
+
+CREATE_ALWAYS := 2
+CREATE_NEW := 1
+OPEN_ALWAYS := 4
+OPEN_EXISTING := 3
+TRUNCATE_EXISTING := 5
+
+FILE_ATTRIBUTE_NORMAL := 128
+FILE_ATTRIBUTE_TEMPORARY := 256
+
+CreateFileW := !(u16^ fileName, int access, int shareMode, void^ security,int createDisp,int flags,void^ tempFile) -> void^ declare
+GetFullPathNameW := !(u16^ wideCh,int buffSize,u16^ ptrToBuff,u16^ plFilePart) -> int declare
+
+FILE_ATTRIBUTE_DIRECTORY := 16
+GetFileAttributesW := !(u16^ filName) -> int declare
+
+FILETIME := class
+{
+	dwLowDateTime := u32
+	dwLowDateTime := u32
+}
+BY_HANDLE_FILE_INFORMATION := class
+{
+	dwFileAttributes := u32
+	ftCreationTime := FILETIME
+	ftLastAccessTime := FILETIME
+	ftLastWriteTime := FILETIME
+	dwVolumeSerialNumber := u32
+	nFileSizeHigh := u32
+	nFileSizeLow := u32
+	nNumberOfLinks := u32
+	nFileIndexHigh := u32
+	nFileIndexLow := u32
+}
+
+GetFileInformationByHandle := !(void^ filId,BY_HANDLE_FILE_INFORMATION^ res) -> int declare
 
 
+Utf8ToUtf16 := !(char^ itStr) -> u16[]
+{
+	retSize := MultiByteToWideChar(CP_UTF8,MB_PRECOMPOSED,itStr,-1,null,0)
+	preRet := new u16[retSize + 1] ; $temp
+	MultiByteToWideChar(CP_UTF8,MB_PRECOMPOSED,itStr,-1,preRet,retSize)
+	preRet[retSize] = 0
+	return preRet
+}
+Utf16ToUtf8 := !(u16^ itStr) -> char^
+{
+	resSize := WideCharToMultiByte(CP_UTF8,WC_COMPOSITECHECK,itStr,-1,null->{char^},0,null,null)
+	preRet := new char[resSize + 1] ; $temp
+	WideCharToMultiByte(CP_UTF8,WC_COMPOSITECHECK,itStr,-1,preRet,resSize,null,null)
+	preRet[resSize] = 0
+	return preRet
+}

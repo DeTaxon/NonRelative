@@ -157,27 +157,23 @@ Path := class
 	}
 	"==" := !(Path pt2) -> bool
 	{
-		idX := u64
-		idY := u64
-		if prvtGetFileInfo(itStr,null,null,idX&,null,gMallocTemporary) == 0
-			return false
-		if prvtGetFileInfo(pt2.itStr,null,null,idY&,null,gMallocTemporary) == 0
-			return false
+		idX := GetId()
+		idY := pt2.GetId()
+		if idX == 0 return false
 		return idX == idY
 	}
 	IsExist := !() -> bool
 	{
-		fInd := u64
-		return prvtGetFileInfo(pt2.itStr,null,null,fInd&,null,gMallocTemporary) == 1
+		return GetId() != 0
 	}
 
 	FullPath := !() -> Path
 	{
-		newLine := char^
-		if(prvtGetFileInfo(itStr,newLine&,null,null,null,gMallocTemporary) == 0)
-			return Path("")
-		if newLine == null return Path("")
-		return Path(newLine)
+		asW := Utf8ToUtf16(itStr)
+		preRetW := new u16[MAX_PATH] ; $temp
+		retSize := GetFullPathNameW(asW,MAX_PATH,preRetW,null)
+		preRetW[retSize] = 0
+		return Path(Utf16ToUtf8(preRetW))
 	}
 	"~For" := !() -> DirectoryIterator
 	{
@@ -185,10 +181,8 @@ Path := class
 	}
 	IsFolder := !() -> bool
 	{
-		isF := int
-		if prvtGetFileInfo(itStr,null,null,null,isF&,gMallocTemporary) == 0
-			return false
-		return isF == 1
+		asW := Utf8ToUtf16(itStr)
+		return (GetFileAttributesW(asW) and_b FILE_ATTRIBUTE_DIRECTORY) != 0
 	}
 	"=" := !(Path pt) -> void
 	{
@@ -224,6 +218,20 @@ Path := class
 
 		return StringSpan(itStr[pos]&, size - pos)
 	}
+	GetId := !() -> u64
+	{
+		itAsW := Utf8ToUtf16(itStr)
+		hndl := CreateFileW(itAsW,0,FILE_SHARE_READ or_b FILE_SHARE_WRITE or_b FILE_SHARE_DELETE,null,OPEN_EXISTING,FILE_ATTRIBUTE_NORMAL,null)
+		if hndl&->{u64^}^ == not_b 0U
+			return 0
+		flInf := BY_HANDLE_FILE_INFORMATION
+		GetFileInformationByHandle(hndl,flInf&)
+		preRes := u64
+		preRes = flInf.nFileIndexHigh
+		preRes = preRes << 32
+		preRes = flInf.nFileIndexLow
+		return preRes
+	}
 	Name := !() -> StringSpan
 	{
 		size := StrSize(itStr)
@@ -241,8 +249,16 @@ Path := class
 	}
 	Size := !() -> u64
 	{
+		itAsW := Utf8ToUtf16(itStr)
+		hndl := CreateFileW(itAsW,0,FILE_SHARE_READ or_b FILE_SHARE_WRITE or_b FILE_SHARE_DELETE,null,OPEN_EXISTING,FILE_ATTRIBUTE_NORMAL,null)
+		if hndl&->{u64^}^ == not_b 0U
+			return 0
+		flInf := BY_HANDLE_FILE_INFORMATION
+		GetFileInformationByHandle(hndl,flInf&)
 		preRes := u64
-		prvtGetFileInfo(itStr,null,preRes&,null,null,gMallocTemporary)
+		preRes = flInf.nFileSizeHigh
+		preRes = preRes << 32
+		preRes = flInf.nFileSizeLow
 		return preRes
 	}
 	FolderName := !() -> string

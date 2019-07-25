@@ -328,9 +328,9 @@ vRepo := class
 		repoMP.Push()
 		defer repoMP.Pop()
 
-		itId := u64
-		if prvtGetFileInfo(fileName,null,null,itId&,null,gMallocTemporary) == 0
-			return false
+		itP := Path(fileName)
+		itId := itP.GetId()
+		if itId == 0 return false
 
 		ignZip << itId ; $pool
 
@@ -375,9 +375,8 @@ vRepo := class
 							newObj.upFolder = iterFolder
 							iterFolder.subFolders << newObj ; $pool
 						}else{
-							itmId := u64
-							flSz := u64
-							prvtGetFileInfo(subF.Get(),null,flSz&,itmId&,null,gMallocTemporary)
+							itmId := subF.GetId()
+							flSz := subF.Size()
 
 							//if itmId in ignZip
 							if ignZip.Contain(itmId)

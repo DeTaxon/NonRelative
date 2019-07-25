@@ -45,51 +45,6 @@ extern "C"
 	}
 
 	
-	struct dirIterType
-	{
-		DIR* ptrToAll;
-		dirent* ptrToDir;
-	};
-	void* prvtStartFolderIter(char* fileName,void* tempAllocFunc) 
-	{
-		talloc_t talloc = (talloc_t)tempAllocFunc;
-
-		auto newObj = (dirIterType*)talloc(sizeof(dirIterType),8);
-		newObj->ptrToAll = opendir(fileName);
-		if(newObj->ptrToAll == nullptr) 
-			return nullptr;
-		newObj->ptrToDir = readdir(newObj->ptrToAll);
-		if(newObj->ptrToDir == nullptr)
-			return nullptr;
-		while(strcmp(newObj->ptrToDir->d_name,".") == 0 
-		|| strcmp(newObj->ptrToDir->d_name,"..") == 0)
-		{
-			newObj->ptrToDir = readdir(newObj->ptrToAll);
-		}
-		return newObj;
-	}
-	char* prvtGetFolderIterItem(void*  prevItem,void* tempAllocFunc)
-	{	
-		auto newObj = (dirIterType*)prevItem;
-		if (newObj->ptrToDir == nullptr)
-			return nullptr;
-		return newObj->ptrToDir->d_name;
-	}
-	void prvtGetNextFolderIter(void* prevItem)
-	{
-		auto newObj = (dirIterType*)prevItem;
-		newObj->ptrToDir = readdir(newObj->ptrToAll);
-	}
-	int prvtIsEndFolderIter(void* prevItem)
-	{
-		auto newObj = (dirIterType*)prevItem;
-		if(newObj->ptrToDir == nullptr)
-		{
-			closedir(newObj->ptrToAll);
-			return 1;
-		}
-		return 0;
-	}
 	void* OpenLib(char* fileName,void* tFunc) 
 	{
 		return dlopen(fileName,2);

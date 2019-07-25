@@ -134,29 +134,35 @@ Path := class
 	{
 		return itStr
 	}
+	GetId := !() -> u64
+	{
+		st1 := char[144]
+		if stat(itStr,st1[0]&) != 0
+			return 0
+		return st1[8]&->{u64^}^
+	}
 	"==" := !(Path pt2) -> bool
 	{
-		idX := u64
-		idY := u64
-		if prvtGetFileInfo(itStr,null,null,idX&,null,gMallocTemporary) == 0
-			return false
-		if prvtGetFileInfo(pt2.itStr,null,null,idY&,null,gMallocTemporary) == 0
-			return false
-		return idX == idY
+		idA := GetId()
+		idB := pt2.GetId()
+		if idA == 0 or idB == 0 return false
+		return idA == idB
 	}
 	IsExist := !() -> bool
 	{
-		fInd := u64
-		return prvtGetFileInfo(pt2.itStr,null,null,fInd&,null,gMallocTemporary) == 1
+		return GetId() != 0
 	}
 
 	FullPath := !() -> Path
 	{
-		newLine := char^
-		if(prvtGetFileInfo(itStr,newLine&,null,null,null,gMallocTemporary) == 0)
-			return Path("")
+		newLine := realpath(itStr,null->{char^})
 		if newLine == null return Path("")
-		return Path(newLine)
+		stSize := StrSize(newLine)
+		preRet := new char[stSize+1] ; $temp
+		memcpy(preRet->{char^},newLine,stSize)
+		preRet[stSize] = 0
+		free(newLine)
+		return Path(preRet)
 	}
 	"~For" := !() -> DirectoryIterator2
 	{
@@ -164,10 +170,11 @@ Path := class
 	}
 	IsFolder := !() -> bool
 	{
-		isF := int
-		if prvtGetFileInfo(itStr,null,null,null,isF&,gMallocTemporary) == 0
+		st1 := char[144]
+		if stat(itStr,st1[0]&) != 0
 			return false
-		return isF == 1
+		itflg := st1[24]&->{s32^}^
+		return ((itflg and_b 16384) != 0)
 	}
 	"=" := !(Path pt) -> void
 	{
@@ -220,9 +227,10 @@ Path := class
 	}
 	Size := !() -> u64
 	{
-		preRes := u64
-		prvtGetFileInfo(itStr,null,preRes&,null,null,gMallocTemporary)
-		return preRes
+		st1 := char[144]
+		if stat(itStr,st1[0]&) != 0
+			return 0
+		return st1[48]&->{u64^}^
 	}
 	FolderName := !() -> string
 	{
