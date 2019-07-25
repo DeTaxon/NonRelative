@@ -10,12 +10,12 @@ WinCompiler := wine "c:/mingw/mingw64/bin/g++.exe"
 FLibs := -C0 FLibs/glfw.cp  
 
 engi: Objs/engi.o
-	clang++ LinuxLibs/OSDep.cpp Objs/engi.o -IFLibs $(Libs) LinuxLibs/Deflate.cpp LinuxLibs/libz.a  -lglfw -o engi
+	clang++ Objs/engi.o -IFLibs $(Libs) LinuxLibs/Deflate.cpp LinuxLibs/libz.a  -lglfw -o engi
 engig: Objs/engig.o
-	clang++ LinuxLibs/OSDep.cpp Objs/engig.o -IFLibs $(Libs) LinuxLibs/Deflate.cpp LinuxLibs/libz.a  -lglfw -o engi
+	clang++ Objs/engig.o -IFLibs $(Libs) LinuxLibs/Deflate.cpp LinuxLibs/libz.a  -lglfw -o engi
 
 wengi: Objs/wengi.o
-	$(WinCompiler) WinLibs/OSDep.cpp  Objs/wengi.o -IFLibs LinuxLibs/Deflate.cpp WinLibs/libz.a -L WinLibs -lglfw3 -lgdi32 -o wengi
+	$(WinCompiler) Objs/wengi.o -IFLibs LinuxLibs/Deflate.cpp WinLibs/libz.a -L WinLibs -lglfw3 -lgdi32 -o wengi
 
 Objs/engi.o: Objs/engi.ll
 	clang Objs/engi.ll -c -o Objs/engi.o

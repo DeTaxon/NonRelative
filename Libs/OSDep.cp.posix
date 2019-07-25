@@ -1,3 +1,0 @@
-OpenLib := !(char^ fileName,void^ talloc) -> u64 declare
-LoadFuncLib := !(u64 libId,char^ loadName) -> void^ declare
-CloseLib := !(u64 libId) -> void declare

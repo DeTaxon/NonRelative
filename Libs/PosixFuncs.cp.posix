@@ -63,3 +63,21 @@ opendir := !(char^ inp) -> void^ declare
 closedir := !(void^ dirFd) ->int declare
 readdir := !(void^ dirFd) -> void^ declare
 stat := !(char^ pth, void^ outStat) ->int declare
+
+
+dlopen := !(char^ itName,int flgs) -> void^ declare
+dlsym := !(void^ modId,char^ funcName) -> void^ declare
+dlclose := !(void^ modId) -> void declare
+
+OpenLib := !(char^ fileName) ->void^
+{
+	return dlopen(fileName,2)
+}
+LoadFuncLib := !(void^ libId, char^ funcName) -> void^
+{
+	return dlsym(libId,funcName)
+}
+CloseLib := !(void^ libId) -> void
+{
+	dlclose(libId)
+}

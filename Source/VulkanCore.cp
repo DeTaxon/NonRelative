@@ -3,7 +3,7 @@ vkEnumerateInstanceExtensionProperties := PFN_vkEnumerateInstanceExtensionProper
 vkEnumerateInstanceLayerProperties := PFN_vkEnumerateInstanceLayerProperties
 vkCreateInstance := PFN_vkCreateInstance
 
-vkDllHandle := u64
+vkDllHandle := void^
 
 vkFuncs := VkFuncsHolder
 vkInstance := void^
@@ -54,11 +54,11 @@ InitVulkan := !() -> bool
 {
 	vkGpuMemId = -1
 	vkCpuMemId = -1
-	vkDllHandle = OpenLib("libvulkan.so",gMallocTemporary)
+	vkDllHandle = OpenLib("libvulkan.so")
 
 	if vkDllHandle == 0
 	{
-		vkDllHandle = OpenLib("vulkan-1.dll",gMallocTemporary)
+		vkDllHandle = OpenLib("vulkan-1.dll")
 		if vkDllHandle == 0
 		{
 			printf("fail at loading dll\n")

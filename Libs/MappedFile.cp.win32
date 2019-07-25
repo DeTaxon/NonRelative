@@ -28,22 +28,27 @@ ArrayIterMappedFile := class
 		return pP.IsInvalid()
 	}
 }
+
+twoIntTo64 := class
+{
+	as64 := u64
+	as32 := u32[2] at as64
+}
 MappedFile := class
 {
-	fileId := u64
+	hndl := void^
 	fileSize  := u64
-	mapId := u64
+	mapId := void^
 	point := u8^
-	isValid := bool
 	this := !(char^ fileName) -> void
 	{
-		fileId = 0
+		hndl = null
 		point = null
 		Open(fileName,FILE_READ,0)
 	}
 	this := !(char^ fileName,int flg) -> void
 	{
-		fileId = 0
+		hndl = null
 		point = null
 		if flg == FILE_CREATE
 			Open(fileName,FILE_WRITE,0)
@@ -62,33 +67,47 @@ MappedFile := class
 	}
 	Open := !(char^ fileName,int flg, u64 itSize) -> void
 	{
-		isValid = false
-		if prvtOpenFile(fileName,fileId&,flg,0,gMallocTemporary) == 0
-			return void
-	
-		fileSize = itSize
-		if prvtMapFile(fileId,mapId&,point&,fileSize&,flg,gMallocTemporary) == 0
+		opTyp := GENERIC_READ
+		fFlg := OPEN_EXISTING
+		fS := FILE_SHARE_READ
+
+		if itSize == 0
 		{
-			prvtCloseFile(fileId)
-			return void
+			asP := Path(fileName)
+			itSize = asP.Size()
 		}
 
-		isValid = true
-	}
-	//Resize := !(s64 newSize) -> void
-	//{
-	//	if IsInvalid() return void
-	//	if newSize < 0 return void
-
-	//	if point != null munmap(point,size)
-	//	ftruncate(itemId,newSize)
-	//	prvtSetFileSize(f
-	//	size = newSize
-	//	makeMap()
-	//}
-	IsInvalid := !() -> bool
-	{
-		return not isValid
+		if flg != FILE_READ
+		{
+			fS = fS or_b FILE_SHARE_WRITE
+			opTyp = opTyp or_b GENERIC_WRITE
+		}
+		if flg == FILE_CREATE
+		{
+			fFlg = CREATE_NEW
+		}
+		asW := Utf8ToUtf16(fileName)
+		hndl = CreateFileW(asW,opTyp,fS,null,fFlg,FILE_ATTRIBUTE_NORMAL,null)
+		if hndl&->{u64^}^ == not_b 0U
+		{
+			throw new Exception(101,"can not open file <"sbt + fileName + ">")
+		}
+	
+		fileSize = itSize
+		someSize := twoIntTo64
+		someSize.as64 = fileSize
+		
+		pA := PAGE_READONLY
+		if flg != FILE_READ pA = PAGE_READWRITE
+		mapId = CreateFileMappingW(hndl,null,pA,someSize.as32[1],someSize.as32[0],null)
+		if mapId&->{u64^}^ == not_b 0U
+		{
+			CloseHandle(hndl)
+			throw new Exception(199,"can not map file <"sbt + fileName + ">")
+		}
+		accTyp := FILE_MAP_READ
+		if flg != FILE_READ accTyp = FILE_MAP_ALL_ACCESS
+		point = MapViewOfFile(mapId,accTyp,0,0,fileSize)
 	}
 
 	Get := !() -> u8^
@@ -110,7 +129,7 @@ MappedFile := class
 	}
 	Close := !() -> void
 	{
-		prvtUnmapFile(mapId,point,fileSize)
-		prvtCloseFile(fileId)
+		UnmapViewOfFile(mapId)
+		CloseHandle(hndl)
 	}
 }

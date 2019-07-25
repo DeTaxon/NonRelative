@@ -3,10 +3,6 @@ calloc := !(size_t size,int sizet) -> void^ declare
 malloc := !(size_t size) -> void^ declare
 free := !(void^ point) -> void declare
 
-dlopen := !(char^ name,int pri) -> void^ declare
-dlsym := !(void^ hndl, char^ name) -> void^ declare
-dlclose := !(void^ hndl) -> int declare
-
 tanf := !(float iiin) ->float declare
 cosf := !(float iiin) ->float declare
 sinf := !(float iiin) ->float declare

@@ -1,100 +1,58 @@
-//st_mode 24 size = 144
-DirectoryIterator := class
+DirectoryIterator2 := class
 {
-	toUse := Path^
-	dirFd := void^
+	hndl := void^
+	nowEntry := WIN32_FIND_DATAW
 	nowPath := Path
-	nowBuff := char[1024]
-	bufSize := int
-	this := !(Path^ tu) -> void
+	buff := char^
+	offst := char^
+	isItEnd := bool
+	leftToSet := int
+	this := !(char^ tu, bool isWildcard) -> void
 	{
-		dirFd = prvtStartFolderIter(tu.itStr,gMallocTemporary)
-		bufSize = strlen(tu.itStr)
-		memcpy(nowBuff[0]&,tu.itStr,bufSize )
-		nowBuff[bufSize] = '/'
-		
-		nowPath.itStr = nowBuff[0]&
-		itmName := prvtGetFolderIterItem(dirFd,gMallocTemporary)
-		itmSize := strlen(itmName)
-		newSize := nowBuff[bufSize+1]&
-		memcpy(newSize,itmName,itmSize)
-		newSize[itmSize] = 0
-	}
-
-	"^" := !() -> ref Path
-	{
-		return nowPath
-	}
-	Inc := !() -> void
-	{
-		prvtGetNextFolderIter(dirFd)
-		itmName := prvtGetFolderIterItem(dirFd,gMallocTemporary)
-
-		if itmName != null
-		{
-			itmSize := strlen(itmName)
-			newSize := nowBuff[bufSize+1]&
-			memcpy(newSize,itmName,itmSize)
-			newSize[itmSize] = 0
-		}
-	}
-	IsEnd := !() -> bool
-	{
-		return prvtIsEndFolderIter(dirFd) == 1
-	}
-}
-
-DirectoryWildcardIterator := class
-{
-	dirFd := void^
-	nowEntry := void^
-	nowPath := Path
-	buff := char[256]
-	addToBuff := int
-	wildCard := char[80]
-	this := !(char^ tu) -> void
-	{
+		buff = new char[1024] ; $temp
 		strL := strlen(tu)
 
-		for c,u : tu
-		{
-			buff[u] = c
-		}
+		buff[u] = tu[^u]
 		buff[strL] = 0
 
-		dirL := strL - 1
-
-		while dirL >= 0
+		if isWildcard
 		{
-			if buff[dirL] in "/\\"
-				break
-			dirL--
+			while strL >= 0 and not buff[strL] in "/\\"
+				strL--
+			strL++
+			offst = buff[strL]&
+			leftToSet =  1024 - strL - 1
+			
+		}else{
+			if buff[strL-1] == '/'
+			{
+				buff[strL] = '*'
+				buff[strL+1] = 0
+				offst = buff[strL]&
+				leftToSet = 1024 - strL - 2
+			}else{
+				buff[strL] = '/'
+				buff[strL+1] = '*'
+				buff[strL+2] = 0
+				offst = buff[strL+1]&
+				leftToSet = 1024 - strL - 3
+			}
 		}
-		dirL++
 
-		for i,j : dirL..(strL-1)
+		hndl = FindFirstFileW(Utf8ToUtf16(buff),nowEntry&)
+		if hndl&->{u64^}^ == not_b 0U
 		{
-			wildCard[j] = buff[i]
-			buff[i] = 0
+			throw new Exception(199,"folder not found")
 		}
-		addToBuff = dirL
-		if dirL == 0
-		{
-			buff[0] = '.'
-			buff[1] = '/'
-			buff[2] = 0
-			addToBuff = 2
-		}
-
-		wildCard[strL - dirL] = 0
-
-		dirFd = opendir(buff[0]&)
-		Inc()
-		nowPath.itStr = buff[0]&
+		putNameToBuff()
+		while (offst == "." or offst == "..") and not isItEnd
+			Inc()
+		nowPath.itStr = buff
 	}
-	"~this" := !() -> void
+	putNameToBuff := !() -> void
 	{
-		if dirFd != null closedir(dirFd)
+		setted := WideCharToMultiByte(CP_UTF8,WC_COMPOSITECHECK,nowEntry.cFileName,-1,offst,leftToSet,null,null)
+		offst[setted] = 0
 	}
 	"^" := !() -> ref Path
 	{
@@ -102,36 +60,17 @@ DirectoryWildcardIterator := class
 	}
 	Inc := !() -> void
 	{
-		nowEntry = readdir(dirFd)
-		while nowEntry != null
+		isItEnd = not FindNextFileW(hndl,nowEntry&)
+		if not isItEnd
 		{
-			newName := GetDirectoryName(nowEntry)
-
-			if not IsInWildcard(newName)
-			{
-				nowEntry = readdir(dirFd)
-				continue
-			}
-
-			preSet := this.addToBuff
-			for c : newName
-			{
-				buff[preSet] = c
-				preSet++
-			}
-			buff[preSet] = 0
-
-			break
-
+			putNameToBuff()
+		}else{
+			FindClose(hndl)
 		}
-	}
-	IsInWildcard := !(char^ str) -> bool
-	{
-		return CmpNameAndWildcard(str,wildCard[0]&)
 	}
 	IsEnd := !() -> bool
 	{
-		return nowEntry == null
+		return isItEnd
 	}
 }
 
@@ -175,9 +114,9 @@ Path := class
 		preRetW[retSize] = 0
 		return Path(Utf16ToUtf8(preRetW))
 	}
-	"~For" := !() -> DirectoryIterator
+	"~For" := !() -> DirectoryIterator2
 	{
-		return DirectoryIterator(this&)
+		return DirectoryIterator2(itStr,false)
 	}
 	IsFolder := !() -> bool
 	{
