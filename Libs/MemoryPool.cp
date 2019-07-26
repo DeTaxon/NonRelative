@@ -12,11 +12,21 @@ AllocOnlyMP := class .{@PageSize,@CleanResult} extend IMemoryPool
 		{
 			memset(newPage,0,PageSize)
 		}
-		createdPages << newPage
+		createdPages << newPage ; $no_pool
 		return newPage
 	}
-	GetMem := virtual !(size_t size, int align) -> void^
+	GetMem := virtual !(size_t size, int align,int prefix) -> void^
 	{
+		//preRet :=  malloc(size)
+		//if CleanResult memset(preRet,0,size)
+		//return preRet
+		if size > PageSize
+		{
+			preRe := malloc(size)
+			if CleanResult memset(preRe,0,size)
+			createdPages << preRe ; $no_pool
+			return preRe
+		}
 		if itPage == null{
 			itPage = GetPage()
 		}
@@ -67,12 +77,12 @@ StupidMemoryPool := class .{@PageSize}
 		{
 			newPage = malloc(PageSize)
 		}else{
-			newPage = itFreedPages.Pop()
+			newPage = itFreedPages.Pop() ; $no_pool
 		}
 		memset(newPage,0,PageSize)
 		return newPage
 	}
-	GetMem := !(int size, int align) -> void^
+	GetMem := !(int size, int align, int prefix) -> void^
 	{
 		if itPage == null{
 			itPage = GetPage()
@@ -86,7 +96,7 @@ StupidMemoryPool := class .{@PageSize}
 
 		if itLoaded >= PageSize
 		{
-			itBusyPages.Push(itPage)
+			itBusyPages.Push(itPage) ; $no_pool
 			itPage = GetPage()
 			itLoaded = size
 			return itPage
@@ -102,7 +112,7 @@ StupidMemoryPool := class .{@PageSize}
 			memset(itPage,0,itLoaded)
 		}
 		itLoaded = 0
-		itFreedPages <<< itBusyPages
+		itFreedPages <<< itBusyPages ; $no_pool
 	}
 }
 

@@ -95,7 +95,7 @@ RawModel := class
 		if vertItems != 7 return false //TODO: normalless support
 
 		totalVerts := vertsCount*vertSize
-		verts = new float[totalVerts]
+		verts = new float[totalVerts] ; $temp
 
 		posInVerts := 0
 

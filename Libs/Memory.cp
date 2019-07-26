@@ -6,7 +6,7 @@ FlushTempMemory := !() -> void
 
 IMemoryPool := class
 {
-	GetMem := virtual !(size_t size, int align) -> void^
+	GetMem := virtual !(size_t size, int align,int prefix) -> void^
 	{
 	}
 	FreeMem := virtual !(void^ memPtr) -> void
@@ -24,10 +24,6 @@ IMemoryPool := class
 		hUserPoolCurrentPool = hUserPoolStack[hUserPoolCount]
 	}
 }
-
-hUserPoolStack := thread_local IMemoryPool^[64]
-hUserPoolCurrentPool := thread_local IMemoryPool^
-hUserPoolCount := int
 
 gMallocTemporary := !(size_t nSize, size_t nAlign) -> void^
 {
@@ -51,15 +47,22 @@ prvtGetBlockId := !(void^ toPt) -> int
 	return (someVal&->{size_t^}^ >> 4) % 2048
 }
 
+hUserPoolStack := thread_local IMemoryPool^[64]
+hUserPoolCurrentPool := thread_local IMemoryPool^
+hUserPoolCount := thread_local int
 
 "new" := !() . {@R} -> void^ 
 {
 	val := R->TypeSize
 	if $temp {
-		return gTemporaryPool.GetMem(val,R->Align)
+		return gTemporaryPool.GetMem(val,R->Align,0)
 	}
-	if $pool {
-		return hUserPoolCurrentPool.GetMem(val,R->Align)
+	usePool := hUserPoolCount != 0
+	if $no_pool{
+		usePool = false
+	}
+	if usePool {
+		return hUserPoolCurrentPool.GetMem(val,R->Align,0)
 	}
 	newNode :=  malloc(val)
 	memset(newNode,0,val)
@@ -74,10 +77,14 @@ prvtGetBlockId := !(void^ toPt) -> int
 	itSi += itAl + 16
 	newNode := null->{u8^}
 	if $temp {
-		newNode = gTemporaryPool.GetMem(itSi,itAl)->{u8^}
+		newNode = gTemporaryPool.GetMem(itSi,itAl,0)->{u8^}
 	}else{
-		if $pool {
-			newNode = hUserPoolCurrentPool.GetMem(itSi,itAl)->{u8^}
+		usePool := hUserPoolCount != 0
+		if $no_pool{
+			usePool = false
+		}
+		if usePool{
+			newNode = hUserPoolCurrentPool.GetMem(itSi,itAl,0)->{u8^}
 		}else{
 			newNode = malloc(itSi)->{u8^}
 			preRet2 := newNode[itAl]&->{R[]}
