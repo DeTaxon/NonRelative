@@ -69,6 +69,7 @@ centf := class
 		result.ang = ang <*> toAdd.ang
 		result.pos = ang * toAdd.pos 
 		result.pos = result.pos + pos
+		result.pos.w = pos.w*toAdd.pos.w
 	}
 	"=" := !(centf toSet) -> void
 	{	
