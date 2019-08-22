@@ -1,3 +1,5 @@
+titleBuf := char[256]
+
 main := !(int argc, char^^ argv) -> int
 {
 	CreateWindow(700,700)
@@ -52,7 +54,9 @@ main := !(int argc, char^^ argv) -> int
 
 		if nowTime - lastCheckedTime > 1.0
 		{
-			glfwSetWindowTitle(glfwWindow,"Hi again! fps = "sbt + fpsCounter)
+			ttlPre := "Hi again! fps = "sbt + fpsCounter
+			strcpy(titleBuf[0]&,ttlPre.Str()) ; $temp
+			glfwSetWindowTitle(glfwWindow,titleBuf[0]&)
 			fpsCounter = 0
 			lastCheckedTime = nowTime
 		}

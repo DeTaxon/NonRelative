@@ -7,7 +7,8 @@ glComp := /media/Docs/VulkanSDK/1.0.39.1/x86_64/bin/glslangValidator -V100 -e ma
 WinCompiler := x86_64-w64-mingw32-gcc 
 WinCompiler := wine "c:/mingw/mingw64/bin/g++.exe"
 
-FLibs := -C0 FLibs/glfw.cp  
+FLibs := -C0 FLibs/glfw.cp 
+SLibs := -C0 "Libs/*" -Z0 "SLib.zip"
 
 engi: Objs/engi.o
 	clang++ Objs/engi.o -IFLibs $(Libs) LinuxLibs/Deflate.cpp LinuxLibs/libz.a  -lglfw -o engi
@@ -25,12 +26,14 @@ Objs/wengi.o: Objs/wengi.ll
 	clang Objs/wengi.ll -c -o Objs/wengi.o --target=x86_64-win32-gnu
 
 Objs/engi.ll: LearnVert
-	./halfvoid  --rname result Source/main.cp -C0 "Libs/*" -C0 "FLibs/*" -C1 "Source/*" --vk vk.xml -o Objs/engi.ll
+	./halfvoid  --rname result Source/main.cp $(SLibs) -C0 "FLibs/*" -C1 "Source/*" --vk vk.xml -o Objs/engi.ll
 Objs/engig.ll: LearnVert
-	./halfvoid  --rname result -g Source/main.cp -C0 "Libs/*" -C0 "FLibs/*" -C1 "Source/*" --vk vk.xml -o Objs/engig.ll
+	./halfvoid  --rname result -g Source/main.cp $(SLibs) -C0 "FLibs/*" -C1 "Source/*" --vk vk.xml -o Objs/engig.ll
 Objs/wengi.ll: LearnVert
-	./halfvoid  --rname result -p win32 Source/main.cp -C0 "Libs/*" -C0 "FLibs/*" -C1 "Source/*" --vk vk.xml -o Objs/wengi.ll
+	./halfvoid  --rname result -p win32 Source/main.cp $(SLibs) -C0 "FLibs/*" -C1 "Source/*" --vk vk.xml -o Objs/wengi.ll
 
+test2: main2.cp
+	./halfvoid --rname result -g main2.cp $(SLibs) -o test2.ll; clang test2.ll -g $(Libs) -o test2
 
 Shaders/% : ShadersSource/%
 	$(glComp) $< -o $@
@@ -40,4 +43,4 @@ LearnVert: Shaders/LearnVert.vert Shaders/LearnFrag.frag
 clean: 
 	rm -f out.ll WinObj.o a.exe a.out engig
 
-.PHONY: clean gdbc cycle repair  LexTest engi LearnVert engig
+.PHONY: clean gdbc cycle repair  LexTest engi LearnVert engig test2

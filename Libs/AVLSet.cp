@@ -1,90 +1,27 @@
-AVLSetIterator := class .{@DATA}
-{
-	miniStack := List.{Tuple.{AVLTreeNode.{DATA}^,bool}}
-	nNode := AVLTreeNode.{DATA}^
-
-	this := !(AVLTreeNode.{DATA}^ nd) .{} -> void
-	{
-		miniStack."this"()
-		nNode = nd
-		if nd != null{
-			if $reverse
-			{
-				DoAMoveRight()
-			}else{
-				DoAMoveLeft()
-			}
-		}
-	}
-	IsEnd := !() -> bool { return nNode == null }
-	"^" := !() -> ref DATA { return nNode.data }
-	Inc := !() .{} -> void { 
-		if miniStack.Empty()
-		{
-			nNode = null
-			return void
-		}
-		nNode = miniStack.Front().0
-		part := miniStack.Front().1
-		miniStack.Pop()
-
-		if part
-		{
-			if $reverse
-			{
-				DoAMoveRight()
-			}else{
-				DoAMoveLeft()
-			}
-		}else{
-		}
-	}
-	DoAMoveRight := !() -> void
-	{
-		while nNode.Right != null
-		{
-			if nNode.Left != null
-				miniStack.Emplace(nNode.Left,true) ; $temp
-			miniStack.Emplace(nNode,false) ; $temp
-			nNode = nNode.Right
-		}
-		if nNode.Left != null
-			miniStack.Emplace(nNode.Left,false) ; $temp
-	}
-	DoAMoveLeft := !() -> void
-	{
-		while nNode.Left != null
-		{
-			if nNode.Right != null
-				miniStack.Emplace(nNode.Right,true) ; $temp
-			miniStack.Emplace(nNode,false) ; $temp
-			nNode = nNode.Left
-		}
-		if nNode.Right != null
-			miniStack.Emplace(nNode.Right,false) ; $temp
-	}
-}
 
 AVLSet := class .{@DATA}
 {
 	itTree := AVLTree.{DATA}
+	itSize := int
 
 	this := !() -> void
 	{
 		itTree."this"()
+		itSize = 0
 	}
 
-	"<<" := !(DATA data) .{} -> ref AVLSet.{DATA}
+	"<<" := !(DATA data) .{} self_return 
 	{
 		Insert(data)
 		return this
 	}
 	Insert := !(DATA dat) .{} -> void
 	{
-		resl := AVLTreeNode.{DATA}^
+		resl := CommonTreeNode.{DATA}^
 		if(itTree.FindOrCreate(dat,resl&))
 		{
 			resl.data = dat
+			itSize += 1
 		}
 		
 	}
@@ -93,6 +30,7 @@ AVLSet := class .{@DATA}
 		resl := itTree.FindNode(dat)
 		if resl != null{
 			itTree.RemoveNode(resl)
+			itSize -= 1
 		}
 	}
 	Contain := !(DATA dat) -> bool
@@ -100,10 +38,11 @@ AVLSet := class .{@DATA}
 		resl := itTree.FindNode(dat)
 		return resl != null
 	}
-	"~For" := !() .{} -> AVLSetIterator.{DATA}
+	"~For" := !() .{} -> CommonSetIterator.{DATA}
 	{
-		return AVLSetIterator.{DATA}(itTree.Start)
+		return CommonSetIterator.{DATA}(itTree.Start)
 	}
+	Size := !() -> int { return itSize }
 }
 
 //"in" := !(A itm, AVLSet.{@A} bag) -> bool

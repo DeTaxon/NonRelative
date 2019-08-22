@@ -1,72 +1,13 @@
-AVLTreeNode := class .{@DATA}
-{
-	data := DATA
-	balance := s8
-	Left,Right,Up := AVLTreeNode.{DATA}^
-	this := !() -> void
-	{
-		Left = null
-		Right = null
-		Up = null
-		balance = 0
-	}
-	PrintIt := !(int i) -> void
-	{
-		for i printf("-")
-		printf("%i %i\n",data,balance)
-		if Left != null Left.PrintIt(i+1)
-		if Right != null Right.PrintIt(i+1)
-	}
-	TestSize := !(int i, !(int)&-> void toSay) -> void
-	{
-		if Left != null Left.TestSize(i+1,toSay)
-		if Right != null Right.TestSize(i+1,toSay)
-		if Left == null and Right == null toSay(i)
-	}
-	IsCorrect := !() -> bool
-	{
-		if Left != null and Left.data > data return false
-		if Right != null and Right.data < data return false
-
-		if Left != null and not Left.IsCorrect() return false
-		if Right != null and not Right.IsCorrect() return false
-		return true
-	}
-	MinSize := !() -> int
-	{
-		sizL := 0
-		sizR := 0
-
-		if Left != null sizL = Left.MinSize()
-		if Right != null sizR = Right.MinSize()
-		if sizL > sizR return sizR + 1
-		return sizL + 1
-	}
-	CheckHeight := !(bool^ res) -> int
-	{
-
-		sizL := 0
-		sizR := 0
-
-		if Left != null sizL = Left.CheckHeight(res)
-		if Right != null sizR = Right.CheckHeight(res)
-
-		if sizR - sizL != balance res^ = false
-		if balance >= 2 or balance <= -2 res^ = false
-		if sizR > sizL return sizR + 1
-		return sizL + 1
-	}
-}
 
 AVLTree := class .{@DATA}
 {
-	Start := AVLTreeNode.{DATA}^
+	Start := CommonTreeNode.{DATA}^
 	
 	this := !() -> void
 	{
 		Start = null
 	}
-	FindNode := !(DATA dat) -> AVLTreeNode.{DATA}^
+	FindNode := !(DATA dat) -> CommonTreeNode.{DATA}^
 	{
 		iter := Start
 		while iter != null
@@ -79,13 +20,13 @@ AVLTree := class .{@DATA}
 				iter = iter.Left
 			}
 		}
-		return null->{AVLTreeNode.{DATA}^}
+		return null->{CommonTreeNode.{DATA}^}
 	}
-	FindOrCreate := !(DATA dat,AVLTreeNode.{DATA}^^ toRet) .{} -> bool //bool isCreated
+	FindOrCreate := !(DATA dat,CommonTreeNode.{DATA}^^ toRet) .{} -> bool //bool isCreated
 	{
 		if Start == null 
 		{
-			Start = new AVLTreeNode.{DATA}()
+			Start = new CommonTreeNode.{DATA}()
 			toRet^ = Start
 			Start.data = dat
 			return true
@@ -110,11 +51,11 @@ AVLTree := class .{@DATA}
 		}
 		
 		if prev.data <=> dat == 1{
-			prev.Right = new AVLTreeNode.{DATA}()
+			prev.Right = new CommonTreeNode.{DATA}()
 			prev.Right.Up = prev
 			iter = prev.Right
 		}else{
-			prev.Left = new AVLTreeNode.{DATA}()
+			prev.Left = new CommonTreeNode.{DATA}()
 			prev.Left.Up = prev
 			iter = prev.Left
 		}
@@ -125,7 +66,7 @@ AVLTree := class .{@DATA}
 		toRet^ = iter
 		return true
 	}
-	RotateLeft := !(AVLTreeNode.{DATA}^ toRotate) -> void
+	RotateLeft := !(CommonTreeNode.{DATA}^ toRotate) -> void
 	{
 		dwNode := toRotate.Right
 		toRotate.Right = dwNode.Left
@@ -140,7 +81,7 @@ AVLTree := class .{@DATA}
 			else dwNode.Up.Right = dwNode
 		}
 	}
-	RotateRight := !(AVLTreeNode.{DATA}^ toRotate) -> void
+	RotateRight := !(CommonTreeNode.{DATA}^ toRotate) -> void
 	{
 		dwNode := toRotate.Left
 		toRotate.Left = dwNode.Right
@@ -155,7 +96,7 @@ AVLTree := class .{@DATA}
 			else dwNode.Up.Right = dwNode
 		}
 	}
-	AVLRepair := !(AVLTreeNode.{DATA}^ toRep) -> void
+	AVLRepair := !(CommonTreeNode.{DATA}^ toRep) -> void
 	{
 		if toRep == null return void
 
@@ -241,110 +182,244 @@ AVLTree := class .{@DATA}
 		}
 	}
 
-	TryLeft := !(AVLTreeNode.{DATA}^^ toTry) -> void
+	RemoveNode := !(CommonTreeNode.{DATA}^ toRem) -> void
 	{
-		if toTry^.Left == null {
-			toTry^ = null	
-		}else{
-			toTry^ = toTry^.Left
-			while toTry^.Right != null toTry^ = toTry^.Right
-		}
-	}
-	TryRight := !(AVLTreeNode.{DATA}^^ toTry) -> void
-	{
-		if toTry^.Right == null {
-			toTry^ = null	
-		}else{
-			toTry^ = toTry^.Right
-			while toTry^.Left != null toTry^ = toTry^.Left
-		}
-	}
-	RemoveNode := !(AVLTreeNode.{DATA}^ toRem) -> void
-	{
-		candToRepl := toRem
-
-		if candToRepl.balance >= 0{
-			TryRight(candToRepl&)
-			if candToRepl == null{
-				candToRepl = toRem
-				TryLeft(candToRepl&)
-			}
-		}else{
-			TryLeft(candToRepl&)
-			if candToRepl == null{
-				candToRepl = toRem
-				TryRight(candToRepl&)
-			}
-		}
-		Fath := toRem.Up
-
-		if candToRepl == null
+		if toRem.Left == null and toRem.Right == null
 		{
-			Fath = toRem
-			if Fath == null {
-				Start = null
+			fth := toRem.Up
+			if fth != null
+			{
+				if fth.Left == toRem
+				{
+					fth.Left = null
+					RebalanceDown(fth,true)
+				}else{
+					fth.Right = null
+					RebalanceDown(fth,false)
+				}
 			}else{
-				RebalanceDown(toRem)
+				Start = null
 			}
 			delete toRem
 			return void
-		}else{
-			if candToRepl.balance != 0 {
-				if candToRepl.balance > 0 {
-					RotateLeft(candToRepl)
-					candToRepl.Up.balance = -1
+		}
+		if toRem.Left == null
+		{
+			if toRem.Up == null
+			{
+				Start = toRem.Right
+				Start.Up = null
+			}else{
+				fth := toRem.Up
+				if fth.Left == toRem
+				{
+					fth.Left = toRem.Right
+					toRem.Right.Up = fth
+					RebalanceDown(fth,true)
 				}else{
-					RotateRight(candToRepl)
-					candToRepl.Up.balance = 1
+					fth.Right = toRem.Right
+					toRem.Right.Up = fth
+					RebalanceDown(fth,false)
 				}
 			}
-			RebalanceDown(candToRepl)
-			candToRepl.balance = toRem.balance
-			candToRepl.Left = toRem.Left
-			candToRepl.Right = toRem.Right
-			oldUp := candToRepl.Up
-			if oldUp != null{
-				if oldUp.Left == candToRepl oldUp.Left = null
-				if oldUp.Right == candToRepl oldUp.Right = null
-			}
-			candToRepl.Up = toRem.Up
-			if candToRepl.Left != null candToRepl.Left.Up = candToRepl
-			if candToRepl.Right != null candToRepl.Right.Up = candToRepl
-			if candToRepl.Up == null Start = candToRepl
+			delete toRem
+			return void
 		}
-
-	}
-	RebalanceDown := !(AVLTreeNode.{DATA}^ toRem) -> void
-	{
-		P := toRem.Up
-		if P == null return void
-
-		if P.Left == toRem {
-			if P.balance  < 0{
-				P.balance++
-				RebalanceDown(P)
-				return void
+		if toRem.Right == null
+		{
+			if toRem.Up == null
+			{
+				Start = toRem.Left
+				Start.Up = null
+			}else{
+				fth := toRem.Up
+				if fth.Left == toRem
+				{
+					fth.Left = toRem.Left
+					toRem.Left.Up = fth
+					RebalanceDown(fth,true)
+				}else{
+					fth.Right = toRem.Left
+					toRem.Left.Up = fth
+					RebalanceDown(fth,false)
+				}
 			}
-			if P.balance == 0 {
-				P.balance++
-				return void
-			}
-			RotateLeft(P)
-			P.Up.balance++
+			delete toRem
+			return void
+		}
+		//else Left != null and Right != null
+
+		cand := toRem.Right
+		while cand.Left != null
+			cand = cand.Left
+
+		cUp := cand.Up
+		remUp := toRem.Up
+		if cUp.Left == cand
+		{
+			cUp.Left = toRem
 		}else{
-			if P.balance > 0 {
-				P.balance--
-				RebalanceDown(P)
-				return void
-			}
-			if P.balance == 0{
-				P.balance--
-				return void
-			}
-			RotateRight(P)
-			P.Up.balance--
+			cUp.Right = toRem
 		}
+		if remUp != null
+		{
+			if remUp.Left == toRem
+			{
+				remUp.Left = cand
+			}else{
+				remUp.Right = cand
+			}
+		}else{
+			Start = cand
+		}
+		toRem.Up = cUp
+		cand.Up = remUp
 
+		cand.Left = toRem.Left
+		toRem.Left = null
 
+		tmp := toRem.Right
+		toRem.Right = cand.Right
+		cand.Right = tmp
+
+		if cand.Left != null cand.Left.Up = cand
+		if cand.Right != null cand.Right.Up = cand
+		if toRem.Right != null toRem.Right.Up = toRem
+
+		cand.balance = toRem.balance
+
+		//swap(toRem.Up,cand.Up)
+		//swap(toRem.Left,cand.Left)
+		//swap(toRem.Right,cand.Right)
+		//printf("swapped\n")
+		//Start.PrintIt(0)
+		RemoveNode(toRem)
+	}
+	RebalanceDown := !(CommonTreeNode.{DATA}^ toBal,bool leftPull) -> void
+	{
+		while true
+		{
+			if toBal == null return void
+			fth := toBal.Up
+			if leftPull
+			{
+				switch toBal.balance
+				{
+					case -1
+						toBal.balance++
+						if fth != null {
+							leftPull = fth.Left == toBal
+							toBal = fth
+						}else{
+							return void
+						}
+					case 0
+						toBal.balance++
+						return void
+					case 1
+						//TODO: rotations
+						sib := toBal.Right
+						if sib.balance == -1
+						{
+							zNode := sib.Left
+							RotateRight(sib)
+							RotateLeft(toBal)
+							
+							switch zNode.balance
+							{
+							case -1
+								sib.balance = 1
+								toBal.balance = 0
+							case 0
+								sib.balance = 0
+								toBal.balance = 0
+							case 1
+								sib.balance = 0
+								toBal.balance = -1
+							}
+							zNode.balance = 0
+
+							if zNode.Up == null return void
+							toBal = zNode.Up
+							leftPull = zNode.Up.Left == zNode
+						}else{
+							oldSibB := sib.balance
+							oldVB := toBal.balance
+							RotateLeft(toBal)
+							if sib.balance == 0
+							{
+								toBal.balance = 1
+								sib.balance = -1
+							}else{
+								toBal.balance = 0
+								sib.balance = 0
+							}
+							if oldVB == 1 and oldSibB != 1 return void
+							if sib.Up == null return void
+							leftPull = sib.Up.Left == sib
+							toBal = sib.Up
+						}
+				}
+			}else{
+				switch toBal.balance
+				{
+					case -1
+						sib := toBal.Left
+						if sib.balance == 1
+						{
+							zNode := sib.Right
+							RotateLeft(sib)
+							RotateRight(toBal)
+
+							switch zNode.balance
+							{
+							case 1
+								toBal.balance = 0
+								sib.balance = -1
+							case 0
+								toBal.balance = 0
+								sib.balance = 0
+							case -1
+								toBal.balance = 1
+								sib.balance = 0
+							}
+							zNode.balance = 0
+
+							if zNode.Up == null return void
+							leftPull = zNode.Up.Left == zNode
+							toBal = zNode.Up
+
+						}else{
+							oldSibB := sib.balance
+							oldToBalB := toBal.balance
+							if sib.balance == 0
+							{
+								toBal.balance = -1
+								sib.balance = 1
+							}else{
+								toBal.balance = 0
+								sib.balance = 0
+							}
+							RotateRight(toBal)
+							if oldSibB != -1 and oldToBalB == -1 return void
+							if sib.Up == null return void
+							leftPull = sib.Up.Left == sib
+							toBal = sib.Up
+						}
+					case 0
+						toBal.balance--
+						return void
+					case 1
+						toBal.balance--
+						if fth != null
+						{
+							leftPull = fth.Left == toBal
+							toBal = fth
+						}else{
+							return void
+						}
+				}
+			}
+		}
 	}
 }

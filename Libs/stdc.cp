@@ -15,6 +15,8 @@ rand := !() -> int declare
 memset := !(void^ dst, char val,int size) -> void declare
 memcpy := !(void^ dst, void^ src,int size) -> void declare
 
+strcpy := !(void^ dst,void^ src) -> void declare
+
 "~this" := !(@R[] this) -> void
 {
 	for this
