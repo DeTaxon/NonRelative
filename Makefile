@@ -11,12 +11,12 @@ FLibs := -C0 FLibs/glfw.cp
 SLibs := -C0 "Libs/*" -Z0 "SLib.zip"
 
 engi: Objs/engi.o
-	clang++ Objs/engi.o -IFLibs $(Libs) LinuxLibs/Deflate.cpp LinuxLibs/libz.a  -lglfw -o engi
+	clang++ Objs/engi.o -IFLibs $(Libs) -o engi
 engig: Objs/engig.o
-	clang++ Objs/engig.o -IFLibs $(Libs) LinuxLibs/Deflate.cpp LinuxLibs/libz.a  -lglfw -o engi
+	clang++ Objs/engig.o -IFLibs $(Libs) -o engi
 
 wengi: Objs/wengi.o
-	$(WinCompiler) Objs/wengi.o -IFLibs LinuxLibs/Deflate.cpp WinLibs/libz.a -L WinLibs -lglfw3 -lgdi32 -o wengi
+	$(WinCompiler) Objs/wengi.o -IFLibs -L WinLibs -o wengi
 
 Objs/engi.o: Objs/engi.ll
 	clang Objs/engi.ll -c -o Objs/engi.o

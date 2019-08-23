@@ -34,6 +34,7 @@ pthread_create := !(pthread_t^ thrPtr, void^ attrs, void^  callFunc,void^ arg) -
 pthread_join := !(pthread_t thrId,void^^ retValue) -> int declare
 
 open := !(char^ name,int flags,int mode) -> int declare
+write := !(int d,void^ toS, int size) -> int declare
 close := !(int fd) -> void declare
 
 sleep := !(int seconds) -> int declare
@@ -58,6 +59,8 @@ posixGetFileSize := !(int fd,u64^ size) -> bool
 
 
 realpath := !(char^ inp, char^ outp) -> char^ declare
+
+mkstemp := !(char^ ndm) -> int declare
 
 opendir := !(char^ inp) -> void^ declare
 closedir := !(void^ dirFd) ->int declare

@@ -67,6 +67,10 @@ vRepoFile := class extend vRepoObject
 		return mFile.point->{u8^}
 
 	}
+	IsVirtual := !() -> bool 
+	{
+		return ptrToZip != null
+	}
 	Unmap := !() -> void
 	{
 		if ptrToZip != null
@@ -116,7 +120,7 @@ vRepo := class
 
 		ignZip << itId
 
-		itObj := new vZipObject
+		itObj := new ZipFile
 		itObj.AnalizeFile(fileName)
 		rootFolder.subZipFolders << itObj.zipRoot&
 

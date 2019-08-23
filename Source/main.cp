@@ -2,10 +2,11 @@ titleBuf := char[256]
 
 main := !(int argc, char^^ argv) -> int
 {
+	vPreInit()
+
 	CreateWindow(700,700)
 	defer DestroyWindow() 
 
-	vPreInit()
 	InitVulkan()
 	defer DestroyVulkan()
 

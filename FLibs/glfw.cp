@@ -1,28 +1,57 @@
-glfwInit := !() -> int declare
-glfwTerminate := !() -> void declare
 
-glfwSetErrorCallback := !(void^ call) -> void declare
-glfwSetKeyCallback := !(void^ win, void^ call) ->void declare
+glfwInit := !() -> int
+{
+	lib := Library("glfw3.dll","libglfw.so.3")
 
-glfwCreateWindow := !(int w,int h, char^ name,void^ monitor, void^ share) -> void^ declare
-glfwWindowHint := !(int what, int to) -> void declare
-glfwDestroyWindow := !(void^ wind) -> void declare
+	glfwInitReal = lib.Get("glfwInit")
+	glfwTerminate = lib.Get("glfwTerminate")
+	glfwSetErrorCallback = lib.Get("glfwSetErrorCallback")
+	glfwSetKeyCallback = lib.Get("glfwSetKeyCallback")
+	glfwCreateWindow = lib.Get("glfwCreateWindow")
+	glfwWindowHint = lib.Get("glfwWindowHint")
+	glfwDestroyWindow = lib.Get("glfwDestroyWindow")
+	glfwMakeContextCurrent = lib.Get("glfwMakeContextCurrent")
+	glfwGetProcAddress = lib.Get("glfwGetProcAddress")
+	glfwWindowShouldClose = lib.Get("glfwWindowShouldClose")
+	glfwPollEvents = lib.Get("glfwPollEvents")
+	glfwSwapBuffers = lib.Get("glfwSwapBuffers")
+	glfwSwapInterval = lib.Get("glfwSwapInterval")
 
-glfwMakeContextCurrent := !(void^ wind) -> void declare
-glfwGetProcAddress := !(char^ proc) -> void^ declare
+	glfwGetTime = lib.Get("glfwGetTime")
+	glfwCreateWindowSurface = lib.Get("glfwCreateWindowSurface")
+	glfwSetWindowSizeCallback = lib.Get("glfwSetWindowSizeCallback")
+	glfwSetWindowTitle = lib.Get("glfwSetWindowTitle")
+	
+	glfwInitReal()
+}
 
-glfwWindowShouldClose := !(void^ wind) -> bool declare
-glfwPollEvents := !() -> void declare
+glfwInitReal := !()^ -> int
+glfwTerminate := !()^ -> void 
 
-glfwSwapBuffers := !(void^ win) -> void declare
-glfwSwapInterval := !(int num) -> void declare
+glfwSetErrorCallback := !(void^)^ -> void 
+glfwSetKeyCallback := !(void^, void^)^ ->void 
 
-glfwGetTime := !() -> double declare
+tempVOIDP := type void^
 
-glfwCreateWindowSurface := !(void^ instance,void^ windo, void^ allctr, void^ surf) -> int declare
+glfwCreateWindow := !(int,int, char^,void^, void^)^ -> tempVOIDP 
+glfwWindowHint := !(int, int)^ -> void 
+glfwDestroyWindow := !(void^)^ -> void 
 
-glfwSetWindowSizeCallback := !(void^ windo,void^ winResizeCall) -> void declare
-glfwSetWindowTitle := !(void^ windo,char^ strTitle) -> void declare
+glfwMakeContextCurrent := !(void^)^ -> void 
+glfwGetProcAddress := !(char^)^ -> void^ 
+
+glfwWindowShouldClose := !(void^)^ -> bool 
+glfwPollEvents := !()^ -> void 
+
+glfwSwapBuffers := !(void^)^ -> void 
+glfwSwapInterval := !(int)^ -> void 
+
+glfwGetTime := !()^ -> double 
+
+glfwCreateWindowSurface := !(void^,void^, void^, void^)^ -> int 
+
+glfwSetWindowSizeCallback := !(void^,void^)^ -> void 
+glfwSetWindowTitle := !(void^,char^)^ -> void 
 
 GLFW_KEY_0               :=    48
 GLFW_KEY_9               :=    57

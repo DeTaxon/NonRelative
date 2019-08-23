@@ -72,9 +72,9 @@ z_stream := class
 	reserved := u64
 }
 
-inflateInit2_ := !(z_stream^ a,int b,char^ c,u64 d) -> int declare
-inflate := !(z_stream^ a,int b) -> int declare
-inflateEnd := !(z_stream^ a) -> int declare
+//inflateInit2_ := !(z_stream^ a,int b,char^ c,u64 d) -> int declare
+//inflate := !(z_stream^ a,int b) -> int declare
+//inflateEnd := !(z_stream^ a) -> int declare
 
 
 vZipEntry := class

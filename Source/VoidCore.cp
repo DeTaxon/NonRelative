@@ -63,6 +63,8 @@
 	vPreInit := !() -> void
 	{
 		itRepo.Init("./")
+		itRepo.AddZipRoot("./Dlls.zip")
+		LibDB.SetRepo(itRepo&)
 		pLoadCommonSettings()
 	}
 	vInit := !() -> void
