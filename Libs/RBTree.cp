@@ -1,37 +1,19 @@
 RBColorBlack := 0
 RBColorRed := 1
 
-RBTree := class .{@DATA}
+RBTree := class .{@DATA} extend CommonTree.{DATA}
 {
-	Start := CommonTreeNode.{DATA}^
-	
 	this := !() -> void
 	{
 		Start = null
+		CreatedNodes = null
 	}
-	FindNode := !(DATA dat) -> CommonTreeNode.{DATA}^
-	{
-		itr := Start
-		while itr != null
-		{
-			switch itr.data <=> dat
-			{
-				case 1
-					itr = itr.Right
-				case 0
-					return itr
-				case -1
-					itr = itr.Left
-			}
-		}
-		return itr
-	}
-	FindOrCreate := !(DATA dat,CommonTreeNode.{DATA}^^ toRet) -> bool //bool isCreated
+	FindOrCreate := !(DATA dat,CommonTreeNode.{DATA}^^ toRet) .{} -> bool //bool isCreated
 	{
 		if Start == null 
 		{
-			Start = new CommonTreeNode.{DATA}()
-			Start.color = RBColorBlack
+			Start = createNode()
+			Start.balance = RBColorBlack
 			toRet^ = Start
 			return true
 		}
@@ -55,13 +37,13 @@ RBTree := class .{@DATA}
 		}
 		
 		if prev.data <=> dat == 1{
-			prev.Right = new CommonTreeNode.{DATA}()
-			prev.Right.color = RBColorRed
+			prev.Right = createNode()
+			prev.Right.balance = RBColorRed
 			prev.Right.Up = prev
 			iter = prev.Right
 		}else{
-			prev.Left = new CommonTreeNode.{DATA}()
-			prev.Left.color = RBColorRed
+			prev.Left = createNode()
+			prev.Left.balance = RBColorRed
 			prev.Left.Up = prev
 			iter = prev.Left
 		}
@@ -71,44 +53,14 @@ RBTree := class .{@DATA}
 		toRet^ = iter
 		return true
 	}
-	RotateLeft := !(CommonTreeNode.{DATA}^ toRotate) -> void
-	{
-		dwNode := toRotate.Right
-		toRotate.Right = dwNode.Left
-		if toRotate.Right != null toRotate.Right.Up = toRotate
-		dwNode.Up = toRotate.Up
-		toRotate.Up = dwNode
-		dwNode.Left = toRotate
-		if dwNode.Up == null {
-			Start = dwNode
-		}else{
-			if dwNode.Up.Left == toRotate dwNode.Up.Left = dwNode
-			else dwNode.Up.Right = dwNode
-		}
-	}
-	RotateRight := !(CommonTreeNode.{DATA}^ toRotate) -> void
-	{
-		dwNode := toRotate.Left
-		toRotate.Left = dwNode.Right
-		if toRotate.Left != null toRotate.Left.Up = toRotate
-		dwNode.Up = toRotate.Up
-		toRotate.Up = dwNode
-		dwNode.Right = toRotate
-		if dwNode.Up == null {
-			Start = dwNode
-		}else{
-			if dwNode.Up.Left == toRotate dwNode.Up.Left = dwNode
-			else dwNode.Up.Right = dwNode
-		}
-	}
 	RBRepair := !(CommonTreeNode.{DATA}^ toRep) -> void
 	{
 		if toRep.Up == null
 		{
-			toRep.color = RBColorBlack
+			toRep.balance = RBColorBlack
 			return void
 		}
-		if toRep.Up.color == RBColorBlack return void
+		if toRep.Up.balance == RBColorBlack return void
 
 		GrandNode := toRep.Up.Up
 
@@ -118,12 +70,12 @@ RBTree := class .{@DATA}
 		if GrandNode.Left == toRep.Up 	UnclNode = GrandNode.Right
 		else				 UnclNode = GrandNode.Left
 
-		if UnclNode != null UnclColorB = UnclNode.color == RBColorBlack
+		if UnclNode != null UnclColorB = UnclNode.balance == RBColorBlack
 		
 		if not UnclColorB {
-			toRep.Up.color = RBColorBlack
-			UnclNode.color = RBColorBlack
-			GrandNode.color = RBColorRed
+			toRep.Up.balance = RBColorBlack
+			UnclNode.balance = RBColorBlack
+			GrandNode.balance = RBColorRed
 			RBRepair(GrandNode)
 			return void
 		}
@@ -134,13 +86,13 @@ RBTree := class .{@DATA}
 		if GrandNode.Right == toRep.Up and toRep.Up.Left == toRep {
 			RotateRight(toRep.Up)
 		}
-		if GrandNode.Left != null and GrandNode.Left.color == RBColorRed{
+		if GrandNode.Left != null and GrandNode.Left.balance == RBColorRed{
 			RotateRight(GrandNode)
 		}else{
 			RotateLeft(GrandNode)
 		}
-		GrandNode.color = RBColorRed
-		GrandNode.Up.color = RBColorBlack
+		GrandNode.balance = RBColorRed
+		GrandNode.Up.balance = RBColorBlack
 	}
 	RemoveNode := !(CommonTreeNode.{DATA}^ toRem) -> void
 	{
@@ -152,17 +104,17 @@ RBTree := class .{@DATA}
 				if fth.Left == toRem
 				{
 					fth.Left = null
-					if toRem.color == RBColorRed return void
+					if toRem.balance == RBColorRed return void
 					RebalanceDown(fth,null)
 				}else{
 					fth.Right = null
-					if toRem.color == RBColorRed return void
+					if toRem.balance == RBColorRed return void
 					RebalanceDown(fth,null)
 				}
 			}else{
 				Start = null
 			}
-			delete toRem
+			remNode(toRem)
 			return void
 		}
 		if toRem.Left == null
@@ -171,33 +123,33 @@ RBTree := class .{@DATA}
 			{
 				Start = toRem.Right
 				Start.Up = null
-				Start.color = RBColorBlack
+				Start.balance = RBColorBlack
 			}else{
 				fth := toRem.Up
 				if fth.Left == toRem
 				{
 					fth.Left = toRem.Right
 					toRem.Right.Up = fth
-					if toRem.color == RBColorRed return void
-					if fth.Left.color == RBColorRed
+					if toRem.balance == RBColorRed return void
+					if fth.Left.balance == RBColorRed
 					{
-						fth.Left.color = RBColorBlack
+						fth.Left.balance = RBColorBlack
 						return void
 					}
 					RebalanceDown(fth,fth.Left)
 				}else{
 					fth.Right = toRem.Right
 					toRem.Right.Up = fth
-					if toRem.color == RBColorRed return void
-					if fth.Right.color == RBColorRed
+					if toRem.balance == RBColorRed return void
+					if fth.Right.balance == RBColorRed
 					{
-						fth.Right.color = RBColorBlack
+						fth.Right.balance = RBColorBlack
 						return void
 					}
 					RebalanceDown(fth,fth.Right)
 				}
 			}
-			delete toRem
+			remNode(toRem)
 			return void
 		}
 		if toRem.Right == null
@@ -206,33 +158,33 @@ RBTree := class .{@DATA}
 			{
 				Start = toRem.Left
 				Start.Up = null
-				Start.color = RBColorBlack
+				Start.balance = RBColorBlack
 			}else{
 				fth := toRem.Up
 				if fth.Left == toRem
 				{
 					fth.Left = toRem.Left
 					toRem.Left.Up = fth
-					if toRem.color == RBColorRed return void
-					if fth.Left.color == RBColorRed
+					if toRem.balance == RBColorRed return void
+					if fth.Left.balance == RBColorRed
 					{
-						fth.Left.color = RBColorBlack
+						fth.Left.balance = RBColorBlack
 						return void
 					}
 					RebalanceDown(fth,fth.Left)
 				}else{
 					fth.Right = toRem.Left
 					toRem.Left.Up = fth
-					if toRem.color == RBColorRed return void
-					if fth.Right.color == RBColorRed
+					if toRem.balance == RBColorRed return void
+					if fth.Right.balance == RBColorRed
 					{
-						fth.Right.color = RBColorBlack
+						fth.Right.balance = RBColorBlack
 						return void
 					}
 					RebalanceDown(fth,fth.Right)
 				}
 			}
-			delete toRem
+			remNode(toRem)
 			return void
 		}
 		//else Left != null and Right != null
@@ -274,9 +226,9 @@ RBTree := class .{@DATA}
 		if cand.Right != null cand.Right.Up = cand
 		if toRem.Right != null toRem.Right.Up = toRem
 		
-		tmpCol := cand.color
-		cand.color = toRem.color
-		toRem.color = tmpCol
+		tmpCol := cand.balance
+		cand.balance = toRem.balance
+		toRem.balance = tmpCol
 		RemoveNode(toRem)
 	}
 	RebalanceDown := !(CommonTreeNode.{DATA}^ par, CommonTreeNode.{DATA}^ Repl) -> void
@@ -293,10 +245,10 @@ RBTree := class .{@DATA}
 			sib = par.Left
 		}
 
-		if sib.color == RBColorRed
+		if sib.balance == RBColorRed
 		{
-			par.color = RBColorRed
-			sib.color = RBColorBlack
+			par.balance = RBColorRed
+			sib.balance = RBColorBlack
 			if sib == par.Left
 			{
 				RotateRight(par)
@@ -311,23 +263,23 @@ RBTree := class .{@DATA}
 			}
 		}
 		Sl := RBColorBlack
-		Sl = sib.Left?.color
+		Sl = sib.Left?.balance
 		Sr := RBColorBlack
-		Sr = sib.Right?.color
-		if par.color == RBColorBlack 
+		Sr = sib.Right?.balance
+		if par.balance == RBColorBlack 
 		{	
 
 			if Sl == Sr and Sl == RBColorBlack
 			{
-				sib.color = RBColorRed
+				sib.balance = RBColorRed
 				RebalanceDown(par.Up,par)
 				return void
 			}
 		}
-		if par.color == RBColorRed and Sl == Sr and Sr == RBColorBlack
+		if par.balance == RBColorRed and Sl == Sr and Sr == RBColorBlack
 		{
-			sib.color = RBColorRed
-			par.color = RBColorBlack
+			sib.balance = RBColorRed
+			par.balance = RBColorBlack
 			return void
 		}
 
@@ -336,26 +288,26 @@ RBTree := class .{@DATA}
 			if Sr == RBColorRed
 			{
 				RotateLeft(sib)
-				sib.color = RBColorRed
-				sib.Up.color = RBColorBlack
+				sib.balance = RBColorRed
+				sib.Up.balance = RBColorBlack
 				sib = sib.Up
 			}
-			sib.Left.color = RBColorBlack
-			sib.color = sib.Up.color
-			sib.Up.color = RBColorBlack
+			sib.Left.balance = RBColorBlack
+			sib.balance = sib.Up.balance
+			sib.Up.balance = RBColorBlack
 			RotateRight(par)
 
 		}else{
 			if Sl == RBColorRed
 			{
 				RotateRight(sib)
-				sib.color = RBColorRed
-				sib.Up.color = RBColorBlack
+				sib.balance = RBColorRed
+				sib.Up.balance = RBColorBlack
 				sib = sib.Up
 			}
-			sib.Right.color = RBColorBlack
-			sib.color = sib.Up.color
-			sib.Up.color = RBColorBlack
+			sib.Right.balance = RBColorBlack
+			sib.balance = sib.Up.balance
+			sib.Up.balance = RBColorBlack
 			RotateLeft(par)
 		}
 	}

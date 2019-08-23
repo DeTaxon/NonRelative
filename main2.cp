@@ -1,14 +1,26 @@
 //printf := !(char^ a,...) -> int declare
 
 
-
 main := !() -> int
 {
-	tst := ""sbt
+	srand(33)
 
-	tst + " hello " + 67  + 13
-
-	printf("heh %s\n",tst.Str())
+	tst := RBSet.{int}()
+	buf := int[1024]
+	for 500
+	{
+		newS := rand() % 1024
+		if newS > 600 or tst.Size() == 0
+		{
+			newS = rand() % 1024
+			tst << newS
+		}else{
+			for i,j : tst
+				buf[j] = i
+			toDel := buf[rand() % tst.Size()]
+			tst.Remove(toDel)
+		}
+	}
 
 	return 0
 }

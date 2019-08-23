@@ -2,10 +2,14 @@
 AVLTree := class .{@DATA}
 {
 	Start := CommonTreeNode.{DATA}^
+	if $keep
+		CreatedNodes := CommonTreeNode.{DATA}^
 	
 	this := !() -> void
 	{
 		Start = null
+		if $keep
+			CreatedNodes = null
 	}
 	FindNode := !(DATA dat) -> CommonTreeNode.{DATA}^
 	{
@@ -22,11 +26,30 @@ AVLTree := class .{@DATA}
 		}
 		return null->{CommonTreeNode.{DATA}^}
 	}
+	createNode := !() .{} -> CommonTreeNode.{DATA}^
+	{
+		if $keep
+		{
+			if CreatedNodes != null
+			{
+				newNode := CreatedNodes
+				CreatedNodes = CreatedNodes.Right
+				newNode.Left = null
+				newNode.Up = null
+				newNode.Right = null
+				newNode.balance = 0
+				return newNode
+			}else{
+				return new CommonTreeNode.{DATA}
+			}
+		}	
+		return new CommonTreeNode.{DATA}
+	}
 	FindOrCreate := !(DATA dat,CommonTreeNode.{DATA}^^ toRet) .{} -> bool //bool isCreated
 	{
 		if Start == null 
 		{
-			Start = new CommonTreeNode.{DATA}()
+			Start = createNode()
 			toRet^ = Start
 			Start.data = dat
 			return true
@@ -51,11 +74,11 @@ AVLTree := class .{@DATA}
 		}
 		
 		if prev.data <=> dat == 1{
-			prev.Right = new CommonTreeNode.{DATA}()
+			prev.Right = createNode()
 			prev.Right.Up = prev
 			iter = prev.Right
 		}else{
-			prev.Left = new CommonTreeNode.{DATA}()
+			prev.Left = createNode()
 			prev.Left.Up = prev
 			iter = prev.Left
 		}
@@ -181,8 +204,19 @@ AVLTree := class .{@DATA}
 			}
 		}
 	}
-
-	RemoveNode := !(CommonTreeNode.{DATA}^ toRem) -> void
+	
+	remNode := !(CommonTreeNode.{DATA}^ toRem) .{} -> void
+	{
+		if $keep
+		{
+			toRem.Right = CreatedNodes
+			CreatedNodes = toRem
+		}else
+		{
+			delete toRem
+		}
+	}
+	RemoveNode := !(CommonTreeNode.{DATA}^ toRem) .{} -> void
 	{
 		if toRem.Left == null and toRem.Right == null
 		{
@@ -200,7 +234,7 @@ AVLTree := class .{@DATA}
 			}else{
 				Start = null
 			}
-			delete toRem
+			remNode(toRem)
 			return void
 		}
 		if toRem.Left == null
@@ -222,7 +256,7 @@ AVLTree := class .{@DATA}
 					RebalanceDown(fth,false)
 				}
 			}
-			delete toRem
+			remNode(toRem)
 			return void
 		}
 		if toRem.Right == null
@@ -244,7 +278,7 @@ AVLTree := class .{@DATA}
 					RebalanceDown(fth,false)
 				}
 			}
-			delete toRem
+			remNode(toRem)
 			return void
 		}
 		//else Left != null and Right != null
