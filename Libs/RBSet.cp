@@ -1,6 +1,8 @@
 RBSet := class .{@DATA}
 {
-	itTree := RBTree.{DATA}
+	$keep
+
+	itTree := RBTree.{DATA} ; #outer_class
 	itSize := int
 
 	this := !() -> void
@@ -9,7 +11,7 @@ RBSet := class .{@DATA}
 		itSize = 0
 	}
 
-	Insert := !(DATA dat) -> void
+	Insert := !(DATA dat) .{} -> void
 	{
 		resl := CommonTreeNode.{DATA}^
 		if(itTree.FindOrCreate(dat,resl&))
@@ -19,7 +21,7 @@ RBSet := class .{@DATA}
 		}
 		
 	}
-	Remove := !(DATA dat) -> void
+	Remove := !(DATA dat) .{} -> void
 	{
 		resl := itTree.FindNode(dat)
 		if resl != null
@@ -28,12 +30,17 @@ RBSet := class .{@DATA}
 			itSize -= 1
 		}
 	}
+	Contain := !(DATA dat) -> bool
+	{
+		resl := itTree.TryFind(dat)
+		return resl != null
+	}
 	Size := !() -> int { return itSize }
 	"~For" := !() -> CommonSetIterator.{DATA}
 	{
 		return CommonSetIterator.{DATA}(itTree.Start)
 	}
-	"<<" := !(DATA dat) -> ref RBSet.{DATA}
+	"<<" := !(DATA dat) .{} self_return
 	{
 		Insert(dat)
 		return this

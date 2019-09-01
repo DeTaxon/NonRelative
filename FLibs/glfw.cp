@@ -31,9 +31,7 @@ glfwTerminate := !()^ -> void
 glfwSetErrorCallback := !(void^)^ -> void 
 glfwSetKeyCallback := !(void^, void^)^ ->void 
 
-tempVOIDP := type void^
-
-glfwCreateWindow := !(int,int, char^,void^, void^)^ -> tempVOIDP 
+glfwCreateWindow := !(int,int, char^,void^, void^)^ -> void^
 glfwWindowHint := !(int, int)^ -> void 
 glfwDestroyWindow := !(void^)^ -> void 
 

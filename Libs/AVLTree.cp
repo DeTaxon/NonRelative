@@ -1,49 +1,12 @@
 
-AVLTree := class .{@DATA}
+AVLTree := class .{@DATA} extend CommonTree.{DATA}
 {
-	Start := CommonTreeNode.{DATA}^
-	if $keep
-		CreatedNodes := CommonTreeNode.{DATA}^
 	
 	this := !() -> void
 	{
 		Start = null
 		if $keep
 			CreatedNodes = null
-	}
-	FindNode := !(DATA dat) -> CommonTreeNode.{DATA}^
-	{
-		iter := Start
-		while iter != null
-		{
-			cmpRes := iter.data <=> dat
-			if cmpRes == 0 return iter
-			if cmpRes == 1 {
-				iter = iter.Right
-			}else{
-				iter = iter.Left
-			}
-		}
-		return null->{CommonTreeNode.{DATA}^}
-	}
-	createNode := !() .{} -> CommonTreeNode.{DATA}^
-	{
-		if $keep
-		{
-			if CreatedNodes != null
-			{
-				newNode := CreatedNodes
-				CreatedNodes = CreatedNodes.Right
-				newNode.Left = null
-				newNode.Up = null
-				newNode.Right = null
-				newNode.balance = 0
-				return newNode
-			}else{
-				return new CommonTreeNode.{DATA}
-			}
-		}	
-		return new CommonTreeNode.{DATA}
 	}
 	FindOrCreate := !(DATA dat,CommonTreeNode.{DATA}^^ toRet) .{} -> bool //bool isCreated
 	{
@@ -88,36 +51,6 @@ AVLTree := class .{@DATA}
 
 		toRet^ = iter
 		return true
-	}
-	RotateLeft := !(CommonTreeNode.{DATA}^ toRotate) -> void
-	{
-		dwNode := toRotate.Right
-		toRotate.Right = dwNode.Left
-		if toRotate.Right != null toRotate.Right.Up = toRotate
-		dwNode.Up = toRotate.Up
-		toRotate.Up = dwNode
-		dwNode.Left = toRotate
-		if dwNode.Up == null {
-			Start = dwNode
-		}else{
-			if dwNode.Up.Left == toRotate dwNode.Up.Left = dwNode
-			else dwNode.Up.Right = dwNode
-		}
-	}
-	RotateRight := !(CommonTreeNode.{DATA}^ toRotate) -> void
-	{
-		dwNode := toRotate.Left
-		toRotate.Left = dwNode.Right
-		if toRotate.Left != null toRotate.Left.Up = toRotate
-		dwNode.Up = toRotate.Up
-		toRotate.Up = dwNode
-		dwNode.Right = toRotate
-		if dwNode.Up == null {
-			Start = dwNode
-		}else{
-			if dwNode.Up.Left == toRotate dwNode.Up.Left = dwNode
-			else dwNode.Up.Right = dwNode
-		}
 	}
 	AVLRepair := !(CommonTreeNode.{DATA}^ toRep) -> void
 	{

@@ -15,7 +15,7 @@ CommonTreeNode := class .{@DATA}
 CommonTree := class .{@DATA}
 {
 	Start := CommonTreeNode.{DATA}^
-	//if $keep
+	if $keep
 		CreatedNodes := CommonTreeNode.{DATA}^
 	
 	FindNode := !(DATA dat) -> CommonTreeNode.{DATA}^

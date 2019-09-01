@@ -1,7 +1,7 @@
 
 AVLMap := class .{@KEY,@VALUE}
 {
-	itTree := AVLTree.{BadPair.{KEY,VALUE}}
+	itTree := AVLTree.{BadPair.{KEY,VALUE}} ; #outer_class
 	itSize := int
 
 	this := !() -> void

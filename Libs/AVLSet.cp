@@ -1,7 +1,9 @@
 
 AVLSet := class .{@DATA}
 {
-	itTree := AVLTree.{DATA}
+	$keep
+
+	itTree := AVLTree.{DATA} ; #outer_class
 	itSize := int
 
 	this := !() -> void
