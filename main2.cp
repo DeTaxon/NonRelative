@@ -4,25 +4,15 @@
 
 main := !(int argc, char^^ argv)
 {
-	tst := RBSet.{int}() ; $keep
-	arr := int[1024]
-	k := 40
-	while true
-	{	
-		k--
-		if k < 0 return 0
-			
-		ab := rand() % 1024
-		if ab > 256 or tst.Size() == 0
-		{
-			l := rand() % 1024
-			tst << l
-		}else{
-			arr[i] = tst[^i]
-			c := rand() % tst.Size()
-			cc := arr[c]
-			tst.Remove(cc)
-		}
+	tst := RBMap.{char^,int}()
+
+	tst["a"] = 1
+	tst["b"] = 13
+	tst["ac"] = 2
+
+	for v,k : tst ; $reverse
+	{
+		printf("%i %s\n",v,k)
 	}
 
 	return 0
