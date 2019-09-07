@@ -131,18 +131,6 @@ Path := class
 	{
 		itStr = pt
 	}
-	"/=" := !(string str) -> void
-	{
-		itStr = itStr + "/" + str
-	}
-	"/" := !(string pt2) -> Path
-	{
-		ToRet.itStr = this.itStr + "/" + pt2
-	}
-	"/" := !(Path pt2) -> Path
-	{
-		return Path(itStr + "/" + pt2.itStr)
-	}
 	Ext := !() -> StringSpan
 	{
 		size := StrSize(itStr)

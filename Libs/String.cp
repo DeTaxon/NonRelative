@@ -1,17 +1,6 @@
-BigBuff := char[4096]
-
-//CreatedStrs := Stack.{char^}
 sprintf := !(char^ buf,char^ frmt, ...) -> int declare
-
 strcmp := !(char^ a,char^ b) -> int declare
 
-CleanStrs := !() -> void
-{
-	while not CreatedStrs.Empty()
-	{
-		free(CreatedStrs.Pop())
-	}
-}
 
 ToString := !(int x) -> char^
 {
@@ -30,11 +19,6 @@ ToString := !(float x) -> char^
 	if a->{int^} == b->{int^} return 0
 	if a == null return 1
 	if b == null return -1
-	//i := 0
-	//while a[i] != 0 and b[i] != 0 and a[i] == b[i] i += 1
-	//if a[i] < b[i] return -1
-	//if a[i] > b[i] return 1
-	//return 0
 	cmpRes := strcmp(a,b)
 	if cmpRes > 0 return 1
 	if cmpRes < 0 return -1
@@ -44,19 +28,12 @@ ToString := !(float x) -> char^
 {
 	if a == null return false
 	if b == null return false
-	//i := 0
-	//while a[i] != 0 and b[i] != 0 and a[i] == b[i] i += 1
-	//return a[i] < b[i]
 	return strcmp(a,b) < 0
 }
-//strcmp := !(char^ a,char^ b) -> int declare
 StrCmp := !(char^ a,char^ b) -> bool
 {
 	if a->{int^} == null or b->{int^} == null return false
 	if a->{int^} == b->{int^} return true
-	//i := 0
-	//while a[i] != 0 and b[i] != 0 and a[i] == b[i] i += 1
-	//return a[i] == b[i]
 	return strcmp(a,b) == 0
 }
 "==" := !(char^ a,char^ b) -> bool
@@ -65,40 +42,7 @@ StrCmp := !(char^ a,char^ b) -> bool
 }
 "!=" := !(char^ a,char^ b) -> bool
 {
-	//i := 0
-	//while a[i] != 0 and b[i] != 0 
-	//{
-	//	if a[i] != b[i] return true
-	//	i += 1
-	//}
 	return strcmp(a,b) != 0
-}
-
-"+" := !(char^ a, char^ b) -> char^
-{
-	if a == null return b
-	if b == null return a
-	sA := StrSize(a)
-	sB := StrSize(b)
-	newStr := new char[sA + sB + 1]
-	memcpy(newStr[0]&,a,sA)
-	memcpy(newStr[sA]&,b,sB)
-	newStr[sA + sB + 1] = 0
-	return newStr
-}
-"+" := !(char^ a, int b) -> char^
-{
-	if a == null {
-		return ToString(b)
-	}
-	return a + ToString(b)
-}
-"+" := !(char^ a, float b) -> char^
-{
-	if a == null {
-		return ToString(b)
-	}
-	return a + ToString(b)
 }
 
 
@@ -120,15 +64,6 @@ StrCopy := !(char^ a) .{} -> char^
 	Si := StrSize(a)
 	Pre := new char[Si+1]
 	memcpy(Pre->{void^},a,Si)
-	Pre[Si] = 0
-
-	return Pre
-}
-Copy := !(char^ this) -> char^
-{
-	Si := StrSize(this)
-	Pre := new char[Si+1]
-	memcpy(Pre->{void^},this,Si)
 	Pre[Si] = 0
 
 	return Pre
@@ -266,7 +201,4 @@ StringIterator := class
 	"^" := !() -> ref char { return itr[ind] }
 }
 "~For" := !(char^ str) -> StringIterator { return StringIterator(str)}
-//"()" := !(char^ this,args...) -> char^ 
-//{
-//}
 
