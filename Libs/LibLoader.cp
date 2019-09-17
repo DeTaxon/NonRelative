@@ -4,7 +4,8 @@ intrRepoBrowser := vRepo^
 LibDBObject := class
 {
 	hndl := void^
-	fileFd := int
+	itFile := RawFile
+	itFileName := char^
 	loadedFuncs := AVLMap.{char^,void^}
 
 	Get := !(char^ name) -> void^
@@ -12,6 +13,9 @@ LibDBObject := class
 		inMap := loadedFuncs.TryFind(name)
 		if inMap != null
 			return inMap^
+
+		LibDB.itMemPool.Push()
+		defer LibDB.itMemPool.Pop()
 
 		newFunc := LoadFuncLib(hndl,name)
 		if newFunc  == null
@@ -21,9 +25,11 @@ LibDBObject := class
 		return newFunc
 	}
 }
+
 LibDatabaseType := class
 {
 	loadedLibs := AVLMap.{char^,LibDBObject}
+	itMemPool := AllocOnlyMP.{4096,true}
 
 	SetRepo := !(vRepo^ toS) -> void
 	{
@@ -34,6 +40,9 @@ LibDatabaseType := class
 		inMap := loadedLibs.TryFind(name)
 		if inMap != null
 			return inMap
+
+		itMemPool.Push()
+		defer itMemPool.Pop()
 
 		newObj := LibDBObject
 
@@ -56,20 +65,23 @@ LibDatabaseType := class
 				{
 					pt := inFS.Map()
 
-					tmpNamePre := "/tmp/"sbt + name + "XXXXXX"
-					tmpName := tmpNamePre.Str() ; $temp
-
-					fd := mkstemp(tmpName)
-					write(fd,pt->{void^},inFS.Size())
+					itWr := RawFile()
+					tmpName := itWr.OpenTemp(name)
+					itWr.Write(pt,inFS.Size())
+					itWr.Close()
 
 					hndl = OpenLib(tmpName)
 					if hndl == null
+					{
+						TFSDelete(tmpName)
 						return null
+					}
 
 					nameCpy := StrCopy(name)
 					inMap2 := ref loadedLibs[nameCpy]
 					inMap2.hndl = hndl
-					inMap2.fileFd = fd
+					inMap2.itFile = itWr
+					inMap2.itFileName = StrCopy(tmpName)
 					return inMap2&
 				}else{
 					toLoad := inFS.GetPath()

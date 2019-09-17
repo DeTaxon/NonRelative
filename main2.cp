@@ -3,26 +3,48 @@
 
 
 
+abc := uvUDP^
+thAddr := uvAddr
+
+buffe := char[1024]
+
+
+Rand := !(range itR) -> int
+{
+	diff := itR->end - itR->begin
+	return rand() % diff + itR->begin
+}
+
 
 main := !() -> int
 {
-	tst := RBMap.{int,int}()
+	TLock(null)
+	TUnlock(null)
+	uvInit()
 
-	tst[1] = 10
-	tst[6] = 60
-	tst[3] = 30
+	mn := uvLoop()
+	for 4
+	{
+		mn.Work(x => {
+			TLock(null)
+			defer TUnlock(null)
 
-	printf("heh %i\n", 3 in tst)
-	printf("heh %i\n", 7 in tst)
-	
-	//uvInit()
-
-	//mn := uvLoop()
-	//mn.Timer(0,0.5s,x => {
-	//	printf("heh\n")
+			for 4
+			{
+				printf("heh %p\n",x)
+				TSleep(0.7)
+			}
+		})
+	}
+	//mn.Work(x => {
+	//	for 8
+	//	{
+	//		printf("heh %p\n",x)
+	//		sleep(1)
+	//	}
+	//	Barrier(null,2)
 	//})
-	//mn.Run()
-
+	mn.Run()
 	return 0
 }
 

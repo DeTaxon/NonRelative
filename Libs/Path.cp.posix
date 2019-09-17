@@ -254,3 +254,8 @@ Path := class
 		return StringSpan(itName.Get(),pos)
 	}
 }
+
+TFSDelete := !(char^ toDel) -> bool
+{
+	return remove(toDel) == 0
+}

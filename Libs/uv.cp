@@ -6,10 +6,81 @@ uv_timer_init := !(void^,void^)^ -> void
 uv_timer_start := !(void^,!(void^)^->void,int,int)^ -> void
 uv_timer_stop := !(void^)^ -> void
 
+uv_idle_init := !(void^,void^)^ -> void
+uv_idle_start := !(void^,!(void^)^->void)^ -> void
+uv_idle_stop := !(void^)^ -> void
+
+uv_ip4_addr := !(char^,int,void^)^ -> void
+
+uv_udp_init := !(void^,void^)^ -> void
+uv_udp_bind := !(void^,void^,int)^ -> void
+uv_udp_recv_start := !(void^,!(uvUDP^,u64,uv_buf_t^)^ ->void^, !(void^,int,uv_buf_t^,uvAddr^,int)^-> void)^ -> void
+uv_udp_send := !(void^,void^,void^,int,void^,!(void^,int)^->void)^ -> void
+
+uv_tcp_init := !(void^,void^)^ -> void
+uv_tcp_bind := !(void^,uvAddr^,int)^ -> void
+uv_tcp_connect := !(void^,void^,uvAddr^,!(void^,int)^->void)^->void
+
+uv_listen := !(void^,int,!(void^,int)^->void)^ -> void
+uv_accept := !(void^,void^)^ -> void
+
+uv_read_start := !(void^,!(void^,u64,uv_buf_t)^->void,!(void^,u64,uv_buf_t^)^->void)^-> void
+uv_write := !(void^,void^,uv_buf_t^,int,!(void^,int)^->void)^->void
+
+uv_queue_work := !(void^,void^,!(void^)^-> void,!(void^,int)^-> void)^ -> void
+
+uv_thread_create := !(void^,!(void^)^->void,void^)^ -> void
+uv_thread_join := !(void^)^ -> void
+
+//uv_barrier_init := !(void^,int)^->void
+//uv_barrier_wait := !(void^)^-> void
+//uv_barrier_destroy := !(void^)^ -> void
+
+//uv_mutex_init := !(void^)^ -> void
+//uv_mutex_lock := !(void^)^ -> void
+//uv_mutex_trylock := !(void^)^ -> int
+//uv_mutex_unlock := !(void^)^ -> void
+//uv_mutex_destroy := !(void^)^-> void
+//
+//uv_cond_init := !(void^)^ -> void
+//uv_cond_signal := !(void^)^ -> void
+//uv_cond_broadcast := !(void^)^ -> void
+//uv_cond_wait := !(void^,void^)^-> void
+//uv_cond_timedwait := !(void^,void^,u64)^ -> void
+//uv_cond_destroy  := !(void^)^ -> void
+//
+//uv_sem_init := !(void^,int)^ -> void
+//uv_sem_post := !(void^)^ -> void
+//uv_sem_wait := !(void^)^ -> int
+//uv_sem_trywait := !(void^)^ -> int
+//uv_sem_destroy := !(void^)^ -> void
+
+//sizeof(uv_tcp_t) = 248
+//sizeof(sockaddr) = 16
+//sizeof(uv_udp_t) = 216
+//uv_buf_t = 16
+
+uv_buf_t := class
+{
+	ptr := void^
+	len := u64
+}
 
 uvInit := !() -> void
 {
 	uv := Library("libuv.so.1")
+
+	uv_tcp_init = uv.Get("uv_tcp_init")
+	uv_tcp_bind = uv.Get("uv_tcp_bind")
+	uv_tcp_connect = uv.Get("uv_tcp_connect")
+
+	uv_queue_work = uv.Get("uv_queue_work")
+
+	uv_listen = uv.Get("uv_listen")
+	uv_accept = uv.Get("uv_accept")
+
+	uv_read_start = uv.Get("uv_read_start")
+	uv_write = uv.Get("uv_write")
 
 	uv_default_loop = uv.Get("uv_default_loop")
 	uv_run = uv.Get("uv_run")
@@ -17,6 +88,209 @@ uvInit := !() -> void
 	uv_timer_init = uv.Get("uv_timer_init")
 	uv_timer_start = uv.Get("uv_timer_start")
 	uv_timer_stop = uv.Get("uv_timer_stop")
+
+	uv_idle_init = uv.Get("uv_idle_init")
+	uv_idle_start = uv.Get("uv_idle_start")
+	uv_idle_stop = uv.Get("uv_idle_stop")
+
+	uv_ip4_addr = uv.Get("uv_ip4_addr")
+
+	uv_udp_init = uv.Get("uv_udp_init")
+	uv_udp_bind = uv.Get("uv_udp_bind")
+	uv_udp_recv_start = uv.Get("uv_udp_recv_start")
+	uv_udp_send = uv.Get("uv_udp_send")
+
+	uv_thread_create = uv.Get("uv_thread_create")
+	uv_thread_join = uv.Get("uv_thread_join")
+
+	//uv_barrier_init = uv.Get("uv_barrier_init")
+	//uv_barrier_wait = uv.Get("uv_barrier_wait")
+	//uv_barrier_destroy = uv.Get("uv_barrier_destroy")
+
+	//uv_mutex_init = uv.Get("uv_mutex_init") 
+	//uv_mutex_lock = uv.Get("uv_mutex_lock")
+	//uv_mutex_trylock = uv.Get("uv_mutex_trylock")
+	//uv_mutex_unlock = uv.Get("uv_mutex_unlock")
+	//uv_mutex_destroy = uv.Get("uv_mutex_destroy")
+
+	//uv_cond_init = uv.Get("uv_cond_init")
+	//uv_cond_signal = uv.Get("uv_cond_signal")
+	//uv_cond_broadcast = uv.Get("uv_cond_broadcast")
+	//uv_cond_wait = uv.Get("uv_cond_wait")
+	//uv_cond_timedwait = uv.Get("uv_cond_timedwait")
+	//uv_cond_destroy = uv.Get("uv_cond_destroy")
+
+	//uv_sem_init 	= uv.Get("uv_sem_init")
+	//uv_sem_post 	= uv.Get("uv_sem_post")
+	//uv_sem_wait 	= uv.Get("uv_sem_wait")
+	//uv_sem_trywait 	= uv.Get("uv_sem_trywait")
+	//uv_sem_destroy 	= uv.Get("uv_sem_destroy")
+}
+
+//uvSem := class
+//{
+//	uvBuffer := char[1024] //TODO check size
+//	"this" := !(int count) -> void
+//	{
+//		uv_sem_init(this&,count)
+//	}
+//	Lock := !() -> void
+//	{
+//		uv_sem_wait(this&)
+//	}
+//	TryLock := !() -> bool
+//	{
+//		return uv_sem_trywait(this&) == 0
+//	}
+//	Unlock := !() -> void
+//	{
+//		uv_sem_post(this&)
+//	}
+//	Destroy := !() -> void
+//	{
+//		uv_sem_destroy(this&)
+//	}
+//}
+//
+//uvCond := class
+//{
+//	uvBuffer := char[1024] // TODO: check size
+//	"this" := !() -> void
+//	{
+//		uv_cond_init(this&)
+//	}
+//	Wait := !(uvMutex mtx) -> void
+//	{
+//		uv_cond_wait(this&,mtx&)
+//	}
+//	Wait := !(uvMutex mtx,double time) -> bool
+//	{
+//		return uv_cond_timedwait(this&,mtx&,time*1000.0) == 0
+//	}
+//	Notify := !() -> void
+//	{
+//		uv_cond_signal(this&)
+//	}
+//	NotifyAll := !() -> void
+//	{
+//		uv_cond_broadcast(this&)
+//	}
+//}
+//
+//uvMutex := class
+//{
+//	uvBuffer := char[1024] //TODO: check size
+//	"this" := !() -> void
+//	{
+//		uv_mutex_init(this&)
+//	}
+//	Lock := !() -> void
+//	{
+//		uv_mutex_lock(this&)
+//	}
+//	TryLock := !() -> bool
+//	{
+//		return uv_mutex_trylock(this&) == 0
+//	}
+//	Unlock := !() -> void
+//	{
+//		uv_mutex_unlock(this&)
+//	}
+//	Destroy := !() -> void
+//	{
+//		uv_mutex_destroy(this&)
+//	}
+//}
+
+
+uvThread := class
+{
+	uvBuffer := char[1024] // TODO: check size
+	"this" := !(void^ arg,!(void^)^->void thrBuf) -> void
+	{
+		uv_thread_create(this&,thrBuf,arg)
+	}
+	Join := !() -> void
+	{
+		uv_thread_join(this&)
+	}
+}
+uvWork := class
+{
+	uvBuffer := char[128]
+}
+uvTCP := class
+{	
+	buffer := char[256]
+	accpCallb := !(uvTCP^)^->void
+	connectCallb := !(uvTCP^)^ ->void
+	readCallb := !(uvTCP^,int)^ -> void
+	recvBuf := uv_buf_t
+	
+	Recv := !(@InTyp[] inBuf, !(uvTCP^,int)^->void callb) -> void {
+		this.Recv(inBuf[0]&,InTyp->TypeSize*inBuf->len,callb)
+	}	
+	Recv := !(@InTyp[@inSiz] inBuf, !(uvTCP^,int)^->void callb) -> void {
+		this.Recv(inBuf[0]&,InTyp->TypeSize*inSiz,callb)
+	}	
+	Recv := !(void^ bufferIn,int siz, !(uvTCP^,int)^->void callb) -> void
+	{
+		recvBuf.ptr = bufferIn
+		recvBuf.len = siz
+		readCallb = callb
+		uv_read_start(buffer[0]&,(x,y,z) => {
+			z.ptr = x->{uvTCP^}.recvBuf.ptr
+			z.len = x->{uvTCP^}.recvBuf.len
+		},(x,y,z) => {
+			x->{uvTCP^}.readCallb(x->{uvTCP^},z[0].len)
+		})
+	}
+	Send := !(void^ bufferIn,int size) -> void
+	{
+		recvBuf.ptr = bufferIn
+		recvBuf.len = size
+		wrt := new char[192]
+		uv_write(wrt,this&,recvBuf&,1,(x,y)=>{})
+	}
+}
+
+uvUDP := class
+{
+	buffer := char[256]
+	sndBufs := uv_buf_t[16]
+	udpSendT := char[320]
+
+	Send := !(uvAddr^ somAddr,void^ toSend,u64 sndSize, !(void^,int)^ -> void callb) -> void
+	{
+		sndBufs[0].ptr = toSend,
+		sndBufs[0].len = sndSize
+		uv_udp_send(udpSendT[0]&,buffer[0]&,sndBufs[0]&,1,somAddr,callb)
+	}
+}
+
+uvIdle := class
+{
+	buffer := char[120] //  sizeof(uv_idle_t) = 120
+	Stop := !() -> void
+	{
+		uv_idle_stop(buffer)
+	}
+}
+
+uvAddr := class
+{
+	buffer := char[128]
+
+	"=" := !(uvAddr toGet) -> void
+	{
+		memcpy(this&,toGet&,uvAddr->TypeSize)
+	}
+}
+
+uvConnect := class
+{	
+	uvBuffer := char[96]
+	lpPtr := uvTCP^
 }
 
 uvLoop := class
@@ -41,8 +315,98 @@ uvLoop := class
 		uv_timer_start(toRet,callb,timeout*1000.0,repeat*1000.0)
 		return toRet
 	}
-}
+	Idle := !(!(uvIdle^)^->void callb) -> uvIdle^
+	{
+		toRet := new uvIdle
+		uv_idle_init(loopPtr,toRet)
+		uv_idle_start(toRet,callb)
+		return toRet
+	}
+	IP4 := !(char^ addr, int port) -> uvAddr
+	{
+		uv_ip4_addr(addr,port,result&)
+	}
+	TCPListen := !(char^ addr, int port,int backLog, !(uvTCP^)^->void callb) ->  uvTCP^
+	{
+		toRet := new uvTCP
+		itAD := this.IP4(addr,port)
+		toRet.accpCallb = callb
+		uv_tcp_init(loopPtr,toRet)
+		uv_tcp_bind(toRet,itAD&,0)
+		uv_listen(toRet,backLog, (x,y) => {
+			newTcp := new uvTCP
+			//TODO: get loop
+			uv_tcp_init(uv_default_loop(),newTcp)
+			uv_accept(x,newTcp)
+			x->{uvTCP^}.accpCallb(newTcp)
+		})
+		return toRet
+	}
+	TCPConnect := !(char^ addr, int port, !(uvTCP^)^-> void callb) -> uvTCP^
+	{
+		toRet := new uvTCP
+		itAD := this.IP4(addr,port)
+		uv_tcp_init(loopPtr,toRet)
+		cnct := new uvConnect
+		cnct.lpPtr = toRet
+		toRet.connectCallb = callb
+		uv_tcp_connect(cnct,toRet,itAD&,(x,y) => {
+			x->{uvConnect^}.lpPtr.connectCallb(x->{uvConnect^}.lpPtr)
+		})
 
+		return toRet
+	}
+	UDPRecv := !(char^ addr, int port, !(void^,uvUDP^,int,void^,uvAddr^,int)^ -> void callb) -> uvUDP^
+	{
+		toRet := new uvUDP
+		itAddr := this.IP4(addr,port)
+		uv_udp_init(loopPtr,toRet)
+		uv_udp_bind(toRet,itAddr&,0)
+		uv_udp_recv_start(toRet,(x,y,z) => 
+		{
+			assert(false)
+			z.ptr = malloc(y)
+			z.len = y
+		},callb)
+
+		return toRet
+	}
+	UDPRecv := !(char^ addr, int port,@At[] toSet, !(uvUDP^,int,uvAddr^,int)^ -> void callb) -> uvUDP^ {
+		return UDPRecv(addr,port,toSet[0]&,toSet->len*At->TypeSize,callb)
+	}
+	UDPRecv := !(char^ addr, int port,@At[@Bt] toSet, !(uvUDP^,int,uvAddr^,int)^ -> void callb) -> uvUDP^ {
+		return UDPRecv(addr,port,toSet[0]&,Bt*At->TypeSize,callb)
+	}
+	UDPRecv := !(char^ addr, int port,void^ toSet,u64 bufSize, !(uvUDP^,int,uvAddr^,int)^ -> void callb) -> uvUDP^
+	{
+		toRet := new uvUDP
+		toRet.sndBufs[0].ptr = toSet
+		toRet.sndBufs[0].len = bufSize
+		itAddr := this.IP4(addr,port)
+		uv_udp_init(loopPtr,toRet)
+		uv_udp_bind(toRet,itAddr&,0)
+		uv_udp_recv_start(toRet,(x,y,z) => 
+		{
+			z.ptr = x.sndBufs[0].ptr
+			z.len = x.sndBufs[0].len
+		},callb)
+
+		return toRet
+	}
+	UDP := !() -> uvUDP^
+	{
+		toRet := new uvUDP
+		uv_udp_init(loopPtr,toRet)
+		return toRet
+	}
+	Work := !(!(uvWork^)^-> void callb) -> uvWork^
+	{
+		itWork := malloc(uvWork->TypeSize)
+		uv_queue_work(loopPtr,itWork,callb,(x,y) => {
+			free(x)
+		})
+	}
+}
 uvTimer := class
 {
 	buffer := char[1024]

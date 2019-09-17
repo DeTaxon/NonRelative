@@ -16,7 +16,7 @@ vRepoObject := class
 			iterUp = iterUp.upFolder
 		}
 
-		strB := StringBuilder.{256}()
+		strB := StringBuilderTemporary.{256}()
 
 		for it,i : itms
 		{

@@ -25,6 +25,8 @@ FILE_ATTRIBUTE_NORMAL := 128
 FILE_ATTRIBUTE_TEMPORARY := 256
 
 CreateFileW := !(u16^ fileName, int access, int shareMode, void^ security,int createDisp,int flags,void^ tempFile) -> void^ declare
+WriteFile := !(void^ hndl,void^ buf,u32 toWrite,u32^ writtem,void^ overlp) -> int declare
+
 GetFullPathNameW := !(u16^ wideCh,int buffSize,u16^ ptrToBuff,u16^ plFilePart) -> int declare
 CloseHandle := !(void^ hndl) -> void declare
 
@@ -114,3 +116,5 @@ CloseLib := !(void^ libId) -> void
 {
 	FreeLibrary(libId)
 }
+
+DeleteFileW := !(u16^ lName) -> int declare

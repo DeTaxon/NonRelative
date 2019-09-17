@@ -24,6 +24,17 @@ sem_t := class
 
 pthread_t := type u64
 
+pthread_mutex_init := !(void^ a,void^ b) -> void declare
+pthread_mutex_lock := !(void^ a) -> void declare
+pthread_mutex_unlock := !(void^ a) -> void declare
+pthread_mutex_destroy := !(void^ a) -> void declare
+
+pthread_cond_init := !(void^ a,void^ b) -> void declare
+pthread_cond_wait := !(void^ a,void^ b) -> void declare
+pthread_cond_signal := !(void^ a) -> void declare
+pthread_cond_broadcast := !(void^ a) -> void declare
+pthread_cond_destroy := !(void^ a) -> void declare
+
 //sem_open := !(char^ name, int oflags) -> sem_t^ declare
 sem_init := !(sem_t^ semPtr,int pshared, u32 value) -> int declare
 sem_wait := !(sem_t^ semPtr) -> int declare
@@ -83,4 +94,19 @@ LoadFuncLib := !(void^ libId, char^ funcName) -> void^
 CloseLib := !(void^ libId) -> void
 {
 	dlclose(libId)
+}
+
+remove := !(char^ toDel) -> int declare
+
+nanosleep := !(void^ a,void^ b) -> int declare
+
+TSleep := !(double timeSleep) -> void
+{
+	tmStruct := u64[2]
+	tmStruct[0] = timeSleep->{int}
+	timeSleep -= tmStruct[0]->{int}
+	tmStruct[1] = (timeSleep*1000000000.0)->{int}
+	if tmStruct[1] >= 999999999
+		tmStruct[1] = 999999999
+	nanosleep(tmStruct[0]&,null)
 }
