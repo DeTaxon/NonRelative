@@ -4,7 +4,6 @@ intrRepoBrowser := vRepo^
 LibDBObject := class
 {
 	hndl := void^
-	itFile := RawFile
 	itFileName := char^
 	loadedFuncs := AVLMap.{char^,void^}
 
@@ -30,7 +29,16 @@ LibDatabaseType := class
 {
 	loadedLibs := AVLMap.{char^,LibDBObject}
 	itMemPool := AllocOnlyMP.{4096,true}
-
+	
+	Clean := !() -> void
+	{
+		for loadedLibs
+		{
+			CloseLib(it.hndl)
+			if it.itFileName != null
+				TFSDelete(it.itFileName)
+		}
+	}
 	SetRepo := !(vRepo^ toS) -> void
 	{
 		intrRepoBrowser = toS
@@ -80,7 +88,6 @@ LibDatabaseType := class
 					nameCpy := StrCopy(name)
 					inMap2 := ref loadedLibs[nameCpy]
 					inMap2.hndl = hndl
-					inMap2.itFile = itWr
 					inMap2.itFileName = StrCopy(tmpName)
 					return inMap2&
 				}else{

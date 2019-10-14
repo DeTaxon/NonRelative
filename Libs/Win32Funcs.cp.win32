@@ -118,3 +118,10 @@ CloseLib := !(void^ libId) -> void
 }
 
 DeleteFileW := !(u16^ lName) -> int declare
+
+Sleep := !(u32 dwMillisec) -> void declare
+
+TSleep := !(double timeWait) -> void
+{
+	Sleep((timeWait*1000.0)->{int})
+}

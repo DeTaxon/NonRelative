@@ -261,7 +261,7 @@ InitVulkan := !() -> bool
 	printf("formats\n")
 	for formts
 	{
-		printf("-format %i\n",it)
+		printf("-format %i\n",it&->{int^}^)
 	}
 
 	presMods := 0

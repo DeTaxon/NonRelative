@@ -21,6 +21,8 @@ uv_tcp_init := !(void^,void^)^ -> void
 uv_tcp_bind := !(void^,uvAddr^,int)^ -> void
 uv_tcp_connect := !(void^,void^,uvAddr^,!(void^,int)^->void)^->void
 
+uv_close := !(void^)^ -> void
+
 uv_listen := !(void^,int,!(void^,int)^->void)^ -> void
 uv_accept := !(void^,void^)^ -> void
 
@@ -68,7 +70,7 @@ uv_buf_t := class
 
 uvInit := !() -> void
 {
-	uv := Library("libuv.so.1")
+	uv := Library("libuv.so.1","libuv-1.dll")
 
 	uv_tcp_init = uv.Get("uv_tcp_init")
 	uv_tcp_bind = uv.Get("uv_tcp_bind")
@@ -99,6 +101,8 @@ uvInit := !() -> void
 	uv_udp_bind = uv.Get("uv_udp_bind")
 	uv_udp_recv_start = uv.Get("uv_udp_recv_start")
 	uv_udp_send = uv.Get("uv_udp_send")
+
+	uv_close = uv.Get("uv_close")
 
 	uv_thread_create = uv.Get("uv_thread_create")
 	uv_thread_join = uv.Get("uv_thread_join")
@@ -217,27 +221,33 @@ uvThread := class
 }
 uvWork := class
 {
-	uvBuffer := char[128]
+	uvBuffer := char[256]
 }
 uvTCP := class
 {	
 	buffer := char[256]
-	accpCallb := !(uvTCP^)^->void
-	connectCallb := !(uvTCP^)^ ->void
-	readCallb := !(uvTCP^,int)^ -> void
+	accpCallb := !(uvTCP^,uvTCP^)&->void
+	connectCallb := !(uvTCP^)& ->void
+	readCallb := !(uvTCP^,int)& -> void
+	loopPtr := uvLoop^
 	recvBuf := uv_buf_t
-	
-	Recv := !(@InTyp[] inBuf, !(uvTCP^,int)^->void callb) -> void {
+	bgh := char[256]
+
+	Loop := !() -> uvLoop^
+	{
+		return loopPtr
+	}
+	Recv := !(@InTyp[] inBuf, !(uvTCP^,int)&->void callb) -> void {
 		this.Recv(inBuf[0]&,InTyp->TypeSize*inBuf->len,callb)
 	}	
-	Recv := !(@InTyp[@inSiz] inBuf, !(uvTCP^,int)^->void callb) -> void {
+	Recv := !(@InTyp[@inSiz] inBuf, !(uvTCP^,int)&->void callb) -> void {
 		this.Recv(inBuf[0]&,InTyp->TypeSize*inSiz,callb)
 	}	
-	Recv := !(void^ bufferIn,int siz, !(uvTCP^,int)^->void callb) -> void
+	Recv := !(void^ bufferIn,int siz, !(uvTCP^,int)&->void callb) -> void
 	{
 		recvBuf.ptr = bufferIn
 		recvBuf.len = siz
-		readCallb = callb
+		readCallb = callb.Capture()
 		uv_read_start(buffer[0]&,(x,y,z) => {
 			z.ptr = x->{uvTCP^}.recvBuf.ptr
 			z.len = x->{uvTCP^}.recvBuf.len
@@ -246,11 +256,41 @@ uvTCP := class
 		})
 	}
 	Send := !(void^ bufferIn,int size) -> void
-	{
+	{	
 		recvBuf.ptr = bufferIn
 		recvBuf.len = size
 		wrt := new char[192]
 		uv_write(wrt,this&,recvBuf&,1,(x,y)=>{})
+	}
+	Listen := !(char^ addr, int port,int backLog, !(uvTCP^,uvTCP^)&->void callb) -> void 
+	{
+		itAD := loopPtr.IP4(addr,port)
+		accpCallb = callb.Capture()
+		uv_tcp_bind(this&,itAD&,0)
+		uv_listen(this&,backLog, (x,y) => {
+			newTcp := x->{uvTCP^}.loopPtr.TCP()
+			uv_accept(x,newTcp)
+			x->{uvTCP^}.accpCallb(x->{uvTCP^},newTcp)
+		})
+	}
+	Connect := !(char^ addr, int port, !(uvTCP^)&-> void callb) -> void 
+	{
+		itAD := loopPtr.IP4(addr,port)
+		cnct := new uvConnect
+		cnct.lpPtr = this&
+		connectCallb = callb.Capture()
+		uv_tcp_connect(cnct,this&,itAD&,(x,y) => {
+			lambPtr := ref x->{uvConnect^}.lpPtr.connectCallb
+			x->{uvConnect^}.lpPtr.connectCallb(x->{uvConnect^}.lpPtr)
+			//delete x
+			lambPtr.Delete()
+			//lambPtr = null
+			
+		})
+	}
+	Destroy := !() -> void
+	{
+		//TODO: implement
 	}
 }
 
@@ -259,12 +299,37 @@ uvUDP := class
 	buffer := char[256]
 	sndBufs := uv_buf_t[16]
 	udpSendT := char[320]
+	loopPtr := uvLoop^
 
+	Loop := !() -> uvLoop^
+	{
+		return loopPtr
+	}
 	Send := !(uvAddr^ somAddr,void^ toSend,u64 sndSize, !(void^,int)^ -> void callb) -> void
 	{
 		sndBufs[0].ptr = toSend,
 		sndBufs[0].len = sndSize
 		uv_udp_send(udpSendT[0]&,buffer[0]&,sndBufs[0]&,1,somAddr,callb)
+	}
+	Recv := !(char^ addr, int port,@At[] toSet, !(uvUDP^,int,uvAddr^,int)& -> void callb) -> uvUDP^ {
+		return UDPRecv(addr,port,toSet[0]&,toSet->len*At->TypeSize,callb)
+	}
+	Recv := !(char^ addr, int port,@At[@Bt] toSet, !(uvUDP^,int,uvAddr^,int)& -> void callb) -> uvUDP^ {
+		return UDPRecv(addr,port,toSet[0]&,Bt*At->TypeSize,callb)
+	}
+	Recv := !(char^ addr, int port,void^ toSet,u64 bufSize, !(uvUDP^,int,uvAddr^,int)& -> void callb) -> uvUDP^
+	{
+		sndBufs[0].ptr = toSet
+		sndBufs[0].len = bufSize
+		itAddr := this.IP4(addr,port)
+		uv_udp_bind(this&,itAddr&,0)
+		uv_udp_recv_start(this&,(x,y,z) => 
+		{
+			z.ptr = x.sndBufs[0].ptr
+			z.len = x.sndBufs[0].len
+		},callb)
+
+		return toRet
 	}
 }
 
@@ -296,6 +361,9 @@ uvConnect := class
 uvLoop := class
 {
 	loopPtr := void^
+	
+	//stAlloc := StaticSizeAllocator.{1024,16}
+
 	this := !() -> void
 	{
 		loopPtr = uv_default_loop()
@@ -308,11 +376,23 @@ uvLoop := class
 	{
 		return loopPtr
 	}
-	Timer := !(double timeout,double repeat,!(uvTimer^)^-> void callb) -> uvTimer^
+	Timer := !(double timeout,double repeat,!(uvTimer^)&-> void callb) -> uvTimer^
 	{
 		toRet := new uvTimer
+		toRet.timerCallb = callb.Capture()
 		uv_timer_init(loopPtr,toRet)
-		uv_timer_start(toRet,callb,timeout*1000.0,repeat*1000.0)
+		if (repeat*1000.0)->{int} == 0
+		{
+			uv_timer_start(toRet,x => {
+				x->{uvTimer^}.timerCallb(x->{uvTimer^})
+				//TODO: Destroy
+				x->{uvTimer^}.timerCallb.Delete()
+			},timeout*1000.0,repeat*1000.0)
+		}else{
+			uv_timer_start(toRet,x => {
+				x->{uvTimer^}.timerCallb(x->{uvTimer^})
+			},timeout*1000.0,repeat*1000.0)
+		}
 		return toRet
 	}
 	Idle := !(!(uvIdle^)^->void callb) -> uvIdle^
@@ -326,76 +406,17 @@ uvLoop := class
 	{
 		uv_ip4_addr(addr,port,result&)
 	}
-	TCPListen := !(char^ addr, int port,int backLog, !(uvTCP^)^->void callb) ->  uvTCP^
+	TCP := !() -> uvTCP^
 	{
 		toRet := new uvTCP
-		itAD := this.IP4(addr,port)
-		toRet.accpCallb = callb
 		uv_tcp_init(loopPtr,toRet)
-		uv_tcp_bind(toRet,itAD&,0)
-		uv_listen(toRet,backLog, (x,y) => {
-			newTcp := new uvTCP
-			//TODO: get loop
-			uv_tcp_init(uv_default_loop(),newTcp)
-			uv_accept(x,newTcp)
-			x->{uvTCP^}.accpCallb(newTcp)
-		})
-		return toRet
-	}
-	TCPConnect := !(char^ addr, int port, !(uvTCP^)^-> void callb) -> uvTCP^
-	{
-		toRet := new uvTCP
-		itAD := this.IP4(addr,port)
-		uv_tcp_init(loopPtr,toRet)
-		cnct := new uvConnect
-		cnct.lpPtr = toRet
-		toRet.connectCallb = callb
-		uv_tcp_connect(cnct,toRet,itAD&,(x,y) => {
-			x->{uvConnect^}.lpPtr.connectCallb(x->{uvConnect^}.lpPtr)
-		})
-
-		return toRet
-	}
-	UDPRecv := !(char^ addr, int port, !(void^,uvUDP^,int,void^,uvAddr^,int)^ -> void callb) -> uvUDP^
-	{
-		toRet := new uvUDP
-		itAddr := this.IP4(addr,port)
-		uv_udp_init(loopPtr,toRet)
-		uv_udp_bind(toRet,itAddr&,0)
-		uv_udp_recv_start(toRet,(x,y,z) => 
-		{
-			assert(false)
-			z.ptr = malloc(y)
-			z.len = y
-		},callb)
-
-		return toRet
-	}
-	UDPRecv := !(char^ addr, int port,@At[] toSet, !(uvUDP^,int,uvAddr^,int)^ -> void callb) -> uvUDP^ {
-		return UDPRecv(addr,port,toSet[0]&,toSet->len*At->TypeSize,callb)
-	}
-	UDPRecv := !(char^ addr, int port,@At[@Bt] toSet, !(uvUDP^,int,uvAddr^,int)^ -> void callb) -> uvUDP^ {
-		return UDPRecv(addr,port,toSet[0]&,Bt*At->TypeSize,callb)
-	}
-	UDPRecv := !(char^ addr, int port,void^ toSet,u64 bufSize, !(uvUDP^,int,uvAddr^,int)^ -> void callb) -> uvUDP^
-	{
-		toRet := new uvUDP
-		toRet.sndBufs[0].ptr = toSet
-		toRet.sndBufs[0].len = bufSize
-		itAddr := this.IP4(addr,port)
-		uv_udp_init(loopPtr,toRet)
-		uv_udp_bind(toRet,itAddr&,0)
-		uv_udp_recv_start(toRet,(x,y,z) => 
-		{
-			z.ptr = x.sndBufs[0].ptr
-			z.len = x.sndBufs[0].len
-		},callb)
-
+		toRet.loopPtr = this&
 		return toRet
 	}
 	UDP := !() -> uvUDP^
 	{
 		toRet := new uvUDP
+		toRet.loopPtr = this&
 		uv_udp_init(loopPtr,toRet)
 		return toRet
 	}
@@ -410,6 +431,7 @@ uvLoop := class
 uvTimer := class
 {
 	buffer := char[1024]
+	timerCallb := !(uvTimer^)&-> void
 	Stop := !() -> void
 	{
 		uv_timer_stop(buffer[0]&)
