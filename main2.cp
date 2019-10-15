@@ -54,7 +54,7 @@ main := !() -> int
 	uv.TCP().Connect("127.0.0.1",2000,x ==> {
 		printf("on connect %p\n",x)
 		o2 := 0
-		uv.Timer(0,1,T ==> [o2&,x]{
+		uv.Timer(0,1,T ==> [o2&]{
 			printf("obj %i\n",o2)
 			x.Send("Hello"[0]&,6)
 			return void
