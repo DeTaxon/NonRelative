@@ -13,6 +13,19 @@
 	preRes := (a <*> c) <*>revA
 	return vec4f(preRes.x,preRes.y,preRes.z,b.w)
 }
+Normal := !(vec4f this) -> vec4f
+{
+	siz := this <+> this
+	if siz < 0.000001f
+		return this
+	siz = 1/sqrtf(siz)
+	preRet := this
+	preRet.x *= siz
+	preRet.y *= siz
+	preRet.z *= siz
+	return preRet
+}
+
 quantfAt := !(float x, float y, float z, float de) -> quantf
 {
 	halfAn := de * 0.5f

@@ -16,9 +16,32 @@ main := !(int argc, char^^ argv) -> int
 	prp.modelPos.ang = quantfAt(1.0f,0.0f,0.0f,0deg)
 	prp.modelPos.pos = vec4f(0.0f,0.0f,0.0f,1.0f)
 
-	nn := vAddProp("HiResBox")
-	nn.modelPos.ang = quantfAt(1.0f,0.0f,0.0f,0.0f)
-	nn.modelPos.pos = vec4f(0.3f,0.0f,0.0f,0.1f)
+	spheres := PhysSphere^[4]
+	spheres[^] = new PhysSphere(0.1)
+	spheresProps := vProp^[4]
+	spheresProps[^] = vAddProp("HiResBox")
+
+	spheres[0].System.pos = vec4f( 0.3f,0.0f,0.0f,0.1f)
+	spheres[1].System.pos = vec4f(-0.9f,0.3f,0.0f,0.1f)
+	spheres[2].System.pos = vec4f( 0.3f,0.3f,0.0f,0.1f)
+	spheres[3].System.pos = vec4f( 0.0f,-0.3f,0.0f,0.1f)
+	spheres[0].Impulse = vec4f(2.1f,1.3f,0.0f,0.0f)
+
+	gCam.camPos = vec4f(1.5f,1.0f,-1.0f,1.0f)
+	gCam.upDownAng = -45deg
+	gCam.leftRightAng = 45deg
+
+
+	//pln := vAddProp("Plane/Plane")
+	//pln.modelPos.ang = quantfAt(1.0f,0.0f,0.0f,0deg)
+	//pln.modelPos.pos = vec4f(0.0f,0.0f,0.0f,0.4f)
+	//pln := vAddProp("Plane/Plane")
+	//pln.modelPos.ang = quantfAt(1.0f,0.0f,0.0f,0deg)
+	//pln.modelPos.pos = vec4f(0.0f,0.0f,0.0f,0.4f)
+
+	//nn := vAddProp("HiResBox")
+	//nn.modelPos.ang = quantfAt(1.0f,0.0f,0.0f,0.0f)
+	//nn.modelPos.pos = vec4f(0.3f,0.0f,0.0f,0.1f)
 
 	prevTime := glfwGetTime()
 	walkM := 0.5f
@@ -33,6 +56,7 @@ main := !(int argc, char^^ argv) -> int
 	{
 		FlushTempMemory()
 		glfwPollEvents()
+
 		
 		nowTime := glfwGetTime()
 		deltaTime := nowTime - prevTime
@@ -49,6 +73,37 @@ main := !(int argc, char^^ argv) -> int
 			}
 		}
 
+		PhysCheckSvS(spheres[0],spheres[1])
+		PhysCheckSvS(spheres[0],spheres[2])
+		PhysCheckSvS(spheres[0],spheres[3])
+		PhysCheckSvS(spheres[1],spheres[2])
+		PhysCheckSvS(spheres[1],spheres[3])
+		PhysCheckSvS(spheres[2],spheres[3])
+
+		for spheres
+		{
+			subV := it.Impulse
+			subV.x *= deltaTime
+			subV.y *= deltaTime
+			subV.z *= deltaTime
+			it.System.pos += subV
+		}
+		
+		bound := 1.5f
+		for spheres
+		{
+			if it.System.pos.x > bound
+				it.System.pos.x -= 2.0f*bound
+			if it.System.pos.y > bound
+				it.System.pos.y -= 2.0f*bound
+			if it.System.pos.x < -bound
+				it.System.pos.x += 2.0f*bound
+			if it.System.pos.y < -bound
+				it.System.pos.y += 2.0f*bound
+		}
+		spheresProps[^i].modelPos.pos = spheres[i].System.pos
+		spheresProps[^i].modelPos.pos.w = 0.1f
+
 		if nowTime - lastCheckedTime > 1.0
 		{
 			ttlPre := "Hi again! fps = "sbt + fpsCounter
@@ -64,6 +119,7 @@ main := !(int argc, char^^ argv) -> int
 			resizeState = true
 			continue
 		}
+
 
 		prevTime = nowTime
 		gCam.BindDescriptor(mainCmd.Get())
