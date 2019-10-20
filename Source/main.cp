@@ -20,10 +20,6 @@ main := !(int argc, char^^ argv) -> int
 	nn.modelPos.ang = quantfAt(1.0f,0.0f,0.0f,0.0f)
 	nn.modelPos.pos = vec4f(0.3f,0.0f,0.0f,0.1f)
 
-	//pln := vAddProp("Plane/Plane")
-	//pln.modelPos.ang = quantfAt(1.0f,0.0f,0.0f,0deg)
-	//pln.modelPos.pos = vec4f(0.0f,0.0f,0.0f,0.4f)
-
 	prevTime := glfwGetTime()
 	walkM := 0.5f
 

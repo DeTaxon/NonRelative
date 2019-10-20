@@ -34,7 +34,7 @@
 		if ptrToFl == null
 			return void
 		defer itSet.Unmap()
-		itInf := ParseInfo(ptrToFl,itSet.Size()) ; $temp
+		itInf := ParseInfoFile(ptrToFl,itSet.Size()) ; $temp
 
 		for sets : itInf.SubList
 		{
@@ -246,7 +246,7 @@
 		heh := asF.Map()
 		defer asF.Unmap()
 
-		cc := ParseInfo(heh,asF.Size()) ; $temp
+		cc := ParseInfoFile(heh,asF.Size()) ; $temp
 
 		itMd := ref itModels[StrCopy(sName)] ; $pool
 		reqShader := vShader^()
@@ -347,7 +347,7 @@
 			return null
 		defer fl.Unmap()
 
-		cc := ParseInfo(fl.Map(),fl.Size()) ; $temp
+		cc := ParseInfoFile(fl.Map(),fl.Size()) ; $temp
 	
 		fndSh := false
 		vertName := StringSpan()
