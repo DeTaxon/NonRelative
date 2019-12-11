@@ -147,6 +147,14 @@ max := !(@A a, @B b)
 	if a > b return a
 	return b
 }
+max := !(@T a, @T b,@T c) -> float 
+{
+	r := a
+	if b > r r = b
+	if c > r r = c
+	return r
+}
+
 StrSize := !(string xs) -> int
 {
 	itSize := 0
@@ -159,3 +167,9 @@ StrSize := !(string xs) -> int
 	return itSize
 }
 
+
+abs := !(@T a)  -> T
+{
+	it a < 0 return -a
+	return a
+}

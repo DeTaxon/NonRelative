@@ -16,6 +16,15 @@ RawModel := class
 
 	modelState := int
 
+	GetVertSize := !() -> int
+	{
+		preRet := 0
+		if (vertItems and_b MODEL_POSITION) != 0 preRet += 3
+		if (vertItems and_b MODEL_NORMAL) != 0 preRet += 3
+		if (vertItems and_b MODEL_UV) != 0 preRet += 2
+
+		return preRet
+	}
 	this := !() -> void
 	{
 		verts = null

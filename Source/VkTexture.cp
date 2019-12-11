@@ -1,3 +1,24 @@
+webpLib := Library^
+
+webpGetFeatures := !(void^,u64,void^)^ -> int
+webpGetDataRGB := !(void^,u64,void^,u64,int)^ -> int
+webpGetDataRGBA := !(void^,u64,void^,u64,int)^ -> int
+
+InitWebP := !() -> bool
+{
+	if webpLib != null return true
+
+	itLib := new Library("libwebp.so","libwebp-7.dll")
+	
+	webpGetFeatures = itLib.Get("WebPGetFeatures")
+	webpGetDataRGB = itLib.Get("WebPDecodeRGBInto")
+	webpGetDataRGBA = itLib.Get("WebPDecodeRGBAInto")
+	
+	webpLib = itLib
+	return true
+}
+
+
 vTexture := class
 {
 	memObj := vMemObj
@@ -35,7 +56,7 @@ vTexture := class
 		vi := new VkImageViewCreateInfo() ; $temp
 		vi.image = itImg
 		vi.viewType = VK_IMAGE_VIEW_TYPE_2D
-		vi.format = VK_FORMAT_R8G8B8A8_UNORM
+		vi.format = VK_FORMAT_R8G8B8A8_UNORM //TODO: non alpha types and other
 		//vi.components = VK_COM
 		vi.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT
 		vi.subresourceRange.levelCount = 1
@@ -53,44 +74,62 @@ vTexture := class
 
 		if ext == "bmp"
 		{
-		mp := itFile.Map()->{u8^}
-		defer itFile.Unmap()
+			mp := itFile.Map()->{u8^}
+			defer itFile.Unmap()
 
-		bmpH := mp->{BMPMainHeader^}
-		imgH := mp[BMPMainHeader->TypeSize]&->{BMPImgHeaderOld^}
+			bmpH := mp->{BMPMainHeader^}
+			imgH := mp[BMPMainHeader->TypeSize]&->{BMPImgHeaderOld^}
 
-		//printf("bmp size %i\n",bmpH.fileSize)
-		//printf("header size %i , w %i , h %i, bpx %i\n",imgH.itSize,imgH.itW,imgH.itH,imgH.bitsPerPixel)
-		offToData := mp[BMPMainHeader->TypeSize + 40]&
-		itW = imgH.itW&->{int^}^
-		itH = imgH.itH&->{int^}^
+			//printf("bmp size %i\n",bmpH.fileSize)
+			//printf("header size %i , w %i , h %i, bpx %i\n",imgH.itSize,imgH.itW,imgH.itH,imgH.bitsPerPixel)
+			offToData := mp[BMPMainHeader->TypeSize + 40]&
+			itW = imgH.itW&->{int^}^
+			itH = imgH.itH&->{int^}^
 
-		memTyp := CreateObject(itW,itH)
-		ptrToSet := gStageMem.Map()->{u8^}
-		if imgH.bitsPerPixel == 24
-		{
-			for i : itW*itH
+			memTyp := CreateObject(itW,itH)
+			ptrToSet := gStageMem.Map()->{u8^}
+			if imgH.bitsPerPixel == 24
 			{
-				c := i*4
-				ptrToSet[c] = offToData[2]
-				ptrToSet[c + 1] = offToData[1]
-				ptrToSet[c + 2] = offToData[0]
-				ptrToSet[c + 3] = 255
-				offToData = offToData[3]&
+				for i : itW*itH
+				{
+					c := i*4
+					ptrToSet[c] = offToData[2]
+					ptrToSet[c + 1] = offToData[1]
+					ptrToSet[c + 2] = offToData[0]
+					ptrToSet[c + 3] = 255
+					offToData = offToData[3]&
+				}
+			}else{
+				for i : itW*itH
+				{
+					c := i*4
+					ptrToSet[c] = offToData[2]
+					ptrToSet[c + 1] = offToData[1]
+					ptrToSet[c + 2] = offToData[0]
+					ptrToSet[c + 3] = offToData[3]
+					offToData = offToData[4]&
+				}
 			}
-		}else{
-			for i : itW*itH
-			{
-				c := i*4
-				ptrToSet[c] = offToData[2]
-				ptrToSet[c + 1] = offToData[1]
-				ptrToSet[c + 2] = offToData[0]
-				ptrToSet[c + 3] = offToData[3]
-				offToData = offToData[4]&
-			}
+			gStageMem.Unmap()
+			vStageCpyToImage(itImg,itW,itH)
 		}
-		gStageMem.Unmap()
-		vStageCpyToImage(itImg,itW,itH)
+		if itFile.objName[-4..0] == ".webp"
+		{
+			InitWebP()
+
+			mp := itFile.Map()->{u8^}
+			defer itFile.Unmap()
+
+			webpInf := int[3] // width,height,has_alpha
+
+			webpGetFeatures(mp,itFile.Size(),webpInf&)
+
+			memTyp := CreateObject(webpInf[0],webpInf[1])
+			ptrToSet := gStageMem.Map()->{u8^}
+
+			webpGetDataRGBA(mp,itFile.Size(),ptrToSet,itW*itH*4,0)
+			gStageMem.Unmap()
+			vStageCpyToImage(itImg,itW,itH)
 		}
 
 	}

@@ -26,6 +26,19 @@ Normal := !(vec4f this) -> vec4f
 	return preRet
 }
 
+Distance := !(vec3f a, vec3f b) -> float
+{
+	c1 := a - b
+	c2 := c1.xyz0 <+> c1.xyz0
+	return sqrtf(c2)
+}
+Distance := !(vec4f a, vec4f b) -> float
+{
+	c1 := a - b
+	c2 := c1 <+> c1
+	return sqrtf(c2)
+}
+
 quantfAt := !(float x, float y, float z, float de) -> quantf
 {
 	halfAn := de * 0.5f

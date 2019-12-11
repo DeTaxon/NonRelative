@@ -298,11 +298,11 @@
 		pVoidMP.Push()
 		defer pVoidMP.Pop()
 
-		itProps.Emplace() ; $pool
+		itProps.Emplace()
 		newPr := ref itProps.Back()
 		newPr.modelPtr = vGetModel(modelName)
 		newPr.modelShader = newPr.modelPtr.ReqShader
-		newPr.modelPos.ang = quantf(0.0f,1.0f,0.0f,0.0f)
+		newPr.modelPos.ang = quantfAt(-1.0f,1.0f,0.0f,0.0f)
 		newPr.modelPos.pos = vec4f(0.0f,0.0f,0.0f,1.0f)
 
 		newSetCR := new VkDescriptorSetAllocateInfo() ; $temp

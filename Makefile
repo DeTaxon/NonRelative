@@ -11,7 +11,7 @@ FLibs := -C0 FLibs/glfw.cp
 SLibs := -C0 "Libs/*" -Z0 "SLib.zip"
 
 engi: Objs/engi.o
-	clang++ Objs/engi.o -IFLibs $(Libs) -o engi
+	clang++ -g Objs/engi.o -IFLibs $(Libs) -o engi
 engig: Objs/engig.o
 	clang++ Objs/engig.o -IFLibs $(Libs) -o engi
 
@@ -19,16 +19,16 @@ wengi: Objs/wengi.o
 	$(WinCompiler) Objs/wengi.o -IFLibs -L WinLibs -o wengi
 
 Objs/engi.o: Objs/engi.ll
-	clang Objs/engi.ll -c -o Objs/engi.o
+	clang -g Objs/engi.ll -c -o Objs/engi.o
 Objs/engig.o: Objs/engig.ll
 	clang Objs/engig.ll -g -c -o Objs/engig.o
 Objs/wengi.o: Objs/wengi.ll
 	clang Objs/wengi.ll -c -o Objs/wengi.o --target=x86_64-win32-gnu
 
 Objs/engi.ll: LearnVert
-	./halfvoid  --rname result Source/main.cp $(SLibs) -C0 "FLibs/*" -C1 "Source/*" --vk vk.xml -o Objs/engi.ll
+	./halfvoid -g -p posix  --rname result Source/main.cp $(SLibs) -C0 "FLibs/*" -C1 "Source/*" --vk vk.xml -o Objs/engi.ll
 Objs/engig.ll: LearnVert
-	./halfvoid  --rname result -g Source/main.cp $(SLibs) -C0 "FLibs/*" -C1 "Source/*" --vk vk.xml -o Objs/engig.ll
+	nemiver ./halfvoid  --rname result -g Source/main.cp $(SLibs) -C0 "FLibs/*" -C1 "Source/*" --vk vk.xml -o Objs/engig.ll
 Objs/wengi.ll: LearnVert
 	./halfvoid  --rname result -p win32 Source/main.cp $(SLibs) -C0 "FLibs/*" -C1 "Source/*" --vk vk.xml -o Objs/wengi.ll
 
