@@ -159,8 +159,8 @@ InitVulkan := !() -> bool
 
 	if vkFuncs.vkCreateDebugReportCallbackEXT != null
 	{
-		debPrint := new VkDebugReportCallbackCreateInfoEXT ; $temp
-		debPrint.sType = 1000011000
+		debPrint := new VkDebugReportCallbackCreateInfoEXT() ; $temp
+		//debPrint.sType = 1000011000
 		debPrint.pfnCallback = VkDebugCallback->{void^}
 		debPrint.flags = 2 or_b 4 or_b 8
 		vkFuncs.vkCreateDebugReportCallbackEXT(vkInstance,debPrint,null,vkDebugObj&)
@@ -424,8 +424,8 @@ CreateSwapchain := !(int inW,int inH) -> void
 	surfAb := new VkSurfaceCapabilitiesKHR ; $temp
 	vkFuncs.vkGetPhysicalDeviceSurfaceCapabilitiesKHR(vkPhysCard,vkSurface,surfAb)
 
-	crtSwap := new VkSwapchainCreateInfoKHR ; $temp
-	crtSwap.sType = 1000001000
+	crtSwap := new VkSwapchainCreateInfoKHR() ; $temp
+	//crtSwap.sType = 1000001000
 	crtSwap.surface = vkSurface
 	crtSwap.minImageCount = 3
 	crtSwap.imageFormat = SwapImageFormat
@@ -657,8 +657,8 @@ StopDraw := !() -> void
 	vkFuncs.vkQueueWaitIdle(vkQueue)
 
 	res := VkResult
-	pI := new VkPresentInfoKHR ; $temp
-	pI.sType = 1000001001//VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+	pI := new VkPresentInfoKHR() ; $temp
+	//pI.sType = 1000001001//VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 	pI.pNext = null
 	pI.waitSemaphoreCount = 0
 	pI.pWaitSemaphores = null

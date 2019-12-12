@@ -16,23 +16,23 @@ main := !(int argc, char^^ argv) -> int
 	prp.modelPos.ang = quantfAt(1.0f,0.0f,0.0f,0deg)
 	prp.modelPos.pos = vec4f(0.0f,0.0f,0.0f,1.0f)
 
-	//spheres := PhysSphere^[4]
-	//spheres[^] = new PhysSphere(0.1)
-	//spheresProps := vProp^[4]
-	//spheresProps[^] = vAddProp("HiResBox")
+	spheres := PhysSphere^[4]
+	spheres[^] = new PhysSphere(0.1)
+	spheresProps := vProp^[4]
+	spheresProps[^] = vAddProp("HiResBox")
 
-	//spheres[0].System.pos = vec4f( 0.3f,0.0f,0.0f,0.1f)
-	//spheres[1].System.pos = vec4f(-0.9f,0.3f,0.0f,0.1f)
-	//spheres[2].System.pos = vec4f( 0.3f,0.3f,0.0f,0.1f)
-	//spheres[3].System.pos = vec4f( 0.0f,-0.3f,0.0f,0.1f)
-	//spheres[0].ImpulseV = vec4f(-0.3f,1.7f,0.0f,0.0f)
-	//spheres[0].ImpulseA = vec4f(-0.3f,1.7f,0.0f,0.0f)
+	spheres[0].System.pos = vec4f( 0.3f,0.0f,0.0f,0.1f)
+	spheres[1].System.pos = vec4f(-0.9f,0.3f,0.0f,0.1f)
+	spheres[2].System.pos = vec4f( 0.3f,0.3f,0.0f,0.1f)
+	spheres[3].System.pos = vec4f( 0.0f,-0.3f,0.0f,0.1f)
+	spheres[0].ImpulseV = vec4f(-0.3f,1.7f,0.0f,0.0f)
+	spheres[0].ImpulseA = vec4f(-0.3f,1.7f,0.0f,0.0f)
 
-	//infP := PhysInfPlane^[4]
-	//infP[0] = new PhysInfPlane(vec4f(0.0f,1.1f,0.0f,0.0f),vec4f(0.0f,-1.0f,0.0f,0.0f))
-	//infP[1] = new PhysInfPlane(vec4f(0.0f,-1.1f,0.0f,0.0f),vec4f(0.0f,1.0f,0.0f,0.0f))
-	//infP[2] = new PhysInfPlane(vec4f(1.1f,1.1f,0.0f,0.0f),vec4f(-1.0f,0.0f,0.0f,0.0f))
-	//infP[3] = new PhysInfPlane(vec4f(-1.1f,1.1f,0.0f,0.0f),vec4f(1.0f,0.0f,0.0f,0.0f))
+	infP := PhysInfPlane^[4]
+	infP[0] = new PhysInfPlane(vec4f(0.0f,1.1f,0.0f,0.0f),vec4f(0.0f,-1.0f,0.0f,0.0f))
+	infP[1] = new PhysInfPlane(vec4f(0.0f,-1.1f,0.0f,0.0f),vec4f(0.0f,1.0f,0.0f,0.0f))
+	infP[2] = new PhysInfPlane(vec4f(1.1f,1.1f,0.0f,0.0f),vec4f(-1.0f,0.0f,0.0f,0.0f))
+	infP[3] = new PhysInfPlane(vec4f(-1.1f,1.1f,0.0f,0.0f),vec4f(1.0f,0.0f,0.0f,0.0f))
 
 	gCam.camPos = vec4f(1.5f,1.0f,-1.0f,1.0f)
 	gCam.upDownAng = -45deg
@@ -73,19 +73,19 @@ main := !(int argc, char^^ argv) -> int
 			}
 		}
 		
-		//for i : 0..2 
-		//	for j : (i+1)..3
-		//		PhysCheckSvS(spheres[i],spheres[j])
-		//for i : 4
-		//	PhysCheckSvIP(spheres[i],infP[^])
+		for i : 0..2 
+			for j : (i+1)..3
+				PhysCheckSvS(spheres[i],spheres[j])
+		for i : 4
+			PhysCheckSvIP(spheres[i],infP[^])
 
-		//for spheres
-		//{
-		//	it.System.pos += it.ImpulseV*deltaTime
-		//}
-		//
-		//spheresProps[^i].modelPos.pos = spheres[i].System.pos
-		//spheresProps[^i].modelPos.pos.w = 0.1f
+		for spheres
+		{
+			it.System.pos += it.ImpulseV*deltaTime
+		}
+		
+		spheresProps[^i].modelPos.pos = spheres[i].System.pos
+		spheresProps[^i].modelPos.pos.w = 0.1f
 
 		if nowTime - lastCheckedTime > 1.0
 		{
