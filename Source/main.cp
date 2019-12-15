@@ -12,31 +12,33 @@ main := !(int argc, char^^ argv) -> int
 
 	vInit()
 
-	prp := vAddProp("Snooker/SnookerTable")
+	prp := vAddProp("FirstMap")
 	prp.modelPos.ang = quantfAt(1.0f,0.0f,0.0f,0deg)
 	prp.modelPos.pos = vec4f(0.0f,0.0f,0.0f,1.0f)
 
-	spheres := PhysSphere^[4]
-	spheres[^] = new PhysSphere(0.1)
-	spheresProps := vProp^[4]
-	spheresProps[^] = vAddProp("HiResBox")
+	//spheres := PhysSphere^[4]
+	//spheres[^] = new PhysSphere(0.1)
+	//spheresProps := vProp^[4]
+	//spheresProps[^] = vAddProp("Sphere")
 
-	spheres[0].System.pos = vec4f( 0.3f,0.0f,0.0f,0.1f)
-	spheres[1].System.pos = vec4f(-0.9f,0.3f,0.0f,0.1f)
-	spheres[2].System.pos = vec4f( 0.3f,0.3f,0.0f,0.1f)
-	spheres[3].System.pos = vec4f( 0.0f,-0.3f,0.0f,0.1f)
-	spheres[0].ImpulseV = vec4f(-0.3f,1.7f,0.0f,0.0f)
-	spheres[0].ImpulseA = vec4f(-0.3f,1.7f,0.0f,0.0f)
+	//spheres[0].System.pos = vec4f( 0.3f,0.0f,0.0f,1.0f)
+	//spheres[1].System.pos = vec4f(-0.9f,0.3f,0.0f,1.0f)
+	//spheres[2].System.pos = vec4f( 0.3f,0.3f,0.0f,1.0f)
+	//spheres[3].System.pos = vec4f( 0.0f,-0.3f,0.0f,1.0f)
+	//spheres[0].ImpulseV = vec4f(-0.3f,1.7f,0.0f,0.0f)
+	//spheres[0].ImpulseA = vec4f(-0.3f,1.7f,0.0f,0.0f)
 
-	infP := PhysInfPlane^[4]
-	infP[0] = new PhysInfPlane(vec4f(0.0f,1.1f,0.0f,0.0f),vec4f(0.0f,-1.0f,0.0f,0.0f))
-	infP[1] = new PhysInfPlane(vec4f(0.0f,-1.1f,0.0f,0.0f),vec4f(0.0f,1.0f,0.0f,0.0f))
-	infP[2] = new PhysInfPlane(vec4f(1.1f,1.1f,0.0f,0.0f),vec4f(-1.0f,0.0f,0.0f,0.0f))
-	infP[3] = new PhysInfPlane(vec4f(-1.1f,1.1f,0.0f,0.0f),vec4f(1.0f,0.0f,0.0f,0.0f))
+	//infP := PhysInfPlane^[4]
+	//infP[0] = new PhysInfPlane(vec4f(0.0f,1.1f,0.0f,0.0f),vec4f(0.0f,-1.0f,0.0f,0.0f))
+	//infP[1] = new PhysInfPlane(vec4f(0.0f,-1.1f,0.0f,0.0f),vec4f(0.0f,1.0f,0.0f,0.0f))
+	//infP[2] = new PhysInfPlane(vec4f(1.1f,1.1f,0.0f,0.0f),vec4f(-1.0f,0.0f,0.0f,0.0f))
+	//infP[3] = new PhysInfPlane(vec4f(-1.1f,1.1f,0.0f,0.0f),vec4f(1.0f,0.0f,0.0f,0.0f))
 
-	gCam.camPos = vec4f(1.5f,1.0f,-1.0f,1.0f)
+	gCam.camPos = vec4f(1.5f,1.0f,-1.7f,1.0f)
 	gCam.upDownAng = -45deg
 	gCam.leftRightAng = 45deg
+
+	itPlayer := new PhysPlayer
 
 	prevTime := glfwGetTime()
 	walkM := 0.5f
@@ -46,12 +48,12 @@ main := !(int argc, char^^ argv) -> int
 	fpsCounter := 0
 	lastCheckedTime := 0.0
 
-	//mapMap := MappedFile("./FirstMap.ply")
-	//asMdl := new RawModel() ; $temp
-	//asMdl.MapFromPLY(mapMap.Get(),mapMap.Size())
-	//mapP := new PhysHeightMap
-	//mapP.CreateDots(asMdl)
-	//mapMap.Close()
+	mapMap := MappedFile("./Models/FirstMap.ply")
+	asMdl := new RawModel() ; $temp
+	asMdl.MapFromPLY(mapMap.Get(),mapMap.Size())
+	mapP := new PhysHeightMap
+	mapP.CreateDots(asMdl)
+	mapMap.Close()
 
 	while not glfwWindowShouldClose(glfwWindow)
 	{
@@ -73,19 +75,19 @@ main := !(int argc, char^^ argv) -> int
 			}
 		}
 		
-		for i : 0..2 
-			for j : (i+1)..3
-				PhysCheckSvS(spheres[i],spheres[j])
-		for i : 4
-			PhysCheckSvIP(spheres[i],infP[^])
+		//for i : 0..2 
+		//	for j : (i+1)..3
+		//		PhysCheckSvS(spheres[i],spheres[j])
+		//for i : 4
+		//	PhysCheckSvIP(spheres[i],infP[^])
 
-		for spheres
-		{
-			it.System.pos += it.ImpulseV*deltaTime
-		}
+		//for spheres
+		//{
+		//	it.System.pos += it.ImpulseV*deltaTime
+		//}
 		
-		spheresProps[^i].modelPos.pos = spheres[i].System.pos
-		spheresProps[^i].modelPos.pos.w = 0.1f
+		//spheresProps[^i].modelPos.pos = spheres[i].System.pos
+		//spheresProps[^i].modelPos.pos.w = 0.1f
 
 		if nowTime - lastCheckedTime > 1.0
 		{
@@ -119,6 +121,10 @@ main := !(int argc, char^^ argv) -> int
 		if buttons['f'] gCam.AddAngs(0.0f,-deltaTime*0.5f)
 
 		gCam.addLocal(vec4f(addLR,0.0f,addFB,0.0f))
+		itPlayer.System.pos = gCam.camPos
+		itPlayer.System.pos.w = 1.7f
+		PhysCheckPlayerVSHMap(itPlayer,mapP)
+
 
 		vDraw()
 

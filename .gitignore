@@ -5,3 +5,5 @@ Shaders/*.vert
 Shaders/*.frag
 test2
 test2.ll
+test2.exe
+test2.o

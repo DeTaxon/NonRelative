@@ -13,6 +13,10 @@
 	preRes := (a <*> c) <*>revA
 	return vec4f(preRes.x,preRes.y,preRes.z,b.w)
 }
+Length := !(vec4f this) -> float { return sqrtf(this<+>this) }
+Length := !(vec3f this) -> float { return sqrtf(this<+>this) }
+Length := !(vec2f this) -> float { return sqrtf(this<+>this) }
+
 Normal := !(vec4f this) -> vec4f
 {
 	siz := this <+> this
@@ -29,7 +33,7 @@ Normal := !(vec4f this) -> vec4f
 Distance := !(vec3f a, vec3f b) -> float
 {
 	c1 := a - b
-	c2 := c1.xyz0 <+> c1.xyz0
+	c2 := c1 <+> c1
 	return sqrtf(c2)
 }
 Distance := !(vec4f a, vec4f b) -> float

@@ -1,0 +1,6 @@
+
+model:
+	file: sphere.ply
+texture:
+	file: HiResBoxTexture.bmp
+shader: LearnShader
