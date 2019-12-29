@@ -41,9 +41,10 @@ vec3 rotate_vertex_position(vec3 position)
 }
 void main() {
 	vec4 prePosition = vec4((rotate_vertex_position(i_Position.xyz*consts.g_pos.w)) + consts.g_pos.xyz,1.0f);
+	prePosition = prePosition.yzxw * vec4(1.0f,-1.0f,1.0f,1.0f);
 	gl_Position.x = prePosition.x*prespData.x;
 	gl_Position.y = prePosition.y*prespData.y;
-	gl_Position.z = prePosition.z*prespData.z + prespData.w;
-	gl_Position.w = prePosition.z;
+	gl_Position.z = -(prePosition.z*prespData.z + prespData.w);
+	gl_Position.w = -prePosition.z;
 	o_uv = vec2(i_Position.w,i_Normal.w);
 }

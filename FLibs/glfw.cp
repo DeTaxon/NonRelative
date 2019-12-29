@@ -22,6 +22,9 @@ glfwInit := !() -> int
 	glfwSetWindowSizeCallback = lib.Get("glfwSetWindowSizeCallback")
 	glfwSetWindowTitle = lib.Get("glfwSetWindowTitle")
 	
+	glfwSetCursorPosCallback = lib.Get("glfwSetCursorPosCallback") 
+	glfwSetInputMode = lib.Get("glfwSetInputMode")
+
 	glfwInitReal()
 }
 
@@ -30,6 +33,9 @@ glfwTerminate := !()^ -> void
 
 glfwSetErrorCallback := !(void^)^ -> void 
 glfwSetKeyCallback := !(void^, void^)^ ->void 
+
+glfwSetCursorPosCallback := !(void^, void^)^ ->void 
+glfwSetInputMode := !(void^,int,int)^ -> void
 
 glfwCreateWindow := !(int,int, char^,void^, void^)^ -> void^
 glfwWindowHint := !(int, int)^ -> void 
@@ -75,3 +81,8 @@ GLFW_REPEAT   := 	2
 
 GLFW_CLIENT_API := 0x22001
 GLFW_NO_API := 0
+
+GLFW_CURSOR := 0x33001
+GLFW_CURSOR_NORMAL := 0x34001
+GLFW_CURSOR_HIDDEN := 0x34002
+GLFW_CURSOR_DISABLED := 0x34003

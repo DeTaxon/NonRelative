@@ -89,7 +89,6 @@ PhysHeightMap := class
 			if center.w < bDs center.w = bDs
 			if center.w < cDs center.w = cDs
 			center.w *= 1.01
-			//printf("wut %f %f\n",Distance(a.xyz,center.xyz),center.w)
 			ns.PosAndSize = center
 			ns.TriCount = 1
 			ns.Triangles[0] = i
@@ -134,7 +133,6 @@ PhysHeightMap := class
 					ns := new PhysHightSphere ; $temp
 					cent := (it.0.PosAndSize + candPos) / 2
 					cent.w = Distance(candPos.xyz,it.0.PosAndSize.xyz) + max(it.0.PosAndSize.w,candPos.w,it.0.PosAndSize.w)
-					//printf("heh %f\n",it.0.PosAndSize.w)
 					candBool^ = true
 					ns.SpheresCount = 2
 					ns.CSpheres[0] = i + SpheresStart.Size()
@@ -142,35 +140,38 @@ PhysHeightMap := class
 					ns.PosAndSize = cent
 					newPhase.Emplace(ns,false)
 				}
+				it.1 = true
 			}
 			
 			for it : phase^
+			{
 				SpheresStart.Push(it.0)
+			}
 			phase = newPhase
 		}
+		SpheresStart.Push(phase^[0].0)
 		
 		allctdNodes := 0
 		resSpheres := new PhysHightSphere[SpheresStart.Size() - fakeNodes] ; $temp
 	
 		addSphere := (int ind,u16^ resInt) ==> {
-				resInt^ = allctdNodes
-				nowSphere := ref resSpheres[allctdNodes]
-				allctdNodes += 1
+			resInt^ = allctdNodes
+			nowSphere := ref resSpheres[allctdNodes]
+			allctdNodes += 1
 
-				fromSphere := ref SpheresStart^[ind]
-				
-				nowSphere.PosAndSize 
-					= fromSphere.PosAndSize
+			fromSphere := ref SpheresStart^[ind]
+			
+			nowSphere.PosAndSize = fromSphere.PosAndSize
 
-				nowSphere.TriCount = fromSphere.TriCount
-				for i : fromSphere.TriCount
-				nowSphere.Triangles[i] = fromSphere.Triangles[i]
+			nowSphere.TriCount = fromSphere.TriCount
+			for i : fromSphere.TriCount
+			nowSphere.Triangles[i] = fromSphere.Triangles[i]
 
-				nowSphere.SpheresCount = fromSphere.SpheresCount
-				for i : nowSphere.SpheresCount
-				{
-					addSphere(fromSphere.CSpheres[i],nowSphere.CSpheres[i]&)
-				}
+			nowSphere.SpheresCount = fromSphere.SpheresCount
+			for i : nowSphere.SpheresCount
+			{
+				addSphere(fromSphere.CSpheres[i],nowSphere.CSpheres[i]&)
+			}
 		}
 		fkNode := u16
 		addSphere(SpheresStart.Size() - 1,fkNode&)
@@ -192,17 +193,17 @@ PhysHeightMap := class
 		memcpy(Spheres,resSpheres->{void^},asIntP[1])
 		memcpy(Triangles,Triangles2->{void^},asIntP[2])
 	}
-	GetTris := !(vec4f pos,u16[32]^ triBuf, int^ triSize,int sInd)-> void
+	GetTris := !(vec4f pos,u16[32]^ triBuf, int^ triSize,int sInd,List.{vec4f}^ pp , int dd)-> void
 	{
 		itSphere := ref Spheres[sInd]
 
 
-		if Distance(pos.xyz,itSphere.PosAndSize.xyz) > pos.w + itSphere.PosAndSize.w
+		if Distance(pos.xyz,itSphere.PosAndSize.xyz) > (pos.w + itSphere.PosAndSize.w)
 			return void
 
 		for i : itSphere.SpheresCount
-			GetTris(pos,triBuf,triSize,itSphere.CSpheres[i])
-		//printf("hh %f %f %f %i\n",Distance(pos.xyz,itSphere.PosAndSize.xyz),pos.w,itSphere.PosAndSize.w,itSphere.SpheresCount)
+			GetTris(pos,triBuf,triSize,itSphere.CSpheres[i],pp,dd+1)
+		//if itSphere.TriCount != 0  pp.Push(itSphere.PosAndSize) ; $temp
 
 		for i : itSphere.TriCount
 		{
@@ -242,9 +243,12 @@ PhysHeightMap := class
 		return true
 	}
 	
-	TriangleDistanceH := !(vec4f pos, u16 ind,vec4f^ res) -> bool
+	TriangleDistanceH := !(vec4f pos, u16 ind,vec4f^ res,List.{vec4f}^ pp) -> bool
 	{
 		itTri := ref Triangles[ind]
+		pp.Push(Dots[itTri[0]])
+		pp.Push(Dots[itTri[1]])
+		pp.Push(Dots[itTri[2]])
 		return TriangleDistanceH(pos,Dots[itTri[0]],Dots[itTri[1]],Dots[itTri[2]],res)
 	}
 	TriangleDistanceH := !(vec4f pos, vec4f a, vec4f b, vec4f c,vec4f^ res) -> bool
@@ -256,7 +260,7 @@ PhysHeightMap := class
 		rb := (ab.xy <+> ap.xy) / ab.xy.Length()
 		rc := (ac.xy <+> ap.xy) / ac.xy.Length()
 		
-		printf("hu %f %f\n",rb,rc)
+		//printf("hu %f %f\n",rb,rc)
 		if rb < 0.0f or rc < 0.0f return false
 		if rb + rc > 1.0f return false
 		
@@ -279,7 +283,7 @@ sqrta := !(float inp) -> float
 
 abc := int
 
-PhysCheckPlayerVSHMap := !(PhysPlayer^ p,PhysHeightMap^ hMap) -> void
+PhysCheckPlayerVSHMap := !(PhysPlayer^ p,PhysHeightMap^ hMap,List.{vec4f}^ pp) -> void
 {
 	triC := 0
 	tris := u16[32]
@@ -290,13 +294,13 @@ PhysCheckPlayerVSHMap := !(PhysPlayer^ p,PhysHeightMap^ hMap) -> void
 	tHeight := p.Height*p.System.pos.w
 	testPos := p.System.pos
 	testPos.w = tHeight
-
-	hMap.GetTris(p.System.pos,tris&,triC&,0)
+	
+	hMap.GetTris(p.System.pos,tris&,triC&,0,pp,1)
 	//printf("heh %i\n",triC)
 	for i : triC
 	{
 		hV := vec4f
-		nowT := hMap.TriangleDistanceH(p.System.pos,tris[i],hV&)
+		nowT := hMap.TriangleDistanceH(p.System.pos,tris[i],hV&,pp)
 		if nowT
 		{
 			itH := p.System.pos.z - hV.z

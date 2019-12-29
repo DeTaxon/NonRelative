@@ -5,17 +5,22 @@ gLastTimeResized := double
 
 glfwWindow := void^
 buttons := bool[256]
+mouseX := double
+mouseY := double
 
 glfwKeyPressRes := !(void^ win,int key, int scancode,int action) -> void
 {
 	asCh := 0
 
+	//printf("heh %i\n",key)
 	switch(key)
 	{
 		case GLFW_KEY_0..GLFW_KEY_9
 			asCh = '0' + key - GLFW_KEY_0
 		case GLFW_KEY_A..GLFW_KEY_Z
 			asCh = 'a' + key - GLFW_KEY_A
+		case 340
+			asCh = 'S'
 		case void
 			return void
 	}
@@ -29,6 +34,11 @@ glfwWinResized := !(void^ window, int newW, int newH) -> void
 	gWindowH = newH
 	gLastTimeResized = glfwGetTime()
 }
+glfwMouseMove := !(void^ w, double itX, double itY) -> void
+{
+	mouseX = itX
+	mouseY = itY
+}
 
 CreateWindow := !(int newW,int newH) -> void
 {
@@ -41,6 +51,10 @@ CreateWindow := !(int newW,int newH) -> void
 
 	glfwSetKeyCallback(glfwWindow,glfwKeyPressRes)
 	glfwSetWindowSizeCallback(glfwWindow,glfwWinResized)
+
+	glfwSetCursorPosCallback(glfwWindow,glfwMouseMove)
+
+	glfwSetInputMode(glfwWindow,GLFW_CURSOR,GLFW_CURSOR_DISABLED)
 }
 
 DestroyWindow := !() -> void

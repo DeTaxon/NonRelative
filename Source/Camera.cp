@@ -8,13 +8,17 @@ vCamera := class
 	perspConsts := float[4]
 	memOnGpu := bool
 
+	mouseCamX := double
+	mouseCamY := double
+
 	this := !() -> void
 	{
 		upDownAng = 0.0f
 		leftRightAng = 0.0f
 		camPos.w = 1.0f
 		//vkPerspMem.CreateObject(4*4,true)
-
+		mouseCamX = mouseX
+		mouseCamY = mouseY
 	}
 
 	AddAngs := !(float lrA, float udA) -> void
@@ -43,8 +47,8 @@ vCamera := class
 
 		perspConsts[0] = fovTM / aspect
 		perspConsts[1] = fovTM
-		perspConsts[2] = (camNear + camFar) / range
-		perspConsts[3] =  -(2.0f * camFar*camNear/range)
+		perspConsts[2] = (camFar) / range
+		perspConsts[3] = (camFar*camNear/range)
 		
 		itMem := vkPerspMem&
 		if memOnGpu
@@ -93,19 +97,23 @@ vCamera := class
 
 		UpdatePerspective(w,h)
 	}
-
+	
+	camQuant := !() -> quantf
+	{
+		return quantfAt(0.0f,0.0f,1.0f,-leftRightAng)<*>quantfAt(0.0f,1.0f,0.0f,upDownAng)
+	}
 	addLocal := !(vec4f diffAdd) -> void
 	{
-		rotQ := quantfAt(-1.0f,0.0f,0.0f,90deg)<*>quantfAt(0.0f,1.0f,0.0f,leftRightAng)<*>quantfAt(1.0f,0.0f,0.0f,upDownAng)
+		rotQ := camQuant()
 
 		oldW := camPos.w
-		camPos += (rotQ*diffAdd)* vec4f(-1.0f,-1.0f,-1.0f,0.0)
+		camPos += rotQ*diffAdd
 		camPos.w = oldW
 	}
 	ApplyCamera := !(centf propPos, centf posRes) -> void
 	{
 		tempCent := centf
-		tempCent.ang = quantfAt(-1.0f,0.0f,0.0f,90deg)<*>quantfAt(0.0f,1.0f,0.0f,leftRightAng)<*>quantfAt(1.0f,0.0f,0.0f,upDownAng)
+		tempCent.ang = camQuant()
 		tempCent.pos = camPos
 
 		invC := tempCent.Inverse()
@@ -114,6 +122,31 @@ vCamera := class
 	BindDescriptor := !(VkCommandBuffer cmdB) -> void
 	{
 		vkFuncs.vkCmdBindDescriptorSets(cmdB,VK_PIPELINE_BIND_POINT_GRAPHICS,vkLayout,0,1,vkPerspSet&,0,null)
+	}
+	InputCheck := !(double deltaTime) -> void
+	{
+		walkM := 0.5f
+		addLR := 0.0f
+		addFB := 0.0f
+		walkTime := deltaTime
+		if buttons['S'] walkTime *= 3.5
+		if buttons['a'] addLR = -walkM*walkTime
+		if buttons['d'] addLR =  walkM*walkTime
+		if buttons['w'] addFB =  walkM*walkTime
+		if buttons['s'] addFB = -walkM*walkTime
+		if buttons['q'] AddAngs(-deltaTime*0.5f,0.0f)
+		if buttons['e'] AddAngs( deltaTime*0.5f,0.0f)
+		if buttons['r'] AddAngs(0.0f, deltaTime*0.5f)
+		if buttons['f'] AddAngs(0.0f,-deltaTime*0.5f)
+
+		msXDiff := mouseX - mouseCamX
+		msYDiff := mouseY - mouseCamY
+		mouseCamX = mouseX
+		mouseCamY = mouseY
+		mouseSense := 0.4
+		AddAngs(deltaTime*msXDiff*mouseSense,-deltaTime*msYDiff*mouseSense)
+
+		addLocal(vec4f(-addFB,addLR,0.0f,0.0f))
 	}
 }
 

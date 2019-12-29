@@ -110,6 +110,9 @@ centf := class
 	{
 		result.ang = quantf(-ang.x,-ang.y,-ang.z,ang.w)
 		result.pos = result.ang*pos
+		result.pos.x *= -1.0f
+		result.pos.y *= -1.0f
+		result.pos.z *= -1.0f
 		result.pos.w = 1.0f / pos.w
 	}
 }

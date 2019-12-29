@@ -4,22 +4,22 @@ main := !(int argc, char^^ argv) -> int
 {
 	vPreInit()
 
-	CreateWindow(700,700)
+	CreateWindow(1700,900)
 	defer DestroyWindow() 
 
 	InitVulkan()
 	defer DestroyVulkan()
 
 	vInit()
-
+	
 	prp := vAddProp("FirstMap")
 	prp.modelPos.ang = quantfAt(1.0f,0.0f,0.0f,0deg)
 	prp.modelPos.pos = vec4f(0.0f,0.0f,0.0f,1.0f)
 
 	//spheres := PhysSphere^[4]
 	//spheres[^] = new PhysSphere(0.1)
-	//spheresProps := vProp^[4]
-	//spheresProps[^] = vAddProp("Sphere")
+	spheresProps := vProp^[3]
+	spheresProps[^] = vAddProp("Sphere")
 
 	//spheres[0].System.pos = vec4f( 0.3f,0.0f,0.0f,1.0f)
 	//spheres[1].System.pos = vec4f(-0.9f,0.3f,0.0f,1.0f)
@@ -34,14 +34,15 @@ main := !(int argc, char^^ argv) -> int
 	//infP[2] = new PhysInfPlane(vec4f(1.1f,1.1f,0.0f,0.0f),vec4f(-1.0f,0.0f,0.0f,0.0f))
 	//infP[3] = new PhysInfPlane(vec4f(-1.1f,1.1f,0.0f,0.0f),vec4f(1.0f,0.0f,0.0f,0.0f))
 
-	gCam.camPos = vec4f(1.5f,1.0f,-1.7f,1.0f)
-	gCam.upDownAng = -45deg
-	gCam.leftRightAng = 45deg
+	gCam.camPos = vec4f(0.0f,0.0f,0.0f,1.0f)
+	//gCam.upDownAng = -45deg
+	//gCam.leftRightAng = 45deg
+	gCam.upDownAng = 0.0f
+	gCam.leftRightAng = 0.0f
 
 	itPlayer := new PhysPlayer
 
 	prevTime := glfwGetTime()
-	walkM := 0.5f
 
 	resizeState := false
 
@@ -55,6 +56,7 @@ main := !(int argc, char^^ argv) -> int
 	mapP.CreateDots(asMdl)
 	mapMap.Close()
 
+	dotIter := 0
 	while not glfwWindowShouldClose(glfwWindow)
 	{
 		FlushTempMemory()
@@ -107,29 +109,36 @@ main := !(int argc, char^^ argv) -> int
 
 
 		prevTime = nowTime
+		gCam.InputCheck(deltaTime)
 		gCam.BindDescriptor(mainCmd.Get())
-	
-		addLR := 0.0f
-		addFB := 0.0f
-		if buttons['a'] addLR = -walkM*deltaTime
-		if buttons['d'] addLR =  walkM*deltaTime
-		if buttons['w'] addFB =  walkM*deltaTime
-		if buttons['s'] addFB = -walkM*deltaTime
-		if buttons['q'] gCam.AddAngs(-deltaTime*0.5f,0.0f)
-		if buttons['e'] gCam.AddAngs( deltaTime*0.5f,0.0f)
-		if buttons['r'] gCam.AddAngs(0.0f, deltaTime*0.5f)
-		if buttons['f'] gCam.AddAngs(0.0f,-deltaTime*0.5f)
-
-		gCam.addLocal(vec4f(addLR,0.0f,addFB,0.0f))
+		
 		itPlayer.System.pos = gCam.camPos
 		itPlayer.System.pos.w = 1.7f
-		PhysCheckPlayerVSHMap(itPlayer,mapP)
+		printf("heh %f %f %f\n",gCam.camPos.x,gCam.camPos.y,gCam.camPos.z)
+		tmpsS := new List.{vec4f} ; $temp
+		PhysCheckPlayerVSHMap(itPlayer,mapP,tmpsS)
+
+		if tmpsS.Size() == 0
+		{
+			spheresProps[0].modelPos.pos = vec4f(0.0f,0.0f,-100.0f,1.0f)
+			spheresProps[1].modelPos.pos = vec4f(0.0f,0.0f,-100.0f,1.0f)
+			spheresProps[2].modelPos.pos = vec4f(0.0f,0.0f,-100.0f,1.0f)
+		}else{
+			kk := (dotIter div 40) % (tmpsS.Size() div 3)
+			spheresProps[0].modelPos.pos = tmpsS^[kk*3]
+			spheresProps[0].modelPos.pos.w = 0.2
+			spheresProps[1].modelPos.pos = tmpsS^[kk*3+1]
+			spheresProps[1].modelPos.pos.w = 0.2
+			spheresProps[2].modelPos.pos = tmpsS^[kk*3+2]
+			spheresProps[2].modelPos.pos.w = 0.2
+		}
 
 
 		vDraw()
 
 		StopDraw()
 		fpsCounter++
+		dotIter += 1
 	}
 		
 	return 0
