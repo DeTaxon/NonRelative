@@ -35,6 +35,7 @@ PhysInfPlane := class extend PhysCommon
 PhysPlayer := class extend PhysCommon
 {
 	Height := float
+	MapTouchTime := double
 }
 PhysHightSphere := class
 {
@@ -193,7 +194,7 @@ PhysHeightMap := class
 		memcpy(Spheres,resSpheres->{void^},asIntP[1])
 		memcpy(Triangles,Triangles2->{void^},asIntP[2])
 	}
-	GetTris := !(vec4f pos,u16[32]^ triBuf, int^ triSize,int sInd,List.{vec4f}^ pp , int dd)-> void
+	GetTris := !(vec4f pos,u16[32]^ triBuf, int^ triSize,int sInd)-> void
 	{
 		itSphere := ref Spheres[sInd]
 
@@ -202,8 +203,7 @@ PhysHeightMap := class
 			return void
 
 		for i : itSphere.SpheresCount
-			GetTris(pos,triBuf,triSize,itSphere.CSpheres[i],pp,dd+1)
-		//if itSphere.TriCount != 0  pp.Push(itSphere.PosAndSize) ; $temp
+			GetTris(pos,triBuf,triSize,itSphere.CSpheres[i])
 
 		for i : itSphere.TriCount
 		{
@@ -232,18 +232,18 @@ PhysHeightMap := class
 		ac := c.xyz - a.xyz
 		ap := pos.xyz - a.xyz
 		
-		rb := (ab <+> ap) / ab.xyz.Length()
-		rc := (ac <+> ap) / ac.xyz.Length()
+		rb := (ab <+> ap) / ab.xyz.LengthSq()
+		rc := (ac <+> ap) / ac.xyz.LengthSq()
 		
 		if rb < 0.0f or rc < 0.0f return false
 		if rb + rc > 1.0f return false
 		
-		res^ = ab*rb + ac*rc
+		res^ = ab*rb + ac*rc + a
 		
 		return true
 	}
 	
-	TriangleDistanceH := !(vec4f pos, u16 ind,vec4f^ res,List.{vec4f}^ pp) -> bool
+	TriangleDistanceH := !(vec4f pos, u16 ind,vec4f^ res,List.{vec4f} pp) -> bool
 	{
 		itTri := ref Triangles[ind]
 		pp.Push(Dots[itTri[0]])
@@ -257,14 +257,14 @@ PhysHeightMap := class
 		ac := c.xyz - a.xyz
 		ap := pos.xyz - a.xyz
 		
-		rb := (ab.xy <+> ap.xy) / ab.xy.Length()
-		rc := (ac.xy <+> ap.xy) / ac.xy.Length()
-		
-		//printf("hu %f %f\n",rb,rc)
+		rb := (ab.xy <+> ap.xy) / ab.xy.LengthSq()
+		rc := (ac.xy <+> ap.xy) / ac.xy.LengthSq()
+	
 		if rb < 0.0f or rc < 0.0f return false
+		printf("heh %f %f\n",rb,rc)
 		if rb + rc > 1.0f return false
 		
-		res^ = (ab*rb + ac*rc).xyz0
+		res^ = (ab*rb + ac*rc + a.xyz).xyz0 
 		
 		return true
 	}
@@ -281,22 +281,20 @@ sqrta := !(float inp) -> float
 	return sqrtf(inp)
 }
 
-abc := int
 
-PhysCheckPlayerVSHMap := !(PhysPlayer^ p,PhysHeightMap^ hMap,List.{vec4f}^ pp) -> void
+cc := 0
+PhysCheckPlayerVSHMap := !(PhysPlayer^ p,PhysHeightMap^ hMap,List.{vec4f} pp) -> void
 {
 	triC := 0
 	tris := u16[32]
-	gotH := false
-	minH := float
-	maxH := float
 
 	tHeight := p.Height*p.System.pos.w
 	testPos := p.System.pos
 	testPos.w = tHeight
 	
-	hMap.GetTris(p.System.pos,tris&,triC&,0,pp,1)
-	//printf("heh %i\n",triC)
+	hMap.GetTris(p.System.pos,tris&,triC&,0)
+	cc += 1
+	printf("yesno %i %i\n",triC,cc)
 	for i : triC
 	{
 		hV := vec4f
@@ -304,24 +302,17 @@ PhysCheckPlayerVSHMap := !(PhysPlayer^ p,PhysHeightMap^ hMap,List.{vec4f}^ pp) -
 		if nowT
 		{
 			itH := p.System.pos.z - hV.z
-			if itH > -tHeight
+			printf("yes %f\n",itH)
+			if abs(itH) < 0.01f
 			{
-				if gotH 
+				p.MapTouchTime = gNowTime
+				if p.ImpulseV.z < 0.0f
 				{
-					if minH > itH minH = itH
-					if maxH < itH maxH = itH
-				}else{
-					gotH = true
-					minH = itH
-					maxH = itH
+					p.ImpulseV.z = 0.0f
+					p.System.pos.z = hV.z
 				}
 			}
 		}
-	}
-	if gotH
-	{
-		printf("step %i\n",abc)
-		abc++
 	}
 }
 

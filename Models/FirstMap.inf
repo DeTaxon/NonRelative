@@ -2,5 +2,5 @@
 model:
 	file: FirstMap.ply
 texture:
-	file: HiResBoxTexture.bmp
+	file: wut.bmp
 shader: LearnShader

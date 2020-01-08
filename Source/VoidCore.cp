@@ -22,6 +22,8 @@
 	gSamplerNearest := VkSampler
 	gSamplerLinear := VkSampler
 
+	gNowTime := double
+
 
 	pLoadCommonSettings := !() -> void
 	{

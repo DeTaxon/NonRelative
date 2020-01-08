@@ -17,6 +17,10 @@ Length := !(vec4f this) -> float { return sqrtf(this<+>this) }
 Length := !(vec3f this) -> float { return sqrtf(this<+>this) }
 Length := !(vec2f this) -> float { return sqrtf(this<+>this) }
 
+LengthSq := !(vec4f this) -> float { return this<+>this }
+LengthSq := !(vec3f this) -> float { return this<+>this }
+LengthSq := !(vec2f this) -> float { return this<+>this }
+
 Normal := !(vec4f this) -> vec4f
 {
 	siz := this <+> this

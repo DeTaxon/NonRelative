@@ -24,8 +24,12 @@ glfwKeyPressRes := !(void^ win,int key, int scancode,int action) -> void
 		case void
 			return void
 	}
-	if action == GLFW_PRESS buttons[asCh] = true
-	if action == GLFW_RELEASE buttons[asCh] = false
+	if action == GLFW_PRESS or action == GLFW_RELEASE
+	{
+		buttons[asCh] = action == GLFW_PRESS
+
+		KeyPress(asCh,action == GLFW_PRESS)
+	}
 
 }
 glfwWinResized := !(void^ window, int newW, int newH) -> void
