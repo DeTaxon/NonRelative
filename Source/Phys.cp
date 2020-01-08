@@ -261,7 +261,7 @@ PhysHeightMap := class
 		rc := (ac.xy <+> ap.xy) / ac.xy.LengthSq()
 	
 		if rb < 0.0f or rc < 0.0f return false
-		printf("heh %f %f\n",rb,rc)
+		//printf("heh %f %f\n",rb,rc)
 		if rb + rc > 1.0f return false
 		
 		res^ = (ab*rb + ac*rc + a.xyz).xyz0 
@@ -294,7 +294,7 @@ PhysCheckPlayerVSHMap := !(PhysPlayer^ p,PhysHeightMap^ hMap,List.{vec4f} pp) ->
 	
 	hMap.GetTris(p.System.pos,tris&,triC&,0)
 	cc += 1
-	printf("yesno %i %i\n",triC,cc)
+	//printf("yesno %i %i\n",triC,cc)
 	for i : triC
 	{
 		hV := vec4f
@@ -302,7 +302,7 @@ PhysCheckPlayerVSHMap := !(PhysPlayer^ p,PhysHeightMap^ hMap,List.{vec4f} pp) ->
 		if nowT
 		{
 			itH := p.System.pos.z - hV.z
-			printf("yes %f\n",itH)
+			//printf("yes %f\n",itH)
 			if abs(itH) < 0.01f
 			{
 				p.MapTouchTime = gNowTime

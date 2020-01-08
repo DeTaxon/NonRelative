@@ -105,11 +105,11 @@ main := !(int argc, char^^ argv) -> int
 		gCam.camPos = itPlayer.System.pos + vec4f(0.0f,0.0f,1.5f,0.0f)
 		gCam.camPos.w = 1.0f
 		
-		printf("wut %i\n",pp.Size())
+		//printf("wut %i\n",pp.Size())
 		if pp.Size() != 0
 		{
 			kk := btnPress % (pp.Size() div 3)
-			printf("ps %i\n",kk)
+			//printf("ps %i\n",kk)
 			spheres[0].modelPos.pos = pp^[kk*3]
 			spheres[1].modelPos.pos = pp^[kk*3 + 1]
 			spheres[2].modelPos.pos = pp^[kk*3 + 2]

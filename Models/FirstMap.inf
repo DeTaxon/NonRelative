@@ -2,5 +2,5 @@
 model:
 	file: FirstMap.ply
 texture:
-	file: wut.bmp
+	file: wut.webp
 shader: LearnShader

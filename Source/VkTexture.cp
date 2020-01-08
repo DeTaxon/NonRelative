@@ -1,8 +1,8 @@
 webpLib := Library^
 
-webpGetFeatures := !(void^,u64,void^)^ -> int
-webpGetDataRGB := !(void^,u64,void^,u64,int)^ -> int
-webpGetDataRGBA := !(void^,u64,void^,u64,int)^ -> int
+webpGetFeatures := !(void^,u64,void^,int)^ -> int
+webpGetDataRGB := !(void^,u64,void^,u64,int)^ -> void^
+webpGetDataRGBA := !(void^,u64,void^,u64,int)^ -> void^
 
 InitWebP := !() -> bool
 {
@@ -10,7 +10,7 @@ InitWebP := !() -> bool
 
 	itLib := new Library("libwebp.so","libwebp-7.dll")
 	
-	webpGetFeatures = itLib.Get("WebPGetFeatures")
+	webpGetFeatures = itLib.Get("WebPGetFeaturesInternal")
 	webpGetDataRGB = itLib.Get("WebPDecodeRGBInto")
 	webpGetDataRGBA = itLib.Get("WebPDecodeRGBAInto")
 	
@@ -112,8 +112,8 @@ vTexture := class
 			}
 			gStageMem.Unmap()
 			vStageCpyToImage(itImg,itW,itH)
-		}
-		if itFile.objName[-4..0] == ".webp"
+		}else 
+		if itFile.objName[-5..0] == ".webp"
 		{
 			InitWebP()
 
@@ -122,12 +122,12 @@ vTexture := class
 
 			webpInf := int[3] // width,height,has_alpha
 
-			webpGetFeatures(mp,itFile.Size(),webpInf&)
+			webpGetFeatures(mp,itFile.Size(),webpInf&,0x0208)
 
 			memTyp := CreateObject(webpInf[0],webpInf[1])
 			ptrToSet := gStageMem.Map()->{u8^}
 
-			webpGetDataRGBA(mp,itFile.Size(),ptrToSet,itW*itH*4,0)
+			webpGetDataRGBA(mp,itFile.Size(),ptrToSet,itW*itH*4,itW*4)
 			gStageMem.Unmap()
 			vStageCpyToImage(itImg,itW,itH)
 		}

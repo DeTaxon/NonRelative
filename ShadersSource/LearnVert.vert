@@ -46,5 +46,5 @@ void main() {
 	gl_Position.y = prePosition.y*prespData.y;
 	gl_Position.z = -(prePosition.z*prespData.z + prespData.w);
 	gl_Position.w = -prePosition.z;
-	o_uv = vec2(i_Position.w,i_Normal.w);
+	o_uv = vec2(i_Position.w,1.0f - i_Normal.w);
 }

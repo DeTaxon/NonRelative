@@ -2,5 +2,5 @@
 model:
 	file: sphere.ply
 texture:
-	file: HiResBoxTexture.webp
+	file: HiResBoxTexture.bmp
 shader: LearnShader
