@@ -13,6 +13,14 @@
 	preRes := (a <*> c) <*>revA
 	return vec4f(preRes.x,preRes.y,preRes.z,b.w)
 }
+"<*>" := !(vec4f a, vec4f b) -> vec4f
+{
+	preR := vec4f
+	preR.x = a.y*b.z - a.z*b.y
+	preR.y = a.z*b.x - a.x*b.z
+	preR.z = a.x*b.y - a.y*b.x
+	return preR
+}
 Length := !(vec4f this) -> float { return sqrtf(this<+>this) }
 Length := !(vec3f this) -> float { return sqrtf(this<+>this) }
 Length := !(vec2f this) -> float { return sqrtf(this<+>this) }

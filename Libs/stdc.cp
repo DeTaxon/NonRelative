@@ -170,6 +170,6 @@ StrSize := !(string xs) -> int
 
 abs := !(@T a)  -> T
 {
-	it a < 0 return -a
+	if a < 0 return -a
 	return a
 }

@@ -24,7 +24,9 @@ main := !(int argc, char^^ argv) -> int
 	prp.modelPos.pos = vec4f(0.0f,0.0f,0.0f,1.0f)
 
 	spheres := vProp^[3]
-	spheres[^] = vAddProp("Sphere")
+	spheres[0] = vAddProp("SphereR")
+	spheres[1] = vAddProp("SphereG")
+	spheres[2] = vAddProp("SphereB")
 
 	gCam.camPos = vec4f(0.0f,0.0f,0.0f,1.0f)
 	gCam.upDownAng = 0.0f
@@ -90,14 +92,14 @@ main := !(int argc, char^^ argv) -> int
 		gCam.InputCheck(deltaTime)
 		gCam.BindDescriptor(mainCmd.Get())
 		
-		itPlayer.System.pos.w = 1.7f
+		itPlayer.System.pos.w = 0.2f
 
 		frW := 0.0f
 		if buttons['w'] frW += 1.0f
 		if buttons['s'] frW -= 1.0f
 		if buttons['S'] frW *= 2.0f
 		itPlayer.ImpulseV = vec4f(0.0f,0.0f,-2.0f,0.0f)
-		itPlayer.ImpulseV += quantfAt(0.0f,0.0f,-1.0f,gCam.leftRightAng)*vec4f(frW,0.0f,0.0f,0.0f)
+		itPlayer.ImpulseV += quantfAt(0.0f,0.0f,-1.0f,gCam.leftRightAng)*vec4f(-frW,0.0f,0.0f,0.0f)
 		if buttons['g'] itPlayer.ImpulseV.z = 1.0f
 
 		PhysCheckPlayerVSHMap(itPlayer,mapP,pp^)
@@ -105,11 +107,11 @@ main := !(int argc, char^^ argv) -> int
 		gCam.camPos = itPlayer.System.pos + vec4f(0.0f,0.0f,1.5f,0.0f)
 		gCam.camPos.w = 1.0f
 		
-		//printf("wut %i\n",pp.Size())
+		printf("wut %i\n",pp.Size())
 		if pp.Size() != 0
 		{
 			kk := btnPress % (pp.Size() div 3)
-			//printf("ps %i\n",kk)
+			printf("ps %i\n",kk)
 			spheres[0].modelPos.pos = pp^[kk*3]
 			spheres[1].modelPos.pos = pp^[kk*3 + 1]
 			spheres[2].modelPos.pos = pp^[kk*3 + 2]

@@ -231,7 +231,7 @@ PhysHeightMap := class
 		ab := b.xyz - a.xyz
 		ac := c.xyz - a.xyz
 		ap := pos.xyz - a.xyz
-		
+
 		rb := (ab <+> ap) / ab.xyz.LengthSq()
 		rc := (ac <+> ap) / ac.xyz.LengthSq()
 		
@@ -253,18 +253,39 @@ PhysHeightMap := class
 	}
 	TriangleDistanceH := !(vec4f pos, vec4f a, vec4f b, vec4f c,vec4f^ res) -> bool
 	{
-		ab := b.xyz - a.xyz
-		ac := c.xyz - a.xyz
-		ap := pos.xyz - a.xyz
 		
+		//img1 := ab.y*ap.x - ab.x*ap.y
+		//img2 := ac.y*ap.x - ac.x*ap.y
+
+		rA := a.xy - pos.xy
+		rB := b.xy - pos.xy
+		rC := c.xy - pos.xy
+
+		//step1
+		img11 := rB.y*rA.x - rB.x*rA.y
+		img12 := rC.y*rA.x - rC.x*rA.y
+
+		//step2
+		img21 := rA.y*rB.x - rA.x*rB.y
+		img22 := rC.y*rB.x - rC.x*rB.y
+		
+		if img11*img12 > 0 return false
+		if img21*img22 > 0 return false
+
+		ab := b.xyz0 - a.xyz0
+		ac := c.xyz0 - a.xyz0
+		ap := pos.xyz0 - a.xyz0
+
+		ab = ab.Normal()
+		ac = ac.Normal()
+
+		norm := ab<*>ac
+		left := norm<*>ab
+
 		rb := (ab.xy <+> ap.xy) / ab.xy.LengthSq()
-		rc := (ac.xy <+> ap.xy) / ac.xy.LengthSq()
-	
-		if rb < 0.0f or rc < 0.0f return false
-		//printf("heh %f %f\n",rb,rc)
-		if rb + rc > 1.0f return false
+		rc := (left.xy <+> ap.xy) / left.xy.LengthSq()
 		
-		res^ = (ab*rb + ac*rc + a.xyz).xyz0 
+		res^ = (ab*rb + left*rc + a) 
 		
 		return true
 	}
@@ -294,7 +315,7 @@ PhysCheckPlayerVSHMap := !(PhysPlayer^ p,PhysHeightMap^ hMap,List.{vec4f} pp) ->
 	
 	hMap.GetTris(p.System.pos,tris&,triC&,0)
 	cc += 1
-	//printf("yesno %i %i\n",triC,cc)
+	printf("yesno %i %i\n",triC,cc)
 	for i : triC
 	{
 		hV := vec4f
@@ -302,8 +323,9 @@ PhysCheckPlayerVSHMap := !(PhysPlayer^ p,PhysHeightMap^ hMap,List.{vec4f} pp) ->
 		if nowT
 		{
 			itH := p.System.pos.z - hV.z
-			//printf("yes %f\n",itH)
-			if abs(itH) < 0.01f
+			k := abs(itH) < 0.01f
+			printf("yes %f %i %f\n",itH,k,abs(itH))
+			if k
 			{
 				p.MapTouchTime = gNowTime
 				if p.ImpulseV.z < 0.0f
