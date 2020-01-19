@@ -87,37 +87,31 @@ main := !(int argc, char^^ argv) -> int
 		}
 	
 
-		pp := new List.{vec4f} ; $temp
 		prevTime = nowTime
 		gCam.InputCheck(deltaTime)
 		gCam.BindDescriptor(mainCmd.Get())
 		
-		itPlayer.System.pos.w = 0.2f
+		itPlayer.System.pos.w = 1.7f
 
+		oldZImp := itPlayer.ImpulseV.z
 		frW := 0.0f
-		if buttons['w'] frW += 1.0f
-		if buttons['s'] frW -= 1.0f
-		if buttons['S'] frW *= 2.0f
-		itPlayer.ImpulseV = vec4f(0.0f,0.0f,-2.0f,0.0f)
+		if buttons['w'] frW += 3.0f
+		if buttons['s'] frW -= 3.0f
+		if buttons['S'] frW *= 3.0f
+		itPlayer.ImpulseV = vec4f(0.0f,0.0f,-0.5f,0.0f)
 		itPlayer.ImpulseV += quantfAt(0.0f,0.0f,-1.0f,gCam.leftRightAng)*vec4f(-frW,0.0f,0.0f,0.0f)
+		itPlayer.ImpulseV.z += oldZImp
+		if itPlayer.ImpulseV.z < -20.0f itPlayer.ImpulseV.z = -20.0f
 		if buttons['g'] itPlayer.ImpulseV.z = 1.0f
 
-		PhysCheckPlayerVSHMap(itPlayer,mapP,pp^)
+		PhysCheckPlayerVSHMap(itPlayer,mapP)
 		itPlayer.System.pos += itPlayer.ImpulseV*deltaTime
+		PhysCheckPlayerVSHMap(itPlayer,mapP)
 		gCam.camPos = itPlayer.System.pos + vec4f(0.0f,0.0f,1.5f,0.0f)
 		gCam.camPos.w = 1.0f
 		
-		printf("wut %i\n",pp.Size())
-		if pp.Size() != 0
+		if false
 		{
-			kk := btnPress % (pp.Size() div 3)
-			printf("ps %i\n",kk)
-			spheres[0].modelPos.pos = pp^[kk*3]
-			spheres[1].modelPos.pos = pp^[kk*3 + 1]
-			spheres[2].modelPos.pos = pp^[kk*3 + 2]
-			spheres[0].modelPos.pos.w = 0.1f
-			spheres[1].modelPos.pos.w = 0.1f
-			spheres[2].modelPos.pos.w = 0.1f
 		}else{
 			spheres[0].modelPos.pos = vec4f(0.0f,0.0f,-10.0f,1.0f)	
 			spheres[1].modelPos.pos = vec4f(0.0f,0.0f,-10.0f,1.0f)	

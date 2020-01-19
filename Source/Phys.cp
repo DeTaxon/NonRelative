@@ -243,12 +243,9 @@ PhysHeightMap := class
 		return true
 	}
 	
-	TriangleDistanceH := !(vec4f pos, u16 ind,vec4f^ res,List.{vec4f} pp) -> bool
+	TriangleDistanceH := !(vec4f pos, u16 ind,vec4f^ res) -> bool
 	{
 		itTri := ref Triangles[ind]
-		pp.Push(Dots[itTri[0]])
-		pp.Push(Dots[itTri[1]])
-		pp.Push(Dots[itTri[2]])
 		return TriangleDistanceH(pos,Dots[itTri[0]],Dots[itTri[1]],Dots[itTri[2]],res)
 	}
 	TriangleDistanceH := !(vec4f pos, vec4f a, vec4f b, vec4f c,vec4f^ res) -> bool
@@ -303,29 +300,24 @@ sqrta := !(float inp) -> float
 }
 
 
-cc := 0
-PhysCheckPlayerVSHMap := !(PhysPlayer^ p,PhysHeightMap^ hMap,List.{vec4f} pp) -> void
+
+PhysCheckPlayerVSHMap := !(PhysPlayer^ p,PhysHeightMap^ hMap) -> void
 {
 	triC := 0
 	tris := u16[32]
 
 	tHeight := p.Height*p.System.pos.w
-	testPos := p.System.pos
-	testPos.w = tHeight
-	
+
+	onMap := false
 	hMap.GetTris(p.System.pos,tris&,triC&,0)
-	cc += 1
-	printf("yesno %i %i\n",triC,cc)
 	for i : triC
 	{
 		hV := vec4f
-		nowT := hMap.TriangleDistanceH(p.System.pos,tris[i],hV&,pp)
+		nowT := hMap.TriangleDistanceH(p.System.pos,tris[i],hV&)
 		if nowT
 		{
 			itH := p.System.pos.z - hV.z
-			k := abs(itH) < 0.01f
-			printf("yes %f %i %f\n",itH,k,abs(itH))
-			if k
+			if itH < 0.0f and itH > -p.System.pos.w //UNCONST
 			{
 				p.MapTouchTime = gNowTime
 				if p.ImpulseV.z < 0.0f
@@ -333,9 +325,44 @@ PhysCheckPlayerVSHMap := !(PhysPlayer^ p,PhysHeightMap^ hMap,List.{vec4f} pp) ->
 					p.ImpulseV.z = 0.0f
 					p.System.pos.z = hV.z
 				}
+				onMap = true
 			}
 		}
 	}
+
+	//defer printf("vec %f %f %f %f\n",p.ImpulseV.x,p.ImpulseV.y,p.ImpulseV.z,p.ImpulseV.w)
+	//if onMap or true
+	//{
+	//	deltaVec := p.ImpulseV.xy00
+	//	impLen := p.ImpulseV.Length()
+	//	if deltaVec.Length() < 0.00001f return void
+	//	deltaVecN := deltaVec.Normal()
+	//	pos2 := p.System.pos + p.ImpulseV*deltTime
+	//	triC = 0
+	//	hMap.GetTris(pos2,tris&,triC&,0)
+	//	for i : triC
+	//	{
+	//		hV := vec4f
+	//		nowT := hMap.TriangleDistanceH(pos2,tris[i],hV&)
+	//		if nowT
+	//		{
+	//			itH := p.System.pos.z - hV.z
+	//			if itH < p.System.pos.w and itH > -p.System.pos.w
+	//			{
+	//				delt := hV - p.System.pos
+	//				delt.w = 0.0f
+	//				delt = delt.Normal()
+	//				if itH < delt.z or true
+	//				{
+	//					beg := p.ImpulseV.Length()
+	//					p.ImpulseV = delt*impLen
+	//				}
+	//				printf("heh %f\n",delt.z)
+
+	//			}
+	//		}
+	//	}
+	//}
 }
 
 PhysCheckPlayerVSSphere := !(PhysSphere^ p,PhysHeightMap^ hMap) -> void
