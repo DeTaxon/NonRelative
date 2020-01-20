@@ -4,6 +4,7 @@
 
 	itShaders := AVLMap.{char^,vShader}
 	itModels := AVLMap.{char^,vModel}
+	itMaps := AVLMap.{char^,vMap}
 	itProps := List.{vProp}
 
 	gStageMem := vMemObj^
@@ -23,7 +24,6 @@
 	gSamplerLinear := VkSampler
 
 	gNowTime := double
-
 
 	pLoadCommonSettings := !() -> void
 	{
@@ -249,72 +249,58 @@
 		defer asF.Unmap()
 
 		cc := ParseInfoFile(heh,asF.Size()) ; $temp
-
-		itMd := ref itModels[StrCopy(sName)] ; $pool
+		
+		return vGenModel(sName,cc,asF)
+	}
+	vGenModel := !(char^ modelName,InfoNode^ itObj,vRepoFile^ itFile) -> vModel^
+	{
+		//TODO: one faile remove from itModels
+		itMd := ref itModels[StrCopy(modelName)]
 		reqShader := vShader^()
 		itMd.ReqTexture = gBadTexture
-		switch cc.SubList[^].Name
+
+		switch itObj.SubList[^].Name
 		{
 			case "model"
-			switch it.SubList.Size()
-			{
-				case 1
-					switch it.SubList[0].Name
-					{
-						case "file"
-							cdP := ref it.SubList[0]
-							itF := asF.GetFile(cdP.ValueStr)
-							if itF == null 
+				switch it.SubList.Size()
+				{
+					case 1
+						switch it.SubList[0].Name
+						{
+							case "file"
+								cdP := ref it.SubList[0]
+								itF := itFile.GetFile(cdP.ValueStr)
+								if itF == null 
+									return null
+								itMd.LoadFile(itF.Map(),itF.Size())
+								itF.Unmap()
+								
+							case void
 								return null
-							itMd.LoadFile(itF.Map(),itF.Size())
-							itF.Unmap()
-							
-						case void
-							return null
-					}
-				case void
-					return null
-			}
+
+						}
+					case void
+						return null
+				}
 			case "shader"
-			if it.IsValue()
-			{
-				reqShader = vGetShader(it.ValueStr)
-			}else{
-				//TODO
-			}
+				if it.IsValue()
+				{
+					reqShader = vGetShader(it.ValueStr)
+				}else{
+					//TODO
+				}
 			case "texture"
-			if it.IsValue()
-			{
-				//TODO
-			}else{
-				itMd.ReqTexture = vGenTexture(it,asF)
-			}
+				if it.IsValue()
+				{
+					//TODO
+				}else{
+					itMd.ReqTexture = vGenTexture(it,itFile)
+				}
 		}
 		itMd.ReqShader = reqShader
 
 
 		return itMd&
-	}
-	vAddProp := !(char^ modelName) -> vProp^
-	{
-		pVoidMP.Push()
-		defer pVoidMP.Pop()
-
-		itProps.Emplace()
-		newPr := ref itProps.Back()
-		newPr.modelPtr = vGetModel(modelName)
-		newPr.modelShader = newPr.modelPtr.ReqShader
-		newPr.modelPos.ang = quantfAt(-1.0f,1.0f,0.0f,0.0f)
-		newPr.modelPos.pos = vec4f(0.0f,0.0f,0.0f,1.0f)
-
-		newSetCR := new VkDescriptorSetAllocateInfo() ; $temp
-		newSetCR.descriptorPool = gObjectLayoutSets
-		newSetCR.descriptorSetCount = 1
-		newSetCR.pSetLayouts = vkPerObjectLayout&
-
-		vkFuncs.vkAllocateDescriptorSets(vkLogCard,newSetCR,newPr.modelTextureSet&)
-		vSetTexture(newPr.modelTextureSet,newPr.modelPtr.ReqTexture,gSamplerNearest)
-		return newPr&
 	}
 	vDraw := !() -> void
 	{
@@ -322,6 +308,14 @@
 		{
 			it.modelShader.ApplyShaderToQueue(mainCmd.Get())
 			it.AddToCmdBuffer(mainCmd.Get())
+		}
+		for itMaps //??
+		{
+			for mod : it.mapProps
+			{
+				mod.modelShader.ApplyShaderToQueue(mainCmd.Get())
+				mod.AddToCmdBuffer(mainCmd.Get())
+			}
 		}
 	}
 	vGetShader := !(char^ sName) -> Shader^
@@ -393,7 +387,7 @@
 
 		return itSh&
 	}
-	vGenTexture := !(ObjInfo^ itObj,vRepoFile^ itFile) -> vTexture^
+	vGenTexture := !(InfoNode^ itObj,vRepoFile^ itFile) -> vTexture^
 	{
 
 		preRes := gBadTexture
@@ -415,4 +409,111 @@
 		temp.LoadNotFound()
 		return temp
 	}
+	vAddProp := !(char^ modelName) -> vProp^
+	{
+		//pVoidMP.Push()
+		//defer pVoidMP.Pop()
+
+		//itProps.Emplace()
+		//newPr := ref itProps.Back()
+		//newPr.modelPtr = vGetModel(modelName)
+		//newPr.modelShader = newPr.modelPtr.ReqShader
+		//newPr.modelPos.ang = quantfAt(-1.0f,1.0f,0.0f,0.0f)
+		//newPr.modelPos.pos = vec4f(0.0f,0.0f,0.0f,1.0f)
+
+		//newSetCR := new VkDescriptorSetAllocateInfo() ; $temp
+		//newSetCR.descriptorPool = gObjectLayoutSets
+		//newSetCR.descriptorSetCount = 1
+		//newSetCR.pSetLayouts = vkPerObjectLayout&
+
+		//vkFuncs.vkAllocateDescriptorSets(vkLogCard,newSetCR,newPr.modelTextureSet&)
+		//vSetTexture(newPr.modelTextureSet,newPr.modelPtr.ReqTexture,gSamplerNearest)
+		//return newPr&
+		itMod := vGetModel(modelName)
+		if itMod == null return null
+		return vAddProp(itMod,false)
+	}
+	vAddProp := !(vModel^ itModel,bool mapCreated) -> vProp^
+	{
+		pVoidMP.Push()
+		defer pVoidMP.Pop()
+
+		//itProps.Emplace()
+		//newPr := ref itProps.Back()
+
+		newProp := vProp^()
+		if mapCreated
+		{
+			newProp = new vProp
+		}else{
+			itProps.Emplace()
+			newProp = itProps.Back()&
+		}
+		newProp.modelPos.ang = quantfAt(-1.0f,1.0f,0.0f,0.0f)
+		newProp.modelPos.pos = vec4f(0.0f,0.0f,0.0f,1.0f)
+		newProp.modelPtr = itModel
+		newProp.modelShader = newProp.modelPtr.ReqShader
+
+		newSetCR := new VkDescriptorSetAllocateInfo() ; $temp
+		newSetCR.descriptorPool = gObjectLayoutSets
+		newSetCR.descriptorSetCount = 1
+		newSetCR.pSetLayouts = vkPerObjectLayout&
+
+		vkFuncs.vkAllocateDescriptorSets(vkLogCard,newSetCR,newProp.modelTextureSet&)
+		vSetTexture(newProp.modelTextureSet,newProp.modelPtr.ReqTexture,gSamplerNearest)
+		return newProp
+	}
+	vGetMap := !(char^ mapName) -> vMap^
+	{
+		if itMaps.Contain(mapName)
+			return itMaps[mapName]&
+
+		pVoidMP.Push()
+		defer pVoidMP.Pop()
+
+		flName := char^
+		stB := "Maps/"sbt << mapName << ".inf"
+
+		asF := itRepo.GetFile(stB)
+
+		if asF == null 
+		{
+			asF = itRepo.GetFile("Maps/"sbt + mapName + "/" + mapName + ".inf")
+			if asF == null
+				return null
+		}
+
+		mapFile := asF.Map()
+		defer asF.Unmap()
+
+		cc := ParseInfoFile(mapFile,asF.Size()) ; $temp
+
+		newMap := ref itMaps[StrCopy(mapName)]
+
+		preSetProps := List.{vProp^}()
+		
+		for itPreList : cc.SubList
+		{
+			if itPreList.Name == "prop"
+			{
+				for md : itPreList.SubList
+				{
+					if md.isValue
+					{
+						//TODO?
+					}else{
+						//TODO: not anon
+						newMod := vGenModel("anon",md,asF)
+						if newMod == null throw new Exception("Can not load map  , incorrect model file")
+
+						newProp := vAddProp(newMod,true)
+						preSetProps.Push(newProp) ; $temp
+					}
+				}
+			}
+		}
+		newMap.mapProps = preSetProps.ToArray()
+		return newMap&
+	}
+
 //}

@@ -3,7 +3,8 @@ vRepoObject := class
 {
 	objName := StringSpan
 	upFolder := vRepoFolder^
-
+	
+	GetUpFolder := !() -> vRepoFolder^ { return upFolder }
 	GetPath := !() -> char^
 	{
 		itms := List.{vRepoObject^}() ; $temp

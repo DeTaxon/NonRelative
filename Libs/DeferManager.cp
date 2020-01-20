@@ -74,6 +74,11 @@ Exception := class extend IException
 {
 	itId := int
 	itMsg := char^
+	this := !(char^ sMsg) -> void
+	{
+		itId = 0
+		itMsg = sMsg
+	}
 	this := !(int sId, char^ sMsg) -> void
 	{
 		itId = sId

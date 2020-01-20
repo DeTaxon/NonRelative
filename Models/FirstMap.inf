@@ -1,6 +1,0 @@
-
-model:
-	file: FirstMap.ply
-texture:
-	file: wut.webp
-shader: LearnShader
