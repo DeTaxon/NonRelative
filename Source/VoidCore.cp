@@ -25,6 +25,8 @@
 
 	gNowTime := double
 
+	gPlayer := PhysPlayer^
+
 	pLoadCommonSettings := !() -> void
 	{
 		itSet := itRepo.GetFile("commonsettings.inf")
@@ -129,6 +131,10 @@
 		gBadTexture = new vTexture
 		gBadTexture.CreateObject(64,64)
 		gBadTexture.LoadNotFound()
+
+		gPlayer = new PhysPlayer()
+		gPlayer.Height = 1.7f
+		gPlayer.System.pos = vec4f(1.0f,1.0f,2.0f,1.0f)
 
 	}
 	vStageCpyToBuffer := !(VkBuffer tCpy,int nSize) -> void
@@ -254,13 +260,43 @@
 	}
 	vGenModel := !(char^ modelName,InfoNode^ itObj,vRepoFile^ itFile) -> vModel^
 	{
-		//TODO: one faile remove from itModels
 		itMd := ref itModels[StrCopy(modelName)]
 		reqShader := vShader^()
 		itMd.ReqTexture = gBadTexture
 
 		switch itObj.SubList[^].Name
 		{
+			case "phys"
+				if it.SubList.Size() != 0
+				{
+					for pars : it.SubList
+					{
+						if pars.Name == "type"
+						{
+							switch pars.ValueStr
+							{
+								case "hmap"
+									fileName := char^()
+									for opt : it.SubList
+									{
+										if opt.Name == "file" fileName = opt.ValueStr.Str() ; $temp
+									}
+									if fileName == null  throw new Exception("Incorrect phys data")
+									hFile := itFile.GetFile(fileName) 
+									if hFile == null throw new Exception("Incorrect phys data, can not find file")
+									hMap := new PhysHeightMap()
+									mdl := new RawModel ; $temp
+									mdl.MapFromPLY(hFile.Map(),hFile.Size())
+									hMap.CreateDots(mdl)
+									itMd.physExtraData = hMap->{PhysCommon^}
+									itMd.physType = "hmap"
+								case void
+									throw new Exception("unknown physics type")
+							}
+							break
+						}
+					}
+				}
 			case "model"
 				switch it.SubList.Size()
 				{
@@ -411,24 +447,6 @@
 	}
 	vAddProp := !(char^ modelName) -> vProp^
 	{
-		//pVoidMP.Push()
-		//defer pVoidMP.Pop()
-
-		//itProps.Emplace()
-		//newPr := ref itProps.Back()
-		//newPr.modelPtr = vGetModel(modelName)
-		//newPr.modelShader = newPr.modelPtr.ReqShader
-		//newPr.modelPos.ang = quantfAt(-1.0f,1.0f,0.0f,0.0f)
-		//newPr.modelPos.pos = vec4f(0.0f,0.0f,0.0f,1.0f)
-
-		//newSetCR := new VkDescriptorSetAllocateInfo() ; $temp
-		//newSetCR.descriptorPool = gObjectLayoutSets
-		//newSetCR.descriptorSetCount = 1
-		//newSetCR.pSetLayouts = vkPerObjectLayout&
-
-		//vkFuncs.vkAllocateDescriptorSets(vkLogCard,newSetCR,newPr.modelTextureSet&)
-		//vSetTexture(newPr.modelTextureSet,newPr.modelPtr.ReqTexture,gSamplerNearest)
-		//return newPr&
 		itMod := vGetModel(modelName)
 		if itMod == null return null
 		return vAddProp(itMod,false)
@@ -437,9 +455,6 @@
 	{
 		pVoidMP.Push()
 		defer pVoidMP.Pop()
-
-		//itProps.Emplace()
-		//newPr := ref itProps.Back()
 
 		newProp := vProp^()
 		if mapCreated
@@ -453,6 +468,18 @@
 		newProp.modelPos.pos = vec4f(0.0f,0.0f,0.0f,1.0f)
 		newProp.modelPtr = itModel
 		newProp.modelShader = newProp.modelPtr.ReqShader
+
+		if itModel.physType != null
+		{
+			if itModel.physType == "hmap"
+			{
+				hMap := new PhysHeightMap()
+				newProp.physObj = hMap->{PhysCommon^}
+				hMap.Dots = itModel.physExtraData->{PhysHeightMap^}.Dots
+				hMap.Triangles = itModel.physExtraData->{PhysHeightMap^}.Triangles
+				hMap.Spheres = itModel.physExtraData->{PhysHeightMap^}.Spheres
+			}
+		}
 
 		newSetCR := new VkDescriptorSetAllocateInfo() ; $temp
 		newSetCR.descriptorPool = gObjectLayoutSets
@@ -514,6 +541,27 @@
 		}
 		newMap.mapProps = preSetProps.ToArray()
 		return newMap&
+	}
+	vPhysStage := !(double deltaTime) -> void
+	{
+		oldPlayerImpz := gPlayer.ImpulseV.z
+		forw := 0.0f
+		lft := 0.0f
+		if buttons['w'] forw += 2.0f
+		if buttons['s'] forw -= 2.0f
+		if buttons['a'] lft += 2.0f
+		if buttons['d'] lft -= 2.0f
+		if buttons['S'] forw *= 3.0f
+		gPlayer.ImpulseV = quantfAt(0.0f,0.0f,-1.0f,gCam.leftRightAng)*vec4f(-forw,-lft,0.0f,0.0f)
+		gPlayer.ImpulseV.z = oldPlayerImpz - 1.0f
+		if gPlayer.ImpulseV.z < -20.0
+			gPlayer.ImpulseV.z = -20
+		//TODO current map
+		PhysVsPhys(gPlayer->{PhysCommon^},itMaps[^].mapProps[^].physObj?)
+		gPlayer.System.pos += gPlayer.ImpulseV*deltaTime
+		PhysVsPhys(gPlayer->{PhysCommon^},itMaps[^].mapProps[^].physObj?)
+		gCam.camPos = gPlayer.System.pos + vec4f(0.0f,0.0f,1.7f,0.0f)
+
 	}
 
 //}

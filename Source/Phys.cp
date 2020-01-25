@@ -1,5 +1,9 @@
+PhysType_hmap := 1
+PhysType_player := 2
+
 PhysCommon := class
 {
+	PhysType := int
 	System := centf
 	ImpulseV := vec4f
 	ImpulseA := vec4f
@@ -36,6 +40,10 @@ PhysPlayer := class extend PhysCommon
 {
 	Height := float
 	MapTouchTime := double
+	
+	this := !() -> void {
+		PhysType = PhysType_player
+	}
 }
 PhysHightSphere := class
 {
@@ -48,9 +56,15 @@ PhysHightSphere := class
 
 PhysHeightMap := class
 {
+	PhysType := int
 	Dots := vec4f^ //array
 	Triangles := u16[3]^
 	Spheres := PhysHightSphere^ //array
+
+	this := !() -> void
+	{
+		PhysType = PhysType_hmap
+	}
 	
 	CreateDots := !(RawModel^ mdlValue) -> void
 	{
@@ -329,40 +343,6 @@ PhysCheckPlayerVSHMap := !(PhysPlayer^ p,PhysHeightMap^ hMap) -> void
 			}
 		}
 	}
-
-	//defer printf("vec %f %f %f %f\n",p.ImpulseV.x,p.ImpulseV.y,p.ImpulseV.z,p.ImpulseV.w)
-	//if onMap or true
-	//{
-	//	deltaVec := p.ImpulseV.xy00
-	//	impLen := p.ImpulseV.Length()
-	//	if deltaVec.Length() < 0.00001f return void
-	//	deltaVecN := deltaVec.Normal()
-	//	pos2 := p.System.pos + p.ImpulseV*deltTime
-	//	triC = 0
-	//	hMap.GetTris(pos2,tris&,triC&,0)
-	//	for i : triC
-	//	{
-	//		hV := vec4f
-	//		nowT := hMap.TriangleDistanceH(pos2,tris[i],hV&)
-	//		if nowT
-	//		{
-	//			itH := p.System.pos.z - hV.z
-	//			if itH < p.System.pos.w and itH > -p.System.pos.w
-	//			{
-	//				delt := hV - p.System.pos
-	//				delt.w = 0.0f
-	//				delt = delt.Normal()
-	//				if itH < delt.z or true
-	//				{
-	//					beg := p.ImpulseV.Length()
-	//					p.ImpulseV = delt*impLen
-	//				}
-	//				printf("heh %f\n",delt.z)
-
-	//			}
-	//		}
-	//	}
-	//}
 }
 
 PhysCheckPlayerVSSphere := !(PhysSphere^ p,PhysHeightMap^ hMap) -> void
@@ -453,6 +433,22 @@ PhysCheckSvS := !(PhysSphere^ o1,PhysSphere^ o2) -> void
 			resImp1  := imp1S*mPass1
 			o1.ImpulseV = o1.ImpulseV - cas*imp1S + cas*resImp1
 			o2.ImpulseV = o2.ImpulseV - cas*imp2S + cas*(imp1S + imp2S - resImp1)
+		}
+	}
+}
+PhysVsPhys := !(PhysCommon^ a, PhysCommon^ b) -> void
+{
+	if a.PhysType < b.PhysType
+	{
+		PhysVsPhys(b,a)
+		return void
+	}
+	//TODO: phys to table
+	if a.PhysType == PhysType_player
+	{
+		if b.PhysType == PhysType_hmap
+		{
+			PhysCheckPlayerVSHMap(a->{PhysPlayer^},b->{PhysHeightMap^})
 		}
 	}
 }

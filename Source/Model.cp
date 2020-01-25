@@ -6,6 +6,9 @@ vModel := class
 	ReqShader := vShader^
 	ReqTexture := vTexture^
 
+	physType := char^
+	physExtraData := void^
+
 	LoadFile := !(void^ fPoint,u64 fSize) -> bool
 	{
 		rFile := new RawModel ; $temp

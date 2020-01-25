@@ -7,6 +7,8 @@ vProp := class
 	modelShader := vShader^
 	modelTextureSet := VkDescriptorSet
 
+	physObj := PhysCommon^ 
+
 	AddToCmdBuffer := !(VkCommandBuffer cmdB) -> void
 	{
 		gCam.ApplyCamera(modelPos,calculatedPos)

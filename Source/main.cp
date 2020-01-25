@@ -34,13 +34,6 @@ main := !(int argc, char^^ argv) -> int
 	fpsCounter := 0
 	lastCheckedTime := 0.0
 
-	//mapMap := MappedFile("./Models/FirstMap.ply")
-	//asMdl := new RawModel() ; $temp
-	//asMdl.MapFromPLY(mapMap.Get(),mapMap.Size())
-	//mapP := new PhysHeightMap
-	//mapP.CreateDots(asMdl)
-	//mapMap.Close()
-
 	dotIter := 0
 	while not glfwWindowShouldClose(glfwWindow)
 	{
@@ -82,26 +75,7 @@ main := !(int argc, char^^ argv) -> int
 		gCam.InputCheck(deltaTime)
 		gCam.BindDescriptor(mainCmd.Get())
 		
-		//itPlayer.System.pos.w = 1.7f
-
-		//oldZImp := itPlayer.ImpulseV.z
-		//frW := 0.0f
-		//if buttons['w'] frW += 3.0f
-		//if buttons['s'] frW -= 3.0f
-		//if buttons['S'] frW *= 3.0f
-		//itPlayer.ImpulseV = vec4f(0.0f,0.0f,-0.5f,0.0f)
-		//itPlayer.ImpulseV += quantfAt(0.0f,0.0f,-1.0f,gCam.leftRightAng)*vec4f(-frW,0.0f,0.0f,0.0f)
-		//itPlayer.ImpulseV.z += oldZImp
-		//if itPlayer.ImpulseV.z < -20.0f itPlayer.ImpulseV.z = -20.0f
-
-		//PhysCheckPlayerVSHMap(itPlayer,mapP)
-		//itPlayer.System.pos += itPlayer.ImpulseV*deltaTime
-		//PhysCheckPlayerVSHMap(itPlayer,mapP)
-		//gCam.camPos = itPlayer.System.pos + vec4f(0.0f,0.0f,1.5f,0.0f)
-		//gCam.camPos.w = 1.0f
-
-		//if buttons['t'] itPlayer.System.pos = vec4f(0.0f,0.0f,0.3f,1.0f)
-
+		vPhysStage(deltaTime)
 		vDraw()
 
 		StopDraw()
