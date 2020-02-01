@@ -9,6 +9,8 @@ KeyPress := !(int ch,bool isPress) -> void
 
 main := !(int argc, char^^ argv) -> int
 {
+	//ScriptTest()
+	//return 0;
 	vPreInit()
 
 	CreateWindow(1700,900)

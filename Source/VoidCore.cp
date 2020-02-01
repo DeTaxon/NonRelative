@@ -553,7 +553,7 @@
 		if buttons['d'] lft -= 2.0f
 		if buttons['S'] forw *= 3.0f
 		gPlayer.ImpulseV = quantfAt(0.0f,0.0f,-1.0f,gCam.leftRightAng)*vec4f(-forw,-lft,0.0f,0.0f)
-		gPlayer.ImpulseV.z = oldPlayerImpz - 1.0f
+		gPlayer.ImpulseV.z = oldPlayerImpz - 9.8f*deltaTime
 		if gPlayer.ImpulseV.z < -20.0
 			gPlayer.ImpulseV.z = -20
 		//TODO current map

@@ -55,6 +55,15 @@ LibDatabaseType := class
 		newObj := LibDBObject
 
 		hndl := OpenLib(name)
+		
+		if hndl == null
+		{
+			exTest := Path("./"sbt + name)
+			if exTest.IsExist()
+			{
+				hndl = OpenLib(exTest.FullPath().Get())
+			}
+		}
 
 		if hndl != null
 		{
