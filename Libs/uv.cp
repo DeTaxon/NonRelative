@@ -21,7 +21,7 @@ uv_tcp_init := !(void^,void^)^ -> void
 uv_tcp_bind := !(void^,uvAddr^,int)^ -> void
 uv_tcp_connect := !(void^,void^,uvAddr^,!(void^,int)^->void)^->void
 
-uv_close := !(void^)^ -> void
+uv_close := !(void^,!(void^)^->void)^ -> void
 
 uv_listen := !(void^,int,!(void^,int)^->void)^ -> void
 uv_accept := !(void^,void^)^ -> void
@@ -34,28 +34,31 @@ uv_queue_work := !(void^,void^,!(void^)^-> void,!(void^,int)^-> void)^ -> void
 uv_thread_create := !(void^,!(void^)^->void,void^)^ -> void
 uv_thread_join := !(void^)^ -> void
 
-//uv_barrier_init := !(void^,int)^->void
-//uv_barrier_wait := !(void^)^-> void
-//uv_barrier_destroy := !(void^)^ -> void
+uv_async_init := !(void^,void^,!(void^)^->void)^ -> void
+uv_async_send := !(void^)^ -> void
 
-//uv_mutex_init := !(void^)^ -> void
-//uv_mutex_lock := !(void^)^ -> void
-//uv_mutex_trylock := !(void^)^ -> int
-//uv_mutex_unlock := !(void^)^ -> void
-//uv_mutex_destroy := !(void^)^-> void
-//
-//uv_cond_init := !(void^)^ -> void
-//uv_cond_signal := !(void^)^ -> void
-//uv_cond_broadcast := !(void^)^ -> void
-//uv_cond_wait := !(void^,void^)^-> void
-//uv_cond_timedwait := !(void^,void^,u64)^ -> void
-//uv_cond_destroy  := !(void^)^ -> void
-//
-//uv_sem_init := !(void^,int)^ -> void
-//uv_sem_post := !(void^)^ -> void
-//uv_sem_wait := !(void^)^ -> int
-//uv_sem_trywait := !(void^)^ -> int
-//uv_sem_destroy := !(void^)^ -> void
+uv_barrier_init := !(void^,int)^->void
+uv_barrier_wait := !(void^)^-> void
+uv_barrier_destroy := !(void^)^ -> void
+
+uv_mutex_init := !(void^)^ -> void
+uv_mutex_lock := !(void^)^ -> void
+uv_mutex_trylock := !(void^)^ -> int
+uv_mutex_unlock := !(void^)^ -> void
+uv_mutex_destroy := !(void^)^-> void
+
+uv_cond_init := !(void^)^ -> void
+uv_cond_signal := !(void^)^ -> void
+uv_cond_broadcast := !(void^)^ -> void
+uv_cond_wait := !(void^,void^)^-> void
+uv_cond_timedwait := !(void^,void^,u64)^ -> int
+uv_cond_destroy  := !(void^)^ -> void
+
+uv_sem_init := !(void^,int)^ -> void
+uv_sem_post := !(void^)^ -> void
+uv_sem_wait := !(void^)^ -> int
+uv_sem_trywait := !(void^)^ -> int
+uv_sem_destroy := !(void^)^ -> void
 
 //sizeof(uv_tcp_t) = 248
 //sizeof(sockaddr) = 16
@@ -107,117 +110,152 @@ uvInit := !() -> void
 	uv_thread_create = uv.Get("uv_thread_create")
 	uv_thread_join = uv.Get("uv_thread_join")
 
-	//uv_barrier_init = uv.Get("uv_barrier_init")
-	//uv_barrier_wait = uv.Get("uv_barrier_wait")
-	//uv_barrier_destroy = uv.Get("uv_barrier_destroy")
+	uv_async_init = uv.Get("uv_async_init")
+	uv_async_send = uv.Get("uv_async_send")
 
-	//uv_mutex_init = uv.Get("uv_mutex_init") 
-	//uv_mutex_lock = uv.Get("uv_mutex_lock")
-	//uv_mutex_trylock = uv.Get("uv_mutex_trylock")
-	//uv_mutex_unlock = uv.Get("uv_mutex_unlock")
-	//uv_mutex_destroy = uv.Get("uv_mutex_destroy")
+	uv_barrier_init = uv.Get("uv_barrier_init")
+	uv_barrier_wait = uv.Get("uv_barrier_wait")
+	uv_barrier_destroy = uv.Get("uv_barrier_destroy")
 
-	//uv_cond_init = uv.Get("uv_cond_init")
-	//uv_cond_signal = uv.Get("uv_cond_signal")
-	//uv_cond_broadcast = uv.Get("uv_cond_broadcast")
-	//uv_cond_wait = uv.Get("uv_cond_wait")
-	//uv_cond_timedwait = uv.Get("uv_cond_timedwait")
-	//uv_cond_destroy = uv.Get("uv_cond_destroy")
+	uv_mutex_init = uv.Get("uv_mutex_init") 
+	uv_mutex_lock = uv.Get("uv_mutex_lock")
+	uv_mutex_trylock = uv.Get("uv_mutex_trylock")
+	uv_mutex_unlock = uv.Get("uv_mutex_unlock")
+	uv_mutex_destroy = uv.Get("uv_mutex_destroy")
 
-	//uv_sem_init 	= uv.Get("uv_sem_init")
-	//uv_sem_post 	= uv.Get("uv_sem_post")
-	//uv_sem_wait 	= uv.Get("uv_sem_wait")
-	//uv_sem_trywait 	= uv.Get("uv_sem_trywait")
-	//uv_sem_destroy 	= uv.Get("uv_sem_destroy")
+	uv_cond_init = uv.Get("uv_cond_init")
+	uv_cond_signal = uv.Get("uv_cond_signal")
+	uv_cond_broadcast = uv.Get("uv_cond_broadcast")
+	uv_cond_wait = uv.Get("uv_cond_wait")
+	uv_cond_timedwait = uv.Get("uv_cond_timedwait")
+	uv_cond_destroy = uv.Get("uv_cond_destroy")
+
+	uv_sem_init 	= uv.Get("uv_sem_init")
+	uv_sem_post 	= uv.Get("uv_sem_post")
+	uv_sem_wait 	= uv.Get("uv_sem_wait")
+	uv_sem_trywait 	= uv.Get("uv_sem_trywait")
+	uv_sem_destroy 	= uv.Get("uv_sem_destroy")
 }
 
-//uvSem := class
-//{
-//	uvBuffer := char[1024] //TODO check size
-//	"this" := !(int count) -> void
-//	{
-//		uv_sem_init(this&,count)
-//	}
-//	Lock := !() -> void
-//	{
-//		uv_sem_wait(this&)
-//	}
-//	TryLock := !() -> bool
-//	{
-//		return uv_sem_trywait(this&) == 0
-//	}
-//	Unlock := !() -> void
-//	{
-//		uv_sem_post(this&)
-//	}
-//	Destroy := !() -> void
-//	{
-//		uv_sem_destroy(this&)
-//	}
-//}
-//
-//uvCond := class
-//{
-//	uvBuffer := char[1024] // TODO: check size
-//	"this" := !() -> void
-//	{
-//		uv_cond_init(this&)
-//	}
-//	Wait := !(uvMutex mtx) -> void
-//	{
-//		uv_cond_wait(this&,mtx&)
-//	}
-//	Wait := !(uvMutex mtx,double time) -> bool
-//	{
-//		return uv_cond_timedwait(this&,mtx&,time*1000.0) == 0
-//	}
-//	Notify := !() -> void
-//	{
-//		uv_cond_signal(this&)
-//	}
-//	NotifyAll := !() -> void
-//	{
-//		uv_cond_broadcast(this&)
-//	}
-//}
-//
-//uvMutex := class
-//{
-//	uvBuffer := char[1024] //TODO: check size
-//	"this" := !() -> void
-//	{
-//		uv_mutex_init(this&)
-//	}
-//	Lock := !() -> void
-//	{
-//		uv_mutex_lock(this&)
-//	}
-//	TryLock := !() -> bool
-//	{
-//		return uv_mutex_trylock(this&) == 0
-//	}
-//	Unlock := !() -> void
-//	{
-//		uv_mutex_unlock(this&)
-//	}
-//	Destroy := !() -> void
-//	{
-//		uv_mutex_destroy(this&)
-//	}
-//}
+uvSem := class
+{
+	uvBuffer := char[1024] //TODO check size
+	"this" := !(int count) -> void
+	{
+		uv_sem_init(this&,count)
+	}
+	Lock := !() -> void
+	{
+		uv_sem_wait(this&)
+	}
+	TryLock := !() -> bool
+	{
+		return uv_sem_trywait(this&) == 0
+	}
+	Unlock := !() -> void
+	{
+		uv_sem_post(this&)
+	}
+	Destroy := !() -> void
+	{
+		uv_sem_destroy(this&)
+	}
+}
+
+uvCond := class
+{
+	uvBuffer := char[1024] // TODO: check size
+	"this" := !() -> void
+	{
+		uv_cond_init(this&)
+	}
+	Wait := !(uvMutex mtx) -> void
+	{
+		uv_cond_wait(this&,mtx&)
+	}
+	Wait := !(uvMutex mtx,double time) -> bool
+	{
+		itTm := time*1000.0
+		return uv_cond_timedwait(this&,mtx&,itTm->{s32}->{u32}->{u64}) == 0
+	}
+	Notify := !() -> void
+	{
+		uv_cond_signal(this&)
+	}
+	NotifyAll := !() -> void
+	{
+		uv_cond_broadcast(this&)
+	}
+}
+
+uvMutex := class
+{
+	uvBuffer := char[1024] //TODO: check size
+	"this" := !() -> void
+	{
+		uv_mutex_init(this&)
+	}
+	Lock := !() -> void
+	{
+		uv_mutex_lock(this&)
+	}
+	TryLock := !() -> bool
+	{
+		return uv_mutex_trylock(this&) == 0
+	}
+	Unlock := !() -> void
+	{
+		uv_mutex_unlock(this&)
+	}
+	Destroy := !() -> void
+	{
+		uv_mutex_destroy(this&)
+	}
+}
 
 
 uvThread := class
 {
-	uvBuffer := char[1024] // TODO: check size
+	uvBuffer := char[1000] // TODO: check size
+	itLambda := !()&->void
 	"this" := !(void^ arg,!(void^)^->void thrBuf) -> void
 	{
 		uv_thread_create(this&,thrBuf,arg)
+	}
+	"this" := !(!()&->void thrd) -> void
+	{
+		itLambda = thrd
+		uv_thread_create(this&,x => {
+			x->{uvThread^}.itLambda()
+		},this&)
 	}
 	Join := !() -> void
 	{
 		uv_thread_join(this&)
 	}
+}
+uvEvent := class
+{
+	uvBuffer := char[1000]
+	loopP := void^
+	itLambda := !()& -> void
+
+	"this" := !(void^ lp, !()&->void thrd) -> void
+	{
+		itLambda = thrd
+		uv_async_init(lp,this&,x => {
+			x->{uvEvent^}.itLambda()
+		})
+	}
+	Emit := !() -> void
+	{
+		uv_async_send(this&)
+	}
+	Close := !() -> void
+	{
+		uv_close(this&,null)
+	}
+	
 }
 uvWork := class
 {
@@ -375,6 +413,11 @@ uvLoop := class
 	Get := !() -> void^
 	{
 		return loopPtr
+	}
+	Event := !(!()&->void callb) -> uvEvent^
+	{
+		cal := callb.Capture()
+		return new uvEvent(loopPtr,cal)
 	}
 	Timer := !(double timeout,double repeat,!(uvTimer^)&-> void callb) -> uvTimer^
 	{

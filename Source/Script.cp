@@ -92,17 +92,6 @@ CodeSpawn := !(void^ vm) -> int
 	return 0
 }
 
-// The typemask consists in a zero teminated string that represent the expected parameter
-//type. The types are expressed as follows: ‘o’ null, ‘i’ integer, ‘f’ float, ‘n’ integer or float, ‘s’
-//string, ‘t’ table, ‘a’ array, ‘u’ userdata, ‘c’ closure and nativeclosure, ‘g’ generator, ‘p’ user-
-//pointer, ‘v’ thread, ‘x’ instance(class instance), ‘y’ class, ‘b’ bool. and ‘.’ any type. The symbol
-//‘|’ can be used as ‘or’ to accept multiple types on the same parameter. There isn’t any limit
-//on the number of ‘or’ that can be used. Spaces are ignored so can be inserted between types
-//to increase readbility. For instance to check a function that espect a table as ‘this’ a string as
-//first parameter and a number or a userpointer as second parameter, the string would be “tsn|p”
-//(table,string,number or userpointer). If the parameters mask is contains less parameters than
-//‘nparamscheck’ the remaining parameters will not be typechecked
-
 ScriptTest := !() -> void
 {
 	try
