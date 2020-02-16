@@ -18,7 +18,7 @@
 
 	gBadTexture := vTexture^
 
-	pVoidMP := AllocOnlyMP.{4096,true}^
+	//pVoidMP := AllocOnlyMP.{4096,true}^
 
 	gSamplerNearest := VkSampler
 	gSamplerLinear := VkSampler
@@ -77,7 +77,7 @@
 		if vkGpuMemId == vkCpuMemId or vkGpuMemId == -1
 			gDoubleMem = false
 
-		pVoidMP = new AllocOnlyMP.{4096,true}
+		//pVoidMP = new AllocOnlyMP.{4096,true}
 
 		gStageMem = new vMemObj
 
@@ -235,8 +235,8 @@
 		if itModels.Contain(sName)
 			return itModels[sName]&
 
-		pVoidMP.Push()
-		defer pVoidMP.Pop()
+		//pVoidMP.Push()
+		//defer pVoidMP.Pop()
 
 		flName := char^
 		stB := "Models/"sbt
@@ -247,8 +247,12 @@
 
 		if asF == null
 		{
-			printf("failed to load %s\n",stB.Str()) ; $temp
-			return null
+			asF = itRepo.GetFile("Models/"sbt + sName + "/" + sName + ".inf")
+			if asF == null
+			{
+				printf("failed to load %s\n",stB.Str()) ; $temp
+				return null
+			}
 		}
 
 		heh := asF.Map()
@@ -332,6 +336,15 @@
 				}else{
 					itMd.ReqTexture = vGenTexture(it,itFile)
 				}
+			case "script"
+				if it.IsValue()
+				{
+					itMd.scriptFile = itFile.GetFile(it.ValueStr)
+					if itMd.scriptFile != null
+						itMd.scriptUnit = ScriptCompile(itMd.scriptFile)
+				}else{
+					assert(false)
+				}
 		}
 		itMd.ReqShader = reqShader
 
@@ -359,8 +372,8 @@
 		if itShaders.Contain(sName)
 			return itShaders[sName]&
 
-		pVoidMP.Push()
-		defer pVoidMP.Pop()
+		//pVoidMP.Push()
+		//defer pVoidMP.Pop()
 
 		flName := char^
 		stB := "Shaders/"sbt
@@ -453,8 +466,8 @@
 	}
 	vAddProp := !(vModel^ itModel,bool mapCreated) -> vProp^
 	{
-		pVoidMP.Push()
-		defer pVoidMP.Pop()
+		//pVoidMP.Push()
+		//defer pVoidMP.Pop()
 
 		newProp := vProp^()
 		if mapCreated
@@ -488,6 +501,11 @@
 
 		vkFuncs.vkAllocateDescriptorSets(vkLogCard,newSetCR,newProp.modelTextureSet&)
 		vSetTexture(newProp.modelTextureSet,newProp.modelPtr.ReqTexture,gSamplerNearest)
+
+		if itModel.scriptUnit != null
+		{
+			ScriptRun(itModel.scriptUnit,newProp)
+		}
 		return newProp
 	}
 	vGetMap := !(char^ mapName) -> vMap^
@@ -495,8 +513,8 @@
 		if itMaps.Contain(mapName)
 			return itMaps[mapName]&
 
-		pVoidMP.Push()
-		defer pVoidMP.Pop()
+		//pVoidMP.Push()
+		//defer pVoidMP.Pop()
 
 		flName := char^
 		stB := "Maps/"sbt << mapName << ".inf"

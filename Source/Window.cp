@@ -21,6 +21,8 @@ glfwKeyPressRes := !(void^ win,int key, int scancode,int action) -> void
 			asCh = 'a' + key - GLFW_KEY_A
 		case 340
 			asCh = 'S'
+		case 32
+			asCh = ' '
 		case void
 			return void
 	}
@@ -28,7 +30,7 @@ glfwKeyPressRes := !(void^ win,int key, int scancode,int action) -> void
 	{
 		buttons[asCh] = action == GLFW_PRESS
 
-		KeyPress(asCh,action == GLFW_PRESS)
+		//KeyPress(asCh,action == GLFW_PRESS)
 	}
 
 }
@@ -57,7 +59,6 @@ CreateWindow := !(int newW,int newH) -> void
 	glfwSetWindowSizeCallback(glfwWindow,glfwWinResized)
 
 	glfwSetCursorPosCallback(glfwWindow,glfwMouseMove)
-
 	glfwSetInputMode(glfwWindow,GLFW_CURSOR,GLFW_CURSOR_DISABLED)
 }
 

@@ -8,7 +8,7 @@ InitWebP := !() -> bool
 {
 	if webpLib != null return true
 
-	itLib := new Library("libwebp.so","libwebp-7.dll")
+	itLib := new Library("libwebp.so","libwebp.so.6","libwebp-7.dll")
 	
 	webpGetFeatures = itLib.Get("WebPGetFeaturesInternal")
 	webpGetDataRGB = itLib.Get("WebPDecodeRGBInto")

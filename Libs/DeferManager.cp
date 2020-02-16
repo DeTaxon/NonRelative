@@ -130,6 +130,7 @@ internalGetExceptPoint := !() -> void^
 	nowDat := ref intExc
 	if nowDat.depth == 0
 	{
+		printf("uncathed exception %s\n",inp->{IException^}.Msg())
 		internalDebugTrap()
 		return void
 	}

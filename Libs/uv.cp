@@ -470,11 +470,27 @@ uvLoop := class
 			free(x)
 		})
 	}
+	Once := !(double timeout,void^ passV,!(void^)^-> void callb) -> uvTimer^
+	{
+		toRet := new uvTimer
+		uv_timer_init(loopPtr,toRet)
+		toRet.timerPassValue = passV
+		toRet.timerCallbFunc = callb
+
+		uv_timer_start(toRet,x => {
+			x->{uvTimer^}.timerCallbFunc(x->{uvTimer^}.timerPassValue)
+			delete x
+		},timeout*1000.0,0)
+		
+		return toRet
+	}
 }
 uvTimer := class
 {
 	buffer := char[1024]
 	timerCallb := !(uvTimer^)&-> void
+	timerCallbFunc := !(uvTimer^)^-> void
+	timerPassValue := void^
 	Stop := !() -> void
 	{
 		uv_timer_stop(buffer[0]&)

@@ -9,6 +9,9 @@ vModel := class
 	physType := char^
 	physExtraData := void^
 
+	scriptFile := vRepoFile^
+	scriptUnit := ScriptUnit^
+
 	LoadFile := !(void^ fPoint,u64 fSize) -> bool
 	{
 		rFile := new RawModel ; $temp

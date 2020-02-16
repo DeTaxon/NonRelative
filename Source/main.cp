@@ -1,25 +1,14 @@
 titleBuf := char[256]
 
-btnPress := int
-
-KeyPress := !(int ch,bool isPress) -> void
-{
-	if isPress and ch == 'b' btnPress += 1
-}
-
+gQuit := false
 gUV := uvLoop^
 main := !(int argc, char^^ argv) -> int
 {
+	vPreInit()
+
 	uvInit()
 
 	gUV = new uvLoop()
-
-
-	//gUV.Run()
-
-	//ScriptTest()
-	//return 0;
-	vPreInit()
 
 	CreateWindow(1700,900)
 	defer DestroyWindow() 
@@ -28,6 +17,7 @@ main := !(int argc, char^^ argv) -> int
 	defer DestroyVulkan()
 
 	vInit()
+	ScriptInit()
 	
 	gCam.camPos = vec4f(0.0f,0.0f,0.0f,1.0f)
 	gCam.upDownAng = 0.0f
@@ -35,17 +25,17 @@ main := !(int argc, char^^ argv) -> int
 
 	nMap := vGetMap("FirstMap")
 
-	//itPlayer := new PhysPlayer
+	mt := vAddProp("Mitr")
+
 	drawState := false
 	drawMutex := new uvMutex()
 	drawCond := new uvCond()
-	quit := false
 
-	gUV.Timer(0,0.001,(x) ==> [quit&]{
+	gUV.Timer(0,0.001,(x) ==> {
 		prevTime := glfwGetTime()
 		while true
 		{
-			if quit {
+			if gQuit {
 				x.Stop()
 				return void
 			}
@@ -62,56 +52,55 @@ main := !(int argc, char^^ argv) -> int
 
 	resizeState := false
 
-	gUV.Timer(0,0.01, (x) ==> [quit&,fpsCounter&]{
+	gUV.Timer(0,0.01, (x) ==> [fpsCounter&]{
 		
 		prevTime := glfwGetTime()
 		
 		while true
 		{
+			FlushTempMemory()
+			glfwPollEvents()
 
-		FlushTempMemory()
-		glfwPollEvents()
-
-		nowTime := glfwGetTime()
+			nowTime := glfwGetTime()
 
 
-		//if resizeState 
-		//{
-		//	if nowTime - gLastTimeResized > 1.0
-		//	{
-		//		CreateSwapchain(gWindowW,gWindowH)
-		//		gCam.UpdatePerspective(gWindowW->{float},gWindowH->{float})
-		//		resizeState = false
-		//	}else{
-		//		yield void
-		//	}
-		//}
-		
-		if nowTime - prevTime > 1.0
-		{
-			ttlPre := "Hi again! fps = "sbt + fpsCounter
-			strcpy(titleBuf[0]&,ttlPre.Str()) ; $temp
-			glfwSetWindowTitle(glfwWindow,titleBuf[0]&)
-			fpsCounter = 0
-			prevTime = nowTime
-		}
+			//if resizeState 
+			//{
+			//	if nowTime - gLastTimeResized > 1.0
+			//	{
+			//		CreateSwapchain(gWindowW,gWindowH)
+			//		gCam.UpdatePerspective(gWindowW->{float},gWindowH->{float})
+			//		resizeState = false
+			//	}else{
+			//		yield void
+			//	}
+			//}
+			
+			if nowTime - prevTime > 1.0
+			{
+				ttlPre := "Hi again! fps = "sbt + fpsCounter
+				strcpy(titleBuf[0]&,ttlPre.Str()) ; $temp
+				glfwSetWindowTitle(glfwWindow,titleBuf[0]&)
+				fpsCounter = 0
+				prevTime = nowTime
+			}
 
-		if glfwWindowShouldClose(glfwWindow)
-		{
-			quit = true
-			x.Stop()
-		}
+			if glfwWindowShouldClose(glfwWindow)
+			{
+				gQuit = true
+				x.Stop()
+			}
 			yield void
 		}
 	})
 
-	ev := gUV.Event(() ==> [quit&,drawState&,drawMutex,drawCond,fpsCounter&,ev&]{
+	ev := gUV.Event(() ==> [drawState&,drawMutex,drawCond,fpsCounter&,ev&]{
 
 		prevTime := glfwGetTime()
 
 		while  true 
 		{
-			if quit {
+			if gQuit {
 				ev.Close()
 				return void
 			}
@@ -142,15 +131,15 @@ main := !(int argc, char^^ argv) -> int
 	{
 		
 	}else{
-		uvThread(() ==> [quit&,drawState&,drawMutex,drawCond]{
-			while not quit
+		uvThread(() ==> [drawState&,drawMutex,drawCond]{
+			while not gQuit
 			{
 				drawMutex.Lock()
 				while drawState
 				{
 					drawCond.Wait(drawMutex^,0.1)
 				}
-				if quit {
+				if gQuit {
 					ev.Emit()
 					drawMutex.Unlock()
 					return void

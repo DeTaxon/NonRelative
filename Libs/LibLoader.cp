@@ -138,7 +138,7 @@ Library := class
 	{
 		hndl = LibDB.GetLib(name)
 		if hndl == null
-			throw new Exception(0,"can not open library")
+			throw new Exception(0,"can not open library, like "sbt + name)
 	}
 	Get := !(char^ funcName) -> void^
 	{

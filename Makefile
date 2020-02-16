@@ -44,5 +44,7 @@ LearnVert: Shaders/LearnVert.vert Shaders/LearnFrag.frag
 	
 clean: 
 	rm -f out.ll WinObj.o a.exe a.out engig
+nvidia:
+	ENABLE_PRIMUS_LAYER=1 optirun -b primus ./engi
 
 .PHONY: clean gdbc cycle repair  LexTest engi LearnVert engig test2

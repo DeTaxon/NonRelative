@@ -7,7 +7,9 @@ vProp := class
 	modelShader := vShader^
 	modelTextureSet := VkDescriptorSet
 
-	physObj := PhysCommon^ 
+	physObj := PhysCommon^
+
+	sThreads := List.{ScriptThread}
 
 	AddToCmdBuffer := !(VkCommandBuffer cmdB) -> void
 	{

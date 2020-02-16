@@ -590,6 +590,7 @@ StartDraw := !() -> bool
 {
 	vkFuncs.vkResetFences(vkLogCard,1,vkFence&)
 	resAq := vkFuncs.vkAcquireNextImageKHR(vkLogCard,vkSwapchain,not_b 0U,null,vkFence,nowImg&)
+
 	if resAq ==  -1000001004//VK_ERROR_OUT_OF_DATE_KHR 
 	{
 		return false
