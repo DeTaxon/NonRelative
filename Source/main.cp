@@ -2,6 +2,7 @@ titleBuf := char[256]
 
 gQuit := false
 gUV := uvLoop^
+
 main := !(int argc, char^^ argv) -> int
 {
 	vPreInit()
@@ -23,9 +24,15 @@ main := !(int argc, char^^ argv) -> int
 	gCam.upDownAng = 0.0f
 	gCam.leftRightAng = 0.0f
 
+	gHotloadInit()
+
 	nMap := vGetMap("FirstMap")
 
-	mt := vAddProp("Mitr")
+	//mt := vAddProp("Mitr")
+
+	cnvs := vAddProp("Canvas")
+	cnvs.modelPos.pos = vec4f(-2.0f,2.0f,2.0f,1.0f)
+	cnvs.modelPos.ang = quantfAt(0.0f,1.0f,0.0f,90deg)
 
 	drawState := false
 	drawMutex := new uvMutex()
@@ -88,6 +95,7 @@ main := !(int argc, char^^ argv) -> int
 			if glfwWindowShouldClose(glfwWindow)
 			{
 				gQuit = true
+				gHotloadStop()
 				x.Stop()
 			}
 			yield void
@@ -117,6 +125,8 @@ main := !(int argc, char^^ argv) -> int
 			vDraw()
 
 			StopDraw()
+
+			gHotloadCheck()
 			fpsCounter++
 
 			drawMutex.Lock()

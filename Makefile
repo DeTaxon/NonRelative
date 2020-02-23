@@ -15,8 +15,8 @@ engi: Objs/engi.o
 engig: Objs/engig.o
 	clang++ Objs/engig.o -IFLibs $(Libs) -o engi
 
-wengi: Objs/wengi.o
-	$(WinCompiler) Objs/wengi.o -IFLibs -L WinLibs -o wengi
+wengi.exe: Objs/wengi.o
+	$(WinCompiler) Objs/wengi.o -g -IFLibs -L WinLibs -o wengi.exe
 
 Objs/engi.o: Objs/engi.ll
 	clang -g Objs/engi.ll -c -o Objs/engi.o
@@ -28,7 +28,7 @@ Objs/wengi.o: Objs/wengi.ll
 Objs/engi.ll: LearnVert
 	./halfvoid -g -p posix  --rname result Source/main.cp $(SLibs) -C0 "FLibs/*" -C1 "Source/*" --vk vk.xml -o Objs/engi.ll
 Objs/engig.ll: LearnVert
-	nemiver ./halfvoid  --rname result -g Source/main.cp $(SLibs) -C0 "FLibs/*" -C1 "Source/*" --vk vk.xml -o Objs/engig.ll
+	nemiver ./halfvoid -g -p posix  --rname result Source/main.cp $(SLibs) -C0 "FLibs/*" -C1 "Source/*" --vk vk.xml -o Objs/engi.ll
 Objs/wengi.ll: LearnVert
 	./halfvoid  --rname result -p win32 Source/main.cp $(SLibs) -C0 "FLibs/*" -C1 "Source/*" --vk vk.xml -o Objs/wengi.ll
 

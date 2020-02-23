@@ -83,7 +83,6 @@ vModel := class
 		memO2.Unmap()
 		if isIndGpu
 			vStageCpyToBuffer(hndls[1],indSize)
-
 	}
 	AddToCmdBuffer := !(VkCommandBuffer cmdB) -> void
 	{

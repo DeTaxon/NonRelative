@@ -1,0 +1,5 @@
+
+vMap := class
+{
+	mapProps := vProp^[]
+}

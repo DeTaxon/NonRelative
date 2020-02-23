@@ -2,14 +2,22 @@ CmdBuffer := class
 {
 	itCmdBuf := VkCommandBuffer
 	itPauseItm := VkSemaphore
+	itUseInSecond := bool
 
 	
 	CreateBuffer := !() -> void
 	{
+		CreateBuffer(false)
+	}
+	CreateBuffer := !(bool isSecond) -> void
+	{
+		itUseInSecond = isSecond
 		cmdBufC := new VkCommandBufferAllocateInfo() ; $temp
 
 		cmdBufC.commandPool = vkCmdPool
 		cmdBufC.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY 
+		if isSecond
+			cmdBufC.level = VK_COMMAND_BUFFER_LEVEL_SECONDARY
 		cmdBufC.commandBufferCount = 1
 		
 		vkFuncs.vkAllocateCommandBuffers(vkLogCard,cmdBufC,itCmdBuf&)
@@ -41,6 +49,7 @@ CmdBuffer := class
 
 		biC := new VkCommandBufferBeginInfo() ; $temp
 		biC.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT
+		if itUseInSecond biC.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT
 		biC.pInheritanceInfo = inhC->{void^}
 
 		vkFuncs.vkBeginCommandBuffer(itCmdBuf,biC)
@@ -48,6 +57,10 @@ CmdBuffer := class
 	Stop := !() -> void
 	{
 		vkFuncs.vkEndCommandBuffer(itCmdBuf)
+	}
+	UseSecondary := !(VkCommandBuffer mainCmd) -> void
+	{
+		vkFuncs.vkCmdExecuteCommands(mainCmd,1,this.itCmdBuf&)
 	}
 	Submit := !() -> void
 	{

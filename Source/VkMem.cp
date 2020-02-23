@@ -3,7 +3,6 @@ vMemObj := class
 	memObj := VkDeviceMemory
 	objSize := int
 	gpuSide := bool
-	tempMem := VkDeviceMemory
 
 	CreateObject := !(int size,int memType, bool^ gpuSideI) -> bool
 	{
@@ -44,6 +43,10 @@ vMemObj := class
 		vkFuncs.vkAllocateMemory(vkLogCard,allc1,null,memObj&)
 		objSize = size
 		return true
+	}
+	DestroyVK := !() -> void
+	{
+		vkFuncs.vkFreeMemory(vkLogCard, memObj,null)
 	}
 	Map := !() -> void^
 	{

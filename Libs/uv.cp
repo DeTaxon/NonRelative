@@ -37,6 +37,10 @@ uv_thread_join := !(void^)^ -> void
 uv_async_init := !(void^,void^,!(void^)^->void)^ -> void
 uv_async_send := !(void^)^ -> void
 
+uv_fs_event_init := !(void^,void^)^ -> void
+uv_fs_event_start := !(void^,!(void^,char^,int,int)^->void,char^,int)^ -> void
+uv_fs_event_stop := !(void^)^ -> void
+
 uv_barrier_init := !(void^,int)^->void
 uv_barrier_wait := !(void^)^-> void
 uv_barrier_destroy := !(void^)^ -> void
@@ -112,6 +116,10 @@ uvInit := !() -> void
 
 	uv_async_init = uv.Get("uv_async_init")
 	uv_async_send = uv.Get("uv_async_send")
+
+	uv_fs_event_init = uv.Get("uv_fs_event_init")
+	uv_fs_event_start = uv.Get("uv_fs_event_start")
+	uv_fs_event_stop = uv.Get("uv_fs_event_stop")
 
 	uv_barrier_init = uv.Get("uv_barrier_init")
 	uv_barrier_wait = uv.Get("uv_barrier_wait")
@@ -484,6 +492,21 @@ uvLoop := class
 		
 		return toRet
 	}
+	DirectoryMonitor := !(char^ fileName,!(uvFsEvent^,char^)& ->void clb) -> uvFsEvent^
+	{
+		preRes := new uvFsEvent
+		uv_fs_event_init(loopPtr,preRes)
+		preRes.callb = clb.Capture()
+		uv_fs_event_start(preRes,(hndl,flName,ev,status) => {
+			if ev != 2 return void
+			asRealHndl := hndl->{uvFsEvent^}
+			asRealHndl.callb(asRealHndl,flName)
+		}
+		,fileName,0)
+		//4 -recursive, not working on linux
+
+		return preRes
+	}
 }
 uvTimer := class
 {
@@ -496,4 +519,15 @@ uvTimer := class
 		uv_timer_stop(buffer[0]&)
 	}
 	
+}
+uvFsEvent := class
+{
+	buf := char[1000]
+	callb := !(uvFsEvent^,char^)& -> void
+
+	Stop := !() -> void
+	{
+		uv_fs_event_stop(this&)
+	}
+
 }

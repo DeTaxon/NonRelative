@@ -26,6 +26,8 @@ vTexture := class
 	itImgView := VkImageView
 	itW,itH := int
 
+	refCounter := int
+
 	CreateObject := !(int w, int h) -> int
 	{
 		itW = w
@@ -132,6 +134,17 @@ vTexture := class
 			vStageCpyToImage(itImg,itW,itH)
 		}
 
+	}
+	Reload := !(vRepoFile^ itFile) -> void
+	{
+		DestroyVK()
+		CreateTexture(itFile)
+	}
+	DestroyVK := !() -> void
+	{
+		vkFuncs.vkDestroyImageView(vkLogCard,itImgView,null)
+		vkFuncs.vkDestroyImage(vkLogCard,itImg,null)
+		memObj.DestroyVK()
 	}
 	LoadNotFound := !() -> void
 	{

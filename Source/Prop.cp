@@ -13,6 +13,9 @@ vProp := class
 
 	AddToCmdBuffer := !(VkCommandBuffer cmdB) -> void
 	{
+		if gHotload
+			vSetTexture(modelTextureSet,modelPtr.ReqTexture,gSamplerNearest)
+
 		gCam.ApplyCamera(modelPos,calculatedPos)
 		sts := VkDescriptorSet[2]
 		sts[0] = vkPerspSet

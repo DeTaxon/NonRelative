@@ -1,6 +1,6 @@
 //VoidCore := class
 //{
-	itRepo := vRepo
+	gRepo := vRepo
 
 	itShaders := AVLMap.{char^,vShader}
 	itModels := AVLMap.{char^,vModel}
@@ -27,9 +27,11 @@
 
 	gPlayer := PhysPlayer^
 
+	gHotload := bool
+
 	pLoadCommonSettings := !() -> void
 	{
-		itSet := itRepo.GetFile("commonsettings.inf")
+		itSet := gRepo.GetFile("commonsettings.inf")
 
 		if itSet == null
 			return void
@@ -56,6 +58,8 @@
 						case "IMMEDIATE"
 							gUserModes.PushFront(VK_PRESENT_MODE_IMMEDIATE_KHR)
 					}
+				case "hotload"
+					gHotload = sets.ValueStr == "true"
 			}
 		}
 		gUserModes.PushFront(VK_PRESENT_MODE_MAILBOX_KHR) ; $uniq
@@ -66,9 +70,9 @@
 	}
 	vPreInit := !() -> void
 	{
-		itRepo.Init("./")
-		itRepo.AddZipRoot("./Dlls.zip")
-		LibDB.SetRepo(itRepo&)
+		gRepo.Init("./")
+		gRepo.AddZipRoot("./Dlls.zip")
+		LibDB.SetRepo(gRepo&)
 		pLoadCommonSettings()
 	}
 	vInit := !() -> void
@@ -230,127 +234,6 @@
 
 		vkFuncs.vkUpdateDescriptorSets(vkLogCard,1,wrT,0,null)
 	}
-	vGetModel := !(char^ sName) -> vModel^
-	{
-		if itModels.Contain(sName)
-			return itModels[sName]&
-
-		//pVoidMP.Push()
-		//defer pVoidMP.Pop()
-
-		flName := char^
-		stB := "Models/"sbt
-		stB << sName
-		stB << ".inf"
-
-		asF := itRepo.GetFile(stB)
-
-		if asF == null
-		{
-			asF = itRepo.GetFile("Models/"sbt + sName + "/" + sName + ".inf")
-			if asF == null
-			{
-				printf("failed to load %s\n",stB.Str()) ; $temp
-				return null
-			}
-		}
-
-		heh := asF.Map()
-		defer asF.Unmap()
-
-		cc := ParseInfoFile(heh,asF.Size()) ; $temp
-		
-		return vGenModel(sName,cc,asF)
-	}
-	vGenModel := !(char^ modelName,InfoNode^ itObj,vRepoFile^ itFile) -> vModel^
-	{
-		itMd := ref itModels[StrCopy(modelName)]
-		reqShader := vShader^()
-		itMd.ReqTexture = gBadTexture
-
-		switch itObj.SubList[^].Name
-		{
-			case "phys"
-				if it.SubList.Size() != 0
-				{
-					for pars : it.SubList
-					{
-						if pars.Name == "type"
-						{
-							switch pars.ValueStr
-							{
-								case "hmap"
-									fileName := char^()
-									for opt : it.SubList
-									{
-										if opt.Name == "file" fileName = opt.ValueStr.Str() ; $temp
-									}
-									if fileName == null  throw new Exception("Incorrect phys data")
-									hFile := itFile.GetFile(fileName) 
-									if hFile == null throw new Exception("Incorrect phys data, can not find file")
-									hMap := new PhysHeightMap()
-									mdl := new RawModel ; $temp
-									mdl.MapFromPLY(hFile.Map(),hFile.Size())
-									hMap.CreateDots(mdl)
-									itMd.physExtraData = hMap->{PhysCommon^}
-									itMd.physType = "hmap"
-								case void
-									throw new Exception("unknown physics type")
-							}
-							break
-						}
-					}
-				}
-			case "model"
-				switch it.SubList.Size()
-				{
-					case 1
-						switch it.SubList[0].Name
-						{
-							case "file"
-								cdP := ref it.SubList[0]
-								itF := itFile.GetFile(cdP.ValueStr)
-								if itF == null 
-									return null
-								itMd.LoadFile(itF.Map(),itF.Size())
-								itF.Unmap()
-								
-							case void
-								return null
-
-						}
-					case void
-						return null
-				}
-			case "shader"
-				if it.IsValue()
-				{
-					reqShader = vGetShader(it.ValueStr)
-				}else{
-					//TODO
-				}
-			case "texture"
-				if it.IsValue()
-				{
-					//TODO
-				}else{
-					itMd.ReqTexture = vGenTexture(it,itFile)
-				}
-			case "script"
-				if it.IsValue()
-				{
-					itMd.scriptFile = itFile.GetFile(it.ValueStr)
-					if itMd.scriptFile != null
-						itMd.scriptUnit = ScriptCompile(itMd.scriptFile)
-				}else{
-					assert(false)
-				}
-		}
-		itMd.ReqShader = reqShader
-
-
-		return itMd&
-	}
 	vDraw := !() -> void
 	{
 		for itProps
@@ -381,7 +264,7 @@
 		stB << ".inf"
 		flName = stB.Str() ; $temp
 
-		fl := itRepo.GetFile(flName)
+		fl := gRepo.GetFile(flName)
 
 		if fl == null
 			return null
@@ -435,28 +318,6 @@
 
 
 		return itSh&
-	}
-	vGenTexture := !(InfoNode^ itObj,vRepoFile^ itFile) -> vTexture^
-	{
-
-		preRes := gBadTexture
-		switch itObj.SubList[^].Name
-		{
-			case "file"
-				nFile := itFile.GetFile(it.ValueStr)
-				if nFile == null
-					return gBadTexture
-				preRes = new vTexture ; $pool
-				preRes.CreateTexture(nFile)
-		}
-		return preRes
-	}
-	vGetTexture := !(char^ fileName) -> vTexture^
-	{
-		temp := new vTexture
-		temp.CreateObject(64,64)
-		temp.LoadNotFound()
-		return temp
 	}
 	vAddProp := !(char^ modelName) -> vProp^
 	{
@@ -519,11 +380,11 @@
 		flName := char^
 		stB := "Maps/"sbt << mapName << ".inf"
 
-		asF := itRepo.GetFile(stB)
+		asF := gRepo.GetFile(stB)
 
 		if asF == null 
 		{
-			asF = itRepo.GetFile("Maps/"sbt + mapName + "/" + mapName + ".inf")
+			asF = gRepo.GetFile("Maps/"sbt + mapName + "/" + mapName + ".inf")
 			if asF == null
 				return null
 		}
