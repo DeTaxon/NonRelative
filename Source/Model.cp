@@ -12,8 +12,14 @@ vModel := class
 	scriptFile := vRepoFile^
 	scriptUnit := ScriptUnit^
 
-	LoadFile := !(void^ fPoint,u64 fSize) -> bool
+	hlRunThreads := AVLSet.{ScriptThread^}
+
+	LoadFile := !(vRepoFile^ itFl) -> bool
 	{
+		fPoint := itFl.Map()
+		defer itFl.Unmap()
+		fSize := itFl.Size()
+
 		rFile := new RawModel ; $temp
 		if not rFile.MapFromPLY(fPoint,fSize)
 		{
@@ -83,6 +89,47 @@ vModel := class
 		memO2.Unmap()
 		if isIndGpu
 			vStageCpyToBuffer(hndls[1],indSize)
+	}
+	DestroyVK := !() -> void
+	{
+		vkFuncs.vkDestroyBuffer(vkLogCard,hndls[0],null)
+		vkFuncs.vkDestroyBuffer(vkLogCard,hndls[1],null)
+		memObjs[0].DestroyVK()
+		memObjs[1].DestroyVK()
+	}
+	ReloadModel := !(vRepoFile^ itFl) -> void
+	{
+		DestroyVK()
+		LoadFile(itFl)
+	}
+	ReloadScript := !(vRepoFile^ itFl) -> void
+	{
+		scr := ScriptCompile(itFl)
+		if scr != null
+		{
+			cpy := new List.{ScriptThread^} ; $temp
+			prp := new AVLSet.{vProp^} ; $temp
+			for it : hlRunThreads
+			{
+				cpy.Push(it)
+				prp.Insert(it.thrdProp)
+			}
+
+			for it : cpy^
+			{
+				it.Destroy()
+			}
+
+			for it : prp^
+			{
+				ScriptRun(scr,it)
+			}
+			//TODO: destroy CompileUnit
+			
+			printf("reloaded script\n")
+		}else{
+			printf("failed reload\n")
+		}
 	}
 	AddToCmdBuffer := !(VkCommandBuffer cmdB) -> void
 	{

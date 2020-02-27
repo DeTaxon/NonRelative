@@ -3,6 +3,8 @@ titleBuf := char[256]
 gQuit := false
 gUV := uvLoop^
 
+gDisableMouse := false
+
 main := !(int argc, char^^ argv) -> int
 {
 	vPreInit()
@@ -28,7 +30,7 @@ main := !(int argc, char^^ argv) -> int
 
 	nMap := vGetMap("FirstMap")
 
-	//mt := vAddProp("Mitr")
+	mt := vAddProp("Mitr")
 
 	cnvs := vAddProp("Canvas")
 	cnvs.modelPos.pos = vec4f(-2.0f,2.0f,2.0f,1.0f)

@@ -80,8 +80,8 @@ vGenModel := !(char^ modelName,InfoNode^ itObj,vRepoFile^ itFile) -> vModel^
 							itF := itFile.GetFile(cdP.ValueStr)
 							if itF == null 
 								return null
-							itMd.LoadFile(itF.Map(),itF.Size())
-							itF.Unmap()
+							itMd.LoadFile(itF)
+							if gHotload gFsModelsModel[itF] = itMd&
 							
 						case void
 							return null
@@ -109,7 +109,10 @@ vGenModel := !(char^ modelName,InfoNode^ itObj,vRepoFile^ itFile) -> vModel^
 			{
 				itMd.scriptFile = itFile.GetFile(it.ValueStr)
 				if itMd.scriptFile != null
+				{
+					if gHotload gFsModelsScript[itMd.scriptFile] = itMd&
 					itMd.scriptUnit = ScriptCompile(itMd.scriptFile)
+				}
 			}else{
 				assert(false)
 			}

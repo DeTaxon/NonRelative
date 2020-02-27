@@ -486,7 +486,9 @@ uvLoop := class
 		toRet.timerCallbFunc = callb
 
 		uv_timer_start(toRet,x => {
-			x->{uvTimer^}.timerCallbFunc(x->{uvTimer^}.timerPassValue)
+			tmr := x->{uvTimer^}
+			if not tmr.stopped
+				tmr.timerCallbFunc(x->{uvTimer^}.timerPassValue)
 			delete x
 		},timeout*1000.0,0)
 		
@@ -514,8 +516,10 @@ uvTimer := class
 	timerCallb := !(uvTimer^)&-> void
 	timerCallbFunc := !(uvTimer^)^-> void
 	timerPassValue := void^
+	stopped := bool
 	Stop := !() -> void
 	{
+		stopped = true
 		uv_timer_stop(buffer[0]&)
 	}
 	

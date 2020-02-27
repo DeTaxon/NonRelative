@@ -1,18 +1,17 @@
 
 sq_open := !(s64)^ -> void^
+sq_close := !(void^)^ -> void^
 sq_getvmstate := !(void^)^ -> s64
 sq_newthread := !(void^,s64)^ -> void^
 sq_compilebuffer := !(void^,char^,u64,char^,bool)^ -> int
 sq_call := !(void^,s64,bool,bool)^ -> int
 sq_resume := !(void^,bool,bool)^ -> int
 sq_wakeupvm := !(void^,bool,bool,bool,bool)^ -> int
-sq_suspend := !(void^)^ -> s64
+sq_suspendvm := !(void^)^ -> s64
 
 sq_pushroottable := !(void^)^ -> int
 sq_pushregistrytable := !(void^)^ -> int
 sq_setprintfunc := !(void^,void^,void^)^-> int
-
-sq_close := !(void^)^ -> void
 
 sqstd_register_bloblib := !(void^)^->void
 sqstd_register_iolib := !(void^)^->void
@@ -25,8 +24,9 @@ sq_move := !(void^,void^,s64)^ -> void
 sq_gettype := !(void^,s64)^ -> s64
 sq_gettop := !(void^)^ -> s64
 sq_getstackobj := !(void^,s64,void^)^ -> void
-sq_pushobject := !(void^,s64,s64)^ -> void
+sq_pushobject2 := !(void^,void^)^ -> void
 sq_addref := !(void^,void^)^ -> void
+sq_release := !(void^,void^)^ -> void
 
 sq_newclosure := !(void^,void^,int)^ -> void
 sq_newclass := !(void^,bool)^ -> void
@@ -47,28 +47,29 @@ sq_pop := !(void^,s64)^ -> void
 
 SqInit := !() -> void
 {
-	sLib := Library("libsquirrel3.so","squirrel3.dll")
+	sLib := Library("libsquirrel3m.so","squirrel3m.dll")
+
 	sq_open = sLib.Get("sq_open")
+	sq_close = sLib.Get("sq_close")
 	sq_getvmstate = sLib.Get("sq_getvmstate")
 	sq_newthread = sLib.Get("sq_newthread")
 	sq_compilebuffer = sLib.Get("sq_compilebuffer")
 	sq_call = sLib.Get("sq_call")
 	sq_resume = sLib.Get("sq_resume")
 	sq_wakeupvm = sLib.Get("sq_wakeupvm")
-	sq_suspend = sLib.Get("sq_suspendvm")
+	sq_suspendvm = sLib.Get("sq_suspendvm")
 
 	sq_pushroottable = sLib.Get("sq_pushroottable")
 	sq_pushregistrytable = sLib.Get("sq_pushregistrytable")
 	sq_setprintfunc = sLib.Get("sq_setprintfunc")
 
-	sq_close = sLib.Get("sq_close")
-
 	sq_gettop = sLib.Get("sq_gettop")
 	sq_gettype = sLib.Get("sq_gettype")
 	sq_move = sLib.Get("sq_move")
 	sq_getstackobj = sLib.Get("sq_getstackobj")
-	sq_pushobject = sLib.Get("sq_pushobject")
+	sq_pushobject2 = sLib.Get("sq_pushobject2")
 	sq_addref = sLib.Get("sq_addref")
+	sq_release = sLib.Get("sq_release")
 	
 	sq_newclosure = sLib.Get("sq_newclosure")
 	sq_newclass = sLib.Get("sq_newclass")
@@ -127,9 +128,10 @@ iRunScript := !(ScriptThread^ itScriptT) -> bool
 			sq_call(vm,1,true,true)
 		case 2: //SUSPENDED
 			ScriptSetProp(itScriptT,gMainVM)
-			sq_wakeupvm(vm,true,true,true,false)
+			sq_wakeupvm(vm,false,false,true,false)
 	}
 	vmState = sq_getvmstate(vm)
+	if vmState == 0 itScriptT.Destroy()
 	return vmState == 0
 }
 
@@ -154,16 +156,21 @@ CodeSpawn := !(void^ vm) -> int
 		sq_getstackobj(vm2,-1,newNode.thrdObj&)
 		sq_addref(vm2,newNode.thrdObj&)
 		sq_pop(vm2,1)
-		//sq_pushobject(newNode.thrdVM,newNode.thrdObj[0],newNode.thrdObj[1])
 		sq_move(newNode.thrdVM,vm2,2)
 		sq_pushroottable(newNode.thrdVM)
 	}
 
-	gUV.Once(0,newNode&,(x) => {
+	if gHotload
+		gsNowScript.thrdProp.modelPtr.hlRunThreads.Insert(newNode&)
+
+	
+	newEv := gUV.Once(0,newNode&,(x) => {
 		asSc := x->{ScriptThread^}
+		asSc.onceTimer = null
 		asProp := asSc.thrdProp
 		iRunScript(asSc)
 	})
+	newNode.onceTimer = newEv
 	return 0
 }
 //The typemask consists in a zero teminated string that represent the expected parameter type. 
@@ -176,11 +183,39 @@ CodeSpawn := !(void^ vm) -> int
 
 ScriptThread := class
 {
-	thrdObj := s64[2]
+	thrdObj := s64[16]
 	thrdVM := void^
 	thrdProp := vProp^
+
+	onceTimer := uvTimer^
+
 	this := !() -> void
 	{
+	}
+	Destroy := !() -> void
+	{
+		if gHotload
+		{
+			thrdProp.modelPtr.hlRunThreads.Remove(this&)
+		}
+		if onceTimer != null
+		{
+			onceTimer.Stop()
+		}
+		
+		sq_release(gMainVM,thrdObj&)
+		//sq_close(thrdVM)
+
+		i := 0
+		for thrdProp.sThreads
+		{
+			if it& == this&
+			{
+				thrdProp.sThreads.DeleteAt(i)
+				break
+			}
+			i += 1
+		}
 	}
 }
 
@@ -280,6 +315,7 @@ ScriptCompile := !(vRepoFile^ itF) -> ScripObj^
 	res1 := sq_compilebuffer(gMainVM,mp,itF.Size(),itF.objName.Str(),true) ; $temp
 	if res1 != 0
 	{
+		printf("failed compile\n")
 		return null
 	}
 	scrp := new ScriptUnit
@@ -298,7 +334,7 @@ ScriptRun := !(ScriptUnit^ unit,vProp^ itProp) -> void
 	sq_addref(gMainVM,newThread.thrdObj&)
 	sq_pop(gMainVM,1)
 	
-	sq_pushobject(newThread.thrdVM,unit.funcObj[0],unit.funcObj[1])
+	sq_pushobject2(newThread.thrdVM,unit.funcObj&)
 	sq_pushroottable(newThread.thrdVM)
 	iRunScript(newThread&)
 }
@@ -308,10 +344,14 @@ iScriptASleep := !(void^ vm) -> s64
 	waitTime := float
 	sq_getfloat(vm,2,waitTime&)
 	if(waitTime < 0) waitTime = 0
-	gUV.Once(waitTime,gsNowScript,(x) => {
+	newOnce := gUV.Once(waitTime,gsNowScript,(x) => {
 		if gQuit return void //TODO: remove
+		fO := int[2] //TODO: remove stack protection?
 		asSc := x->{ScriptThread^}
+		asSc.onceTimer = null
 		iRunScript(asSc)
 	})
-	return sq_suspend(vm)
+	gsNowScript.onceTimer = newOnce
+	resVal := sq_suspendvm(vm)
+	return resVal
 }

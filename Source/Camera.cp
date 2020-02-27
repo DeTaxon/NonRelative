@@ -144,7 +144,8 @@ vCamera := class
 		mouseCamX = mouseX
 		mouseCamY = mouseY
 		mouseSense := 0.4
-		AddAngs(deltaTime*msXDiff*mouseSense,-deltaTime*msYDiff*mouseSense)
+		if not gDisableMouse
+			AddAngs(deltaTime*msXDiff*mouseSense,-deltaTime*msYDiff*mouseSense)
 
 		addLocal(vec4f(-addFB,addLR,0.0f,0.0f))
 	}

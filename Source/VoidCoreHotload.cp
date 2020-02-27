@@ -3,6 +3,8 @@ gFsMap := AVLMap.{uvFsEvent^,vRepoFolder^}
 
 gFsPreTest := List.{vRepoFile^} ; $keep
 gFsTextures := RBMap.{vRepoFile^,vTexture^}
+gFsModelsModel := AVLMap.{vRepoFile^,vModel^}
+gFsModelsScript := AVLMap.{vRepoFile^,vModel^}
 
 gHotloadInit := !() -> void
 {
@@ -21,6 +23,7 @@ gHotloadInit := !() -> void
 		{
 			mntr := str.GetPath()
 			newEv := gUV.DirectoryMonitor(str.GetPath(),(x,name) ==>{
+
 				itF := gRepo.GetFile(name,gFsMap[x])
 
 				if itF != null
@@ -48,11 +51,24 @@ gHotloadCheck := !() -> void
 		onTest := gFsPreTest.Pop()
 
 		fndInText := gFsTextures.TryFind(onTest)
-
 		if fndInText != null
 		{
 			printf("reloading texture %s\n",onTest.GetPath())
 			fndInText^.Reload(onTest)
+		}
+
+		fndInModelsModel := gFsModelsModel.TryFind(onTest)
+		if fndInModelsModel != null
+		{
+			printf("reloading model.model %s\n",onTest.GetPath())
+			fndInModelsModel^.ReloadModel(onTest)
+		}
+
+		fndInModelsScript := gFsModelsScript.TryFind(onTest)
+		if fndInModelsScript != null
+		{
+			printf("reloading model.script %s\n",onTest.GetPath())
+			fndInModelsScript^.ReloadScript(onTest)
 		}
 
 	}

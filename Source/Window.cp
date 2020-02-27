@@ -23,6 +23,17 @@ glfwKeyPressRes := !(void^ win,int key, int scancode,int action) -> void
 			asCh = 'S'
 		case 32
 			asCh = ' '
+		case 290
+			if action == GLFW_PRESS
+			{
+				gDisableMouse = not gDisableMouse
+				if gDisableMouse
+				{
+					glfwSetInputMode(glfwWindow,GLFW_CURSOR,GLFW_CURSOR_NORMAL)
+				}else{
+					glfwSetInputMode(glfwWindow,GLFW_CURSOR,GLFW_CURSOR_DISABLED)
+				}
+			}
 		case void
 			return void
 	}
