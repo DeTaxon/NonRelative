@@ -13,6 +13,11 @@ main := !(int argc, char^^ argv) -> int
 
 	gUV = new uvLoop()
 
+	st := Path("Makefile")
+	printf("heh %f\n",st.GetTime())
+
+	return 0
+
 	CreateWindow(1700,900)
 	defer DestroyWindow() 
 
@@ -30,7 +35,7 @@ main := !(int argc, char^^ argv) -> int
 
 	nMap := vGetMap("FirstMap")
 
-	mt := vAddProp("Mitr")
+	mt := vAddProp("DatFace")
 
 	cnvs := vAddProp("Canvas")
 	cnvs.modelPos.pos = vec4f(-2.0f,2.0f,2.0f,1.0f)

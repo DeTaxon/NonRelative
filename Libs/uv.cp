@@ -64,10 +64,43 @@ uv_sem_wait := !(void^)^ -> int
 uv_sem_trywait := !(void^)^ -> int
 uv_sem_destroy := !(void^)^ -> void
 
+uv_fs_stat := !(void^,void^,char^,!(void^)^->void)^ -> void
+
 //sizeof(uv_tcp_t) = 248
 //sizeof(sockaddr) = 16
 //sizeof(uv_udp_t) = 216
 //uv_buf_t = 16
+
+uv_timespec_t := class
+{
+	tv_sec := c_long
+	tv_nsec := c_long
+
+	ToDouble := !() -> double
+	{
+		return tv_sec->{double} + tv_nsec->{double}*0.0000000001
+	}
+}
+
+uv_stat_t := class
+{
+	st_dev := u64
+	st_mode := u64
+	st_nlink := u64
+	st_uid := u64
+	st_gid := u64
+	st_rdev := u64
+	st_ino := u64
+	st_size := u64
+	st_blksize := u64
+	st_blocks := u64
+	st_flags := u64
+	st_gen := u64
+	st_atim := uv_timespec_t
+	st_mtim := uv_timespec_t
+	st_ctim := uv_timespec_t
+	st_birthtim := uv_timespec_t
+}
 
 uv_buf_t := class
 {
@@ -143,6 +176,8 @@ uvInit := !() -> void
 	uv_sem_wait 	= uv.Get("uv_sem_wait")
 	uv_sem_trywait 	= uv.Get("uv_sem_trywait")
 	uv_sem_destroy 	= uv.Get("uv_sem_destroy")
+
+	uv_fs_stat 	= uv.Get("uv_fs_stat")
 }
 
 uvSem := class
@@ -509,6 +544,10 @@ uvLoop := class
 
 		return preRes
 	}
+	//Stat := !(char^ pth) -> uv_stat_t
+	//{
+	//	uv_fs_stat(loopPtr,result&,pth,null)
+	//}
 }
 uvTimer := class
 {

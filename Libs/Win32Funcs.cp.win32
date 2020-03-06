@@ -52,6 +52,7 @@ BY_HANDLE_FILE_INFORMATION := class
 	nFileIndexLow := u32
 }
 
+GetFileTime := !(void^ hndl,u64^ createTime,u64^ lastAcces,u64^ lastWrite) -> int declare
 GetFileInformationByHandle := !(void^ filId,BY_HANDLE_FILE_INFORMATION^ res) -> int declare
 
 WIN32_FIND_DATAW := class
@@ -125,3 +126,5 @@ TSleep := !(double timeWait) -> void
 {
 	Sleep((timeWait*1000.0)->{int})
 }
+
+c_long := type s32

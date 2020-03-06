@@ -74,9 +74,9 @@ realpath := !(char^ inp, char^ outp) -> char^ declare
 mkstemp := !(char^ ndm) -> int declare
 
 opendir := !(char^ inp) -> void^ declare
-closedir := !(void^ dirFd) ->int declare
+closedir := !(void^ dirFd) -> int declare
 readdir := !(void^ dirFd) -> void^ declare
-stat := !(char^ pth, void^ outStat) ->int declare
+stat := !(char^ pth, void^ outStat) -> int declare
 
 
 dlopen := !(char^ itName,int flgs) -> void^ declare
@@ -110,3 +110,5 @@ TSleep := !(double timeSleep) -> void
 		tmStruct[1] = 999999999
 	nanosleep(tmStruct[0]&,null)
 }
+
+c_long := type s64

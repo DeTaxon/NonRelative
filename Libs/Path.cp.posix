@@ -253,6 +253,13 @@ Path := class
 		if pos < 0 return itName
 		return StringSpan(itName.Get(),pos)
 	}
+	GetTime := !() -> double
+	{
+		buf := new char[256] ; $temp  //88
+		dat := buf[88]&->{u64^}
+		stat(itStr,buf->{void^})
+		return dat^->{double}
+	}
 }
 
 TFSDelete := !(char^ toDel) -> bool

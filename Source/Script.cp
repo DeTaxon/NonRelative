@@ -346,7 +346,6 @@ iScriptASleep := !(void^ vm) -> s64
 	if(waitTime < 0) waitTime = 0
 	newOnce := gUV.Once(waitTime,gsNowScript,(x) => {
 		if gQuit return void //TODO: remove
-		fO := int[2] //TODO: remove stack protection?
 		asSc := x->{ScriptThread^}
 		asSc.onceTimer = null
 		iRunScript(asSc)
