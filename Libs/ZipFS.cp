@@ -3,6 +3,8 @@ vRepoObject := class
 {
 	objName := StringSpan
 	upFolder := vRepoFolder^
+
+	GetName := !() -> StringSpan { result = objName }
 	
 	GetUpFolder := !() -> vRepoFolder^ { return upFolder }
 	GetPath := !() -> char^

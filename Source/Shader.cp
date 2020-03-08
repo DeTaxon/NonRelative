@@ -1,3 +1,20 @@
+vShaderModule := class
+{
+	itModule := VkShaderModule
+
+	LoadShaderModule := !(void^ modPoint,int modSize,char^ typ) -> void
+	{
+		vSC := new VkShaderModuleCreateInfo() ; $temp
+		vSC.codeSize = modSize
+		vSC.pCode = modPoint
+		vkFuncs.vkCreateShaderModule(vkLogCard,vSC,null,itModule&)
+	}
+	Get := !() -> VkShaderModule
+	{
+		return itModule
+	}
+}
+
 vShader := class 
 {
 	itPipe := VkPipeline
@@ -23,22 +40,11 @@ vShader := class
 		vkFuncs.vkCmdSetViewport(itBuf,0,1,vp&)
 		vkFuncs.vkCmdSetScissor(itBuf,0,1,sc&)
 	}
-	LoadShader := !(void^ vertPoint,int vertSize,void^ fragPoint,int fragSize) -> void
+	LoadShader := !(vShaderModule^ vertModule,vShaderModule^ fragModule) -> void
 	{
 
-		vert := VkShaderModule
-		vSC := new VkShaderModuleCreateInfo() ; $temp
-		vSC.codeSize = vertSize
-		vSC.pCode = vertPoint
-		vkFuncs.vkCreateShaderModule(vkLogCard,vSC,null,vert&)
-		defer vkFuncs.vkDestroyShaderModule(vkLogCard,vert,null)
-
-		frag := VkShaderModule
-		fSC := new VkShaderModuleCreateInfo() ; $temp
-		fSC.codeSize = fragSize
-		fSC.pCode = fragPoint
-		vkFuncs.vkCreateShaderModule(vkLogCard,fSC,null,frag&)
-		defer vkFuncs.vkDestroyShaderModule(vkLogCard,frag,null)
+		vert := vertModule.Get()
+		frag := fragModule.Get()
 
 		sStg := new VkPipelineShaderStageCreateInfo[2] ; $temp
 		sStg[^]."this"()

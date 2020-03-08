@@ -1,4 +1,6 @@
 
+slModules := AVLMap.{vRepoFile^,vShaderModule}
+
 vGetShader := !(char^ sName) -> Shader^
 {
 	if itShaders.Contain(sName)
@@ -46,18 +48,51 @@ vGetShader := !(char^ sName) -> Shader^
 		}
 	}
 
-	vertSize := u64()
-	vertPtr := slCompileShaderFile(fl.GetFile(vertName),vertSize&,"vert")
-	fragSize := u64()
-	fragPtr := slCompileShaderFile(fl.GetFile(fragName),fragSize&,"frag")
+	cacheDir := ""sbt + fl.GetUpFolder().GetPath() + "/ShaderCache/" <-
+	if not Path(cacheDir).IsExist()
+		TCreateDir(cacheDir)
+
+	vertMod := slCompileShaderFile(fl.GetFile(vertName),"vert")
+	fragMod := slCompileShaderFile(fl.GetFile(fragName),"frag")
 
 	itSh := ref itShaders[StrCopy(sName)]
 
-	itSh.LoadShader(vertPtr,vertSize,fragPtr,fragSize)
+	itSh.LoadShader(vertMod,fragMod)
 	return itSh&
 }
-slCompileShaderFile := !(vRepoFile^ itF,u64^ resSize,char^ typ) -> void^
+slCompileShaderFile := !(vRepoFile^ itF,char^ typ) -> vShaderModule^
 {
+	if slModules.Contain(itF)
+		return slModules[itF]&
+
+	
+	cName := "ShaderCache/"sbt + itF.GetName() <-
+	cFile := itF.GetFile(cName)
+
+	cpFile := cFile == null
+
+	if cFile != null and gHotload
+	{
+		cachPath := Path(cFile.GetPath())
+		orgPath := Path(itF.GetPath())
+		if orgPath.IsExist() and cachPath.IsExist() and cachPath.GetTime() < orgPath.GetTime()
+		{
+			cpFile = true
+		}
+	}
+
+	if not cpFile
+	{
+		itMod := ref slModules[itF]
+		on_exception slModules.Remove(itF)
+
+		ptrF := cFile.Map()
+		defer cFile.Unmap()
+		itMod.LoadShaderModule(ptrF,cFile.Size(),typ)
+
+		return itMod&
+	}
+
 	ptrToF := itF.Map()
 	defer itF.Unmap()
 
@@ -77,13 +112,26 @@ slCompileShaderFile := !(vRepoFile^ itF,u64^ resSize,char^ typ) -> void^
 		throw new Exception("failed parsing shader")
 
 	oFl := Path(outFileName)
-	resSize^ = oFl.Size()
+	resSize := oFl.Size()
 	fRd := file(outFileName,"r")
 	defer fRd.Close()
 
-	preRes := new u8[resSize^->{int}] ; $temp
-	fRd.Read(preRes->{void^},resSize^->{int})
+	preRes := new u8[resSize->{int}] ; $temp
+	fRd.Read(preRes->{void^},resSize->{int})
 
-	return preRes->{void^}
+	itMod := ref slModules[itF]
+	on_exception slModules.Remove(itF)
+
+	itMod.LoadShaderModule(preRes->{void^},resSize->{int},typ)
+
+	if slKeepResult
+	{
+		cName2 := ""sbt + itF.GetUpFolder().GetPath() + "/ShaderCache/" + itF.GetName() <-
+		outCFile := file(cName2,"w")
+		defer outCFile.Close()
+		outCFile.Write(preRes->{void^},resSize)
+	}
+
+	return itMod&
 }
 
