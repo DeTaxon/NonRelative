@@ -100,7 +100,11 @@ StringBuilderTemporary := class .{@BufSize}{
 		}
 		return res
 	}
-	"->{}" := !() .{char^} -> string
+	"->{}" := !() .{char^} -> char^
+	{
+		return Str() ; $temp
+	}
+	"<-" := !() -> char^
 	{
 		return Str() ; $temp
 	}

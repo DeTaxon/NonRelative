@@ -11,6 +11,7 @@ sqrtf := !(float iiin) ->float declare
 time := !() -> int declare
 srand := !(int time) -> void declare
 rand := !() -> int declare
+system := !(char^ toExe) -> int declare
 
 memset := !(void^ dst, char val,int size) -> void declare
 memcpy := !(void^ dst, void^ src,int size) -> void declare

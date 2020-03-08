@@ -2,8 +2,6 @@ TimeFlags := -f "time results: real - %E , user - %U user,system - %S ,memory %M
 
 Libs := -ldl -lpthread
 
-glComp := /media/Docs/VulkanSDK/1.0.39.1/x86_64/bin/glslangValidator -V100 -e main
-
 WinCompiler := x86_64-w64-mingw32-gcc 
 #WinCompiler := wine "c:/mingw/mingw64/bin/g++.exe"
 
@@ -25,26 +23,16 @@ Objs/engig.o: Objs/engig.ll
 Objs/wengi.o: Objs/wengi.ll
 	clang Objs/wengi.ll -c -o Objs/wengi.o --target=x86_64-win32-gnu
 
-Objs/engi.ll: LearnVert
+Objs/engi.ll: 
 	./halfvoid -g -p posix  --rname result Source/main.cp $(SLibs) -C0 "FLibs/*" -C1 "Source/*" --vk vk.xml -o Objs/engi.ll
-Objs/engig.ll: LearnVert
+Objs/engig.ll: 
 	nemiver ./halfvoid -g -p posix  --rname result Source/main.cp $(SLibs) -C0 "FLibs/*" -C1 "Source/*" --vk vk.xml -o Objs/engi.ll
-Objs/wengi.ll: LearnVert
+Objs/wengi.ll: 
 	./halfvoid  --rname result -p win32 Source/main.cp $(SLibs) -C0 "FLibs/*" -C1 "Source/*" --vk vk.xml -o Objs/wengi.ll
-
-test2: main2.cp
-	./halfvoid --rname result -g main2.cp $(SLibs) -o test2.ll; clang test2.ll -g $(Libs) -o test2
-test2w: main2.cp
-	./halfvoid --rname result -p win32  -g main2.cp $(SLibs) -o test2.ll; clang --target=x86_64-win32-gnu -c  test2.ll -g $(Libs) -o test2.o; $(WinCompiler) test2.o -o test2.exe
-
-Shaders/% : ShadersSource/%
-	$(glComp) $< -o $@
-
-LearnVert: Shaders/LearnVert.vert Shaders/LearnFrag.frag 
 	
 clean: 
 	rm -f out.ll WinObj.o a.exe a.out engig
 nvidia:
 	ENABLE_PRIMUS_LAYER=1 optirun -b primus ./engi
 
-.PHONY: clean gdbc cycle repair  LexTest engi LearnVert engig test2
+.PHONY: clean gdbc cycle repair Objs/engi.ll Objs/wengi.ll

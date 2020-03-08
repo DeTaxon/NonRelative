@@ -66,6 +66,8 @@ uv_sem_destroy := !(void^)^ -> void
 
 uv_fs_stat := !(void^,void^,char^,!(void^)^->void)^ -> void
 
+uv_spawn := !(void^,void^,void^)^ ->void
+
 //sizeof(uv_tcp_t) = 248
 //sizeof(sockaddr) = 16
 //sizeof(uv_udp_t) = 216
@@ -178,6 +180,8 @@ uvInit := !() -> void
 	uv_sem_destroy 	= uv.Get("uv_sem_destroy")
 
 	uv_fs_stat 	= uv.Get("uv_fs_stat")
+
+	uv_spawn 	= uv.Get("uv_spawn")
 }
 
 uvSem := class
@@ -544,11 +548,30 @@ uvLoop := class
 
 		return preRes
 	}
+	//Spawn := !(char^ file,char^^ args , !(uv_process
 	//Stat := !(char^ pth) -> uv_stat_t
 	//{
 	//	uv_fs_stat(loopPtr,result&,pth,null)
 	//}
 }
+
+//typedef void (*uv_exit_cb)(uv_process_t*, int64_t exit_status, int term_signal);
+
+uv_process := class
+{
+	extrBuf := char[800]
+}
+uv_process_options := class
+{
+	exit_cb := !(void^,s64,int)^ -> void
+	file := char^
+	args := char^^
+	env := char^^
+	cwd := char^
+	flags := int
+	extrBuf := char[800]
+}
+
 uvTimer := class
 {
 	buffer := char[1024]

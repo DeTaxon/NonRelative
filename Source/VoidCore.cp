@@ -29,6 +29,11 @@
 
 	gHotload := bool
 
+	slCompilerPath := char^
+	slInputFile := char^
+	slOutputFile := char^
+	slKeepResult := bool
+
 	pLoadCommonSettings := !() -> void
 	{
 		itSet := gRepo.GetFile("commonsettings.inf")
@@ -60,6 +65,18 @@
 					}
 				case "hotload"
 					gHotload = sets.ValueStr == "true"
+				case "shader_compiler"
+					switch sets.SubList[^].Name
+					{
+						case "exe"
+							slCompilerPath = it.ValueStr.Str()
+						case "inp_temp"
+							slInputFile = it.ValueStr.Str()
+						case "out_temp"
+							slOutputFile = it.ValueStr.Str()
+						case "keep"
+							slKeepResult = it.ValueStr == "true"
+					}
 			}
 		}
 		gUserModes.PushFront(VK_PRESENT_MODE_MAILBOX_KHR) ; $uniq
@@ -249,75 +266,6 @@
 				mod.AddToCmdBuffer(mainCmd.Get())
 			}
 		}
-	}
-	vGetShader := !(char^ sName) -> Shader^
-	{
-		if itShaders.Contain(sName)
-			return itShaders[sName]&
-
-		//pVoidMP.Push()
-		//defer pVoidMP.Pop()
-
-		flName := char^
-		stB := "Shaders/"sbt
-		stB << sName
-		stB << ".inf"
-		flName = stB.Str() ; $temp
-
-		fl := gRepo.GetFile(flName)
-
-		if fl == null
-			return null
-
-		heh := fl.Map()
-
-		if heh == null
-			return null
-		defer fl.Unmap()
-
-		cc := ParseInfoFile(fl.Map(),fl.Size()) ; $temp
-	
-		fndSh := false
-		vertName := StringSpan()
-		fragName := StringSpan()
-		for shIn : cc.SubList
-		{
-			if shIn.Name == "shader"
-			{
-				switch shIn.SubList[^].Name
-				{
-					case "vertex"
-						vertName = it.ValueStr
-					case "fragment"
-						fragName = it.ValueStr
-					case void 
-						return null
-				}
-				fndSh = true
-			}
-		}
-		vertFile := vRepoFile^()
-		fragFile := vRepoFile^()
-
-		if vertName != ""{
-			vertFile = fl.GetFile(vertName)
-			if vertFile == null
-				return null
-		}
-		if fragName != ""{
-			fragFile = fl.GetFile(fragName)
-			if fragFile == null
-				return null
-		}
-
-		itSh := ref itShaders[StrCopy(sName)] ; $pool
-
-		itSh.LoadShader(vertFile.Map(),vertFile.Size(),fragFile.Map(),fragFile.Size())
-		vertFile.Unmap()
-		fragFile.Unmap()
-
-
-		return itSh&
 	}
 	vGetMap := !(char^ mapName) -> vMap^
 	{

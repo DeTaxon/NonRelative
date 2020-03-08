@@ -1,5 +1,6 @@
 fopen := !(char^ Name,char^ s) -> void^ declare
 fwrite := !(void^ data, int size, int count, void^ hndl) -> int declare
+fread  := !(void^ data, int size, int count, void^ hndl) -> int declare
 fclose := !(void^ hndl) -> void declare
 fgets := !(char^ buf,int Size,void^ Hnd) -> char^ declare
 fputs := !(char^ buf,void^ Hnd) -> int declare
@@ -11,26 +12,26 @@ file := class
 	Handle := void^
 	this := !(char^ a,char^ b) -> void
 	{
-		this.open(a,b)
+		this.Open(a,b)
 	}
-	open := !(char^ Name,char^ flags) -> bool
+	Open := !(char^ Name,char^ flags) -> bool
 	{
 		Handle = fopen(Name,flags)
 		return Handle != null
 	}
-	close := !() -> void
+	Close := !() -> void
 	{	
 		fclose(Handle)
 	}
-	read := !(void^ data, int Size) -> int 
+	Read := !(void^ data, int Size) -> int 
 	{
-		return 0	
+		return fread(data,Size,1,Handle)
 	}
-	write := !(void^ data, int Size) -> int
+	Write := !(void^ data, int Size) -> int
 	{	
 		return fwrite(data,Size,1,Handle)
 	}
-	good := !() -> bool
+	Good := !() -> bool
 	{
 		return feof(Handle) == 0
 	}
@@ -46,12 +47,13 @@ sfile := class extend file
 	{
 		this.open(a,b)
 	}
-	readline := !() -> char^
-	{
-		Buff := char[4096]
-		if fgets(Buff,4096,Handle) == null return ""
-		return StrCopy(Buff)
-	}	
+	//TODO: must return $temp
+	//ReadLine := !() -> char^
+	//{
+	//	Buff := char[4096]
+	//	if fgets(Buff,4096,Handle) == null return ""
+	//	return StrCopy(Buff)
+	//}	
 	"<<" := !(char^ likeCpp) -> ref sfile
 	{
 		fputs(likeCpp,Handle)

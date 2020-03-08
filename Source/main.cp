@@ -13,11 +13,6 @@ main := !(int argc, char^^ argv) -> int
 
 	gUV = new uvLoop()
 
-	st := Path("Makefile")
-	printf("heh %f\n",st.GetTime())
-
-	return 0
-
 	CreateWindow(1700,900)
 	defer DestroyWindow() 
 
