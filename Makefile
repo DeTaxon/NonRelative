@@ -6,7 +6,7 @@ WinCompiler := x86_64-w64-mingw32-gcc
 #WinCompiler := wine "c:/mingw/mingw64/bin/g++.exe"
 
 FLibs := -C0 FLibs/glfw.cp 
-SLibs := -C0 "Libs/*" -Z0 "SLib.zip"
+SLibs := -C0 "Libs/*" -C0 "StandartLib/*"
 
 engi: Objs/engi.o
 	clang++ -g Objs/engi.o -IFLibs $(Libs) -o engi

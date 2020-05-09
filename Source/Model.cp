@@ -59,11 +59,11 @@ vModel := class
 			asFlt[i*8 + 1] = rFile.verts[i*8 + 1]
 			asFlt[i*8 + 2] = rFile.verts[i*8 + 2]
 
-			asFlt[i*8 + 4] = rFile.verts[i*8 + 3]
-			asFlt[i*8 + 5] = rFile.verts[i*8 + 4]
-			asFlt[i*8 + 6] = rFile.verts[i*8 + 5]
+			asFlt[i*8 + 3] = rFile.verts[i*8 + 3]
+			asFlt[i*8 + 4] = rFile.verts[i*8 + 4]
+			asFlt[i*8 + 5] = rFile.verts[i*8 + 5]
 
-			asFlt[i*8 + 3] = rFile.verts[i*8 + 6]
+			asFlt[i*8 + 6] = rFile.verts[i*8 + 6]
 			asFlt[i*8 + 7] = rFile.verts[i*8 + 7]
 		}
 

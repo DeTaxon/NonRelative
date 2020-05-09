@@ -17,12 +17,14 @@ ToString := !(float x) -> char^
 "<=>" := !(char^ a, char^ b) -> int
 {
 	if a->{int^} == b->{int^} return 0
-	if a == null return 1
-	if b == null return -1
-	cmpRes := strcmp(a,b)
-	if cmpRes > 0 return 1
-	if cmpRes < 0 return -1
-	return 0
+	if a == null return -1
+	if b == null return 1
+	//i := 0
+	//while a[i] != 0 and b[i] != 0 and a[i] == b[i] i += 1
+	//if a[i] < b[i] return -1
+	//if a[i] > b[i] return 1
+	//return 0
+	return strcmp(a,b)
 }
 "<" := !(char^ a, char^ b) -> bool
 {
@@ -64,6 +66,15 @@ StrCopy := !(char^ a) .{} -> char^
 	Si := StrSize(a)
 	Pre := new char[Si+1]
 	memcpy(Pre->{void^},a,Si)
+	Pre[Si] = 0
+
+	return Pre
+}
+Copy := !(char^ this) -> char^
+{
+	Si := StrSize(this)
+	Pre := new char[Si+1]
+	memcpy(Pre->{void^},this,Si)
 	Pre[Si] = 0
 
 	return Pre
@@ -201,4 +212,50 @@ StringIterator := class
 	"^" := !() -> ref char { return itr[ind] }
 }
 "~For" := !(char^ str) -> StringIterator { return StringIterator(str)}
+
+ReplaceKeywords := !(char^ txt, char^^ keys,int keysCount,!(StringSpan,int)&->char^ cb) -> char^
+{
+	stLen := StrSize(txt)
+	return ReplaceKeywords(txt[0..stLen],keys,keysCount,cb)
+}
+ReplaceKeywords := !(StringSpan txt, char^^ keys,int keysCount,!(StringSpan,int)&->char^ cb) -> char^
+{
+	preRes := ""sbt
+	states := new Tuple.{int,int}[keysCount] ; &temp
+	
+	for i : keysCount
+	{
+		states[i].1 = StrSize(keys[i])
+	}
+
+	lastDumped := 0
+	s := 0
+	for txt.Size()
+	{
+		for st,i : states
+		{
+			if txt[s] == keys[i][st.0]
+			{
+				st.0 += 1
+				if st.0 == st.1
+				{
+					endSize := s - lastDumped - st.1 + 1
+					if endSize > 0
+						preRes << txt[lastDumped..endSize]
+					//preRes << cb(txt[(s-st.1)..st.1])
+					preRes << cb(txt[(s-st.1+1)..st.1],s)
+					lastDumped = s + 1
+				}
+			}else{
+				st.0 = 0
+			}
+		}
+		s++
+	}
+	if s != lastDumped
+	{
+		preRes << txt[lastDumped..(s - lastDumped)]
+	}
+	return preRes.Str() ; $temp
+}
 

@@ -99,10 +99,23 @@ slCompileShaderFile := !(vRepoFile^ itF,char^ typ) -> vShaderModule^
 	resFileName := ""sbt + slInputFile + "." + typ <-
 	outFileName := ""sbt + slOutputFile + "." + typ <-
 
+	keyw := new char^[2] ; $temp
+	keyw[0] = "#VERT_INPUT_DATA_VARS"
+	keyw[1] = "#VERT_INPUT_DATA_INIT"
+	replacedSt := ReplaceKeywords(StringSpan(ptrToF->{char^},itF.Size()),keyw,keyw->len, (a1,a2) ==>{
+		switch a1
+		{
+			case "#VERT_INPUT_DATA_VARS"
+				return "layout(location = 0) in vec3 i_Position;layout(location = 1) in vec3 i_Normal;layout(location = 2) in vec2 i_uv;\n"
+			case "#VERT_INPUT_DATA_INIT"
+				return "\n"
+		}
+	})
+
 	fWrt := file(resFileName,"w")
 	//TODO: defer close
 
-	fWrt.Write(ptrToF,itF.Size())
+	fWrt.Write(replacedSt,StrSize(replacedSt))
 	fWrt.Close()
 	
 	exe := ""sbt + slCompilerPath  + " " + resFileName + " -o " + outFileName  + " " <-
