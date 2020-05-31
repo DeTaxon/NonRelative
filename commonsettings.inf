@@ -8,4 +8,4 @@ shader_compiler:
 	exe: glslangValidator -V100 -e main
 	inp_temp: /tmp/inpshader
 	out_temp: /tmp/resshader
-	keep: false
+	keep: true

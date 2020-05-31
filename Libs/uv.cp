@@ -476,7 +476,7 @@ uvLoop := class
 			uv_timer_start(toRet,x => {
 				x->{uvTimer^}.timerCallb(x->{uvTimer^})
 				//TODO: Destroy
-				x->{uvTimer^}.timerCallb.Delete()
+				x->{uvTimer^}.timerCallb.Destroy()
 			},timeout*1000.0,repeat*1000.0)
 		}else{
 			uv_timer_start(toRet,x => {

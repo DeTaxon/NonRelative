@@ -39,10 +39,11 @@ CmdBuffer := class
 	{
 		inhC := new VkCommandBufferInheritanceInfo() ; $temp
 
-		inhC.renderPass = vkRenderPass
+		inhC.renderPass = gRenderPassModel
 		inhC.subpass = 0
 		//TODO: WARNING, REMOVE FRAMEBUFFER
-		inhC.framebuffer = vkFramebuffers[nowImg]
+		//inhC.framebuffer = vkFramebuffers[nowImg]
+		inhC.framebuffer = gModelFramebuffer
 		inhC.occlusionQueryEnable = 0
 		inhC.queryFlags = 0
 		inhC.pipelineStatistics = 0

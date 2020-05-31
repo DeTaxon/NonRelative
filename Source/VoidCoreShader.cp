@@ -1,7 +1,7 @@
 
 slModules := AVLMap.{vRepoFile^,vShaderModule}
 
-vGetShader := !(char^ sName) -> Shader^
+vGetShader := !(char^ sName) -> vShader^
 {
 	if itShaders.Contain(sName)
 		return itShaders[sName]&
@@ -28,6 +28,7 @@ vGetShader := !(char^ sName) -> Shader^
 
 	cc := ParseInfoFile(fl.Map(),fl.Size()) ; $temp
 
+	isLight := false
 	fndSh := false
 	vertName := StringSpan()
 	fragName := StringSpan()
@@ -41,6 +42,8 @@ vGetShader := !(char^ sName) -> Shader^
 					vertName = it.ValueStr
 				case "fragment"
 					fragName = it.ValueStr
+				case "deffered"
+					isLight = true
 				case void 
 					return null
 			}
@@ -56,8 +59,13 @@ vGetShader := !(char^ sName) -> Shader^
 	fragMod := slCompileShaderFile(fl.GetFile(fragName),"frag")
 
 	itSh := ref itShaders[StrCopy(sName)]
-
-	itSh.LoadShader(vertMod,fragMod)
+	
+	if isLight
+	{
+		itSh.LoadShaderLight(vertMod,fragMod)
+	}else{
+		itSh.LoadShader(vertMod,fragMod)
+	}
 	return itSh&
 }
 slCompileShaderFile := !(vRepoFile^ itF,char^ typ) -> vShaderModule^
