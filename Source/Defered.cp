@@ -8,9 +8,8 @@ vkFramebuffers := VkFramebuffer[]
 
 gModelFramebuffer := VkFramebuffer
 
-depthImage := VkImage
-depthImageView := VkImageView
-depthMemory := vMemObj
+depthTexture := vTexture^
+fbTexture := vTexture^
 
 gLightShader := vShader^
 
@@ -18,9 +17,6 @@ gLightLayout := VkPipelineLayout
 gLightObjectLayout := VkDescriptorSetLayout
 gGBufferLayoutSets := VkDescriptorPool
 gGBufferTextureSet := VkDescriptorSet
-
-fbImage := VkImage
-fbView := VkImageView
 
 CreateSwapchain := !(int inW,int inH) -> void
 {
@@ -150,87 +146,25 @@ CreateFB := !() -> void
 	nowW := 2048
 	nowH := 1024
 
-	if depthImage != null
+	if depthTexture != null
 	{
-		vkFuncs.vkDestroyImage(vkLogCard,depthImage,null)
-		depthImage = null
+		depthTexture.Destroy()
+		delete depthTexture
+		depthTexture = null
 	}
 
-
-	newImg := new VkImageCreateInfo() ; $temp
-	newImg.extent.width = nowW
-	newImg.extent.height = nowH
-	newImg.extent.depth = 1
-	newImg.format = VK_FORMAT_R8G8B8A8_UNORM
-	newImg.imageType = VK_IMAGE_TYPE_2D
-	newImg.samples = VK_SAMPLE_COUNT_1_BIT
-	newImg.tiling = VK_IMAGE_TILING_OPTIMAL
-	newImg.usage = VK_IMAGE_USAGE_SAMPLED_BIT or_b VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT or_b VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT
-	newImg.sharingMode = VK_SHARING_MODE_EXCLUSIVE
-	newImg.mipLevels = 1
-	newImg.arrayLayers = 1
-	//newImg.queueFamilyIndexCount = 0
-	newImg.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED
-
-	memInfp := VkMemoryRequirements
-	vkFuncs.vkCreateImage(vkLogCard,newImg,null,fbImage&)
-	vkFuncs.vkGetImageMemoryRequirements(vkLogCard,fbImage,memInfp&)
-	
-	memObj := new vMemObj
-	memObj.CreateObject(memInfp.size,memInfp.memoryTypeBits,null)
-
-	vkFuncs.vkBindImageMemory(vkLogCard,fbImage,memObj.Get(),0)
-
-	vi := new VkImageViewCreateInfo() ; $temp
-	vi.image = fbImage
-	vi.viewType = VK_IMAGE_VIEW_TYPE_2D
-	vi.format = VK_FORMAT_R8G8B8A8_UNORM
-	vi.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT
-	vi.subresourceRange.levelCount = 1
-	vi.subresourceRange.layerCount = 1
-
-	vkFuncs.vkCreateImageView(vkLogCard,vi,null,fbView&)
+	fbTexture = new vTexture
+	fbTexture.CreateObject(nowW,nowH, (img,viw) ==> {
+		img.usage = VK_IMAGE_USAGE_SAMPLED_BIT or_b VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT or_b VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT
+	})
 
 	//create deth
-	imgDC := new VkImageCreateInfo() ; $temp
-	imgDC.imageType = VK_IMAGE_TYPE_2D
-	imgDC.format = VK_FORMAT_D16_UNORM
-	imgDC.extent.width = nowW
-	imgDC.extent.height = nowH
-	imgDC.extent.depth = 1
-	imgDC.mipLevels = 1
-	imgDC.arrayLayers = 1
-	imgDC.samples = VK_SAMPLE_COUNT_1_BIT
-	imgDC.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED
-	imgDC.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT
-	imgDC.queueFamilyIndexCount = 0
-	imgDC.pQueueFamilyIndices = null
-	imgDC.sharingMode = VK_SHARING_MODE_EXCLUSIVE
-
-	vkFuncs.vkCreateImage(vkLogCard,imgDC,null,depthImage&)
-
-	memReq := VkMemoryRequirements
-	vkFuncs.vkGetImageMemoryRequirements(vkLogCard,depthImage,memReq&)
-	
-	depthMemory.CreateObject(memReq.size->{int},memReq.memoryTypeBits->{int},null)
-
-	vkFuncs.vkBindImageMemory(vkLogCard,depthImage,depthMemory.Get(),0)
-
-	imgVC := new VkImageViewCreateInfo() ; $temp
-	imgVC.image = depthImage
-	imgVC.format = VK_FORMAT_D16_UNORM
-	imgVC.components.r = VK_COMPONENT_SWIZZLE_R
-	imgVC.components.g = VK_COMPONENT_SWIZZLE_G
-	imgVC.components.b = VK_COMPONENT_SWIZZLE_B
-	imgVC.components.a = VK_COMPONENT_SWIZZLE_A
-	imgVC.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT
-	imgVC.subresourceRange.baseMipLevel = 0
-	imgVC.subresourceRange.levelCount = 1
-	imgVC.subresourceRange.baseArrayLayer = 0
-	imgVC.subresourceRange.layerCount = 1
-	imgVC.viewType = VK_IMAGE_VIEW_TYPE_2D
-
-	vkFuncs.vkCreateImageView(vkLogCard,imgVC,null,depthImageView&)
+	depthTexture = new vTexture
+	depthTexture.CreateObject(nowW,nowH,(img,viv)==> {
+		img.format = VK_FORMAT_D16_UNORM
+		img.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT
+		viv.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT
+	})
 
 
 	attmDesc := new VkAttachmentDescription[2] ; $temp
@@ -281,8 +215,8 @@ CreateFB := !() -> void
 	vkFuncs.vkCreateRenderPass(vkLogCard,rpC,null,gRenderPassModel&)
 
 	extrV := VkImageView[2]
-	extrV[0] = fbView
-	extrV[1] = depthImageView
+	extrV[0] = fbTexture.View()
+	extrV[1] = depthTexture.View()
 	fbC := new VkFramebufferCreateInfo() ; $temp
 	fbC.renderPass = gRenderPassModel
 	fbC.attachmentCount = 2
@@ -343,7 +277,7 @@ CreateFB := !() -> void
 
 	imgI := new VkDescriptorImageInfo ; $temp
 	imgI.sampler = gSamplerNearest
-	imgI.imageView = fbView
+	imgI.imageView = fbTexture.View()
 	imgI.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
 
 	wrT := new VkWriteDescriptorSet() ; $temp
@@ -403,7 +337,7 @@ StopDraw := !() -> void
 	imgBarC.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
 	imgBarC.srcQueueFamilyIndex = 0
 	imgBarC.dstQueueFamilyIndex = 0
-	imgBarC.image = fbImage
+	imgBarC.image = fbTexture.Img()
 	imgBarC.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT
 	imgBarC.subresourceRange.baseMipLevel = 0
 	imgBarC.subresourceRange.levelCount = 1

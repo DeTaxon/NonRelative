@@ -27,8 +27,14 @@ vTexture := class
 	itW,itH := int
 
 	refCounter := int
-
+	
+	Img := !() -> VkImage { return itImg }
+	View := !() -> VkImageView { return itImgView }
 	CreateObject := !(int w, int h) -> int
+	{
+		CreateObject(w,h,(x,y) ==> {})
+	}
+	CreateObject := !(int w, int h,!(VkImageCreateInfo^,VkImageViewCreateInfo^)&-> void createSettings) -> int
 	{
 		itW = w
 		itH = h
@@ -47,14 +53,6 @@ vTexture := class
 		//newImg.queueFamilyIndexCount = 0
 		newImg.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED
 
-		memInfp := VkMemoryRequirements
-		vkFuncs.vkCreateImage(vkLogCard,newImg,null,itImg&)
-		vkFuncs.vkGetImageMemoryRequirements(vkLogCard,itImg,memInfp&)
-
-		memObj.CreateObject(memInfp.size,memInfp.memoryTypeBits,null)
-
-		vkFuncs.vkBindImageMemory(vkLogCard,itImg,memObj.Get(),0)
-
 		vi := new VkImageViewCreateInfo() ; $temp
 		vi.image = itImg
 		vi.viewType = VK_IMAGE_VIEW_TYPE_2D
@@ -63,6 +61,19 @@ vTexture := class
 		vi.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT
 		vi.subresourceRange.levelCount = 1
 		vi.subresourceRange.layerCount = 1
+
+		createSettings(newImg,vi)
+
+		memInfp := VkMemoryRequirements
+		vkFuncs.vkCreateImage(vkLogCard,newImg,null,itImg&)
+		vkFuncs.vkGetImageMemoryRequirements(vkLogCard,itImg,memInfp&)
+
+		memObj.CreateObject(memInfp.size,memInfp.memoryTypeBits,null)
+
+		vkFuncs.vkBindImageMemory(vkLogCard,itImg,memObj.Get(),0)
+
+		vi.image = itImg
+		vi.format = newImg.format 
 
 		vkFuncs.vkCreateImageView(vkLogCard,vi,null,itImgView&)
 
@@ -137,10 +148,10 @@ vTexture := class
 	}
 	Reload := !(vRepoFile^ itFile) -> void
 	{
-		DestroyVK()
+		Destroy()
 		CreateTexture(itFile)
 	}
-	DestroyVK := !() -> void
+	Destroy := !() -> void
 	{
 		vkFuncs.vkDestroyImageView(vkLogCard,itImgView,null)
 		vkFuncs.vkDestroyImage(vkLogCard,itImg,null)
