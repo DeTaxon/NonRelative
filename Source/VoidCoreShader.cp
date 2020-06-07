@@ -51,7 +51,7 @@ vGetShader := !(char^ sName) -> vShader^
 		}
 	}
 
-	cacheDir := ""sbt + fl.GetUpFolder().GetPath() + "/ShaderCache/" <-
+	cacheDir := ""sbt + fl.GetUpFolder().GetPath() + "/ShaderCache" <-
 	if not Path(cacheDir).IsExist()
 		TCreateDir(cacheDir)
 

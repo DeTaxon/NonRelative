@@ -9,7 +9,7 @@ vkFramebuffers := VkFramebuffer[]
 gModelFramebuffer := VkFramebuffer
 
 depthTexture := vTexture^
-fbTexture := vTexture^
+fbTextures := vTexture^[2]
 
 gLightShader := vShader^
 
@@ -58,7 +58,7 @@ CreateSwapchain := !(int inW,int inH) -> void
 	vkImages = new VkImage[imgCount]
 	vkFuncs.vkGetSwapchainImagesKHR(vkLogCard,vkSwapchain,imgCount&,vkImages)
 
-	attmDesc := new VkAttachmentDescription[2] ; $temp
+	attmDesc := new VkAttachmentDescription[1] ; $temp
 	//attmDesc[0].format = SwapImageFormat
 	attmDesc[0].format = SwapImageFormat
 	attmDesc[0].samples = VK_SAMPLE_COUNT_1_BIT
@@ -67,23 +67,11 @@ CreateSwapchain := !(int inW,int inH) -> void
 	attmDesc[0].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE
 	attmDesc[0].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE
 	attmDesc[0].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED
-	attmDesc[0].finalLayout  = 1000001002//1000111000//VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
-
-	attmDesc[1].format = VK_FORMAT_D16_UNORM
-	attmDesc[1].samples = VK_SAMPLE_COUNT_1_BIT
-	attmDesc[1].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR
-	attmDesc[1].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE
-	attmDesc[1].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE
-	attmDesc[1].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE
-	attmDesc[1].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED
-	attmDesc[1].finalLayout  =VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
+	attmDesc[0].finalLayout  = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
 
 	attmRef := new VkAttachmentReference ; $temp
 	attmRef.attachment = 0
 	attmRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
-	//attmRef2 := new VkAttachmentReference ; $temp
-	//attmRef2.attachment = 1
-	//attmRef2.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
 
 	subpass := new VkSubpassDescription ; $temp
 	subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS
@@ -127,13 +115,10 @@ CreateSwapchain := !(int inW,int inH) -> void
 
 		vkFuncs.vkCreateImageView(vkLogCard,imgViewC,null,vkImageViews[i]&)
 
-		extrV := VkImageView[2]
-		extrV[0] = vkImageViews[i]
-		//extrV[1] = depthImageView
 		fbC := new VkFramebufferCreateInfo() ; $temp
 		fbC.renderPass = gRenderPassLight
 		fbC.attachmentCount = 1
-		fbC.pAttachments = extrV[0]&
+		fbC.pAttachments = vkImageViews[i]&
 		fbC.width = inW
 		fbC.height = inH
 		fbC.layers = 1
@@ -153,9 +138,14 @@ CreateFB := !() -> void
 		depthTexture = null
 	}
 
-	fbTexture = new vTexture
-	fbTexture.CreateObject(nowW,nowH, (img,viw) ==> {
+	fbTextures[0] = new vTexture
+	fbTextures[0].CreateObject(nowW,nowH, (img,viw) ==> {
 		img.usage = VK_IMAGE_USAGE_SAMPLED_BIT or_b VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT or_b VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT
+	})
+	fbTextures[1] = new vTexture
+	fbTextures[1].CreateObject(nowW,nowH, (img,viw) ==> {
+		img.usage = VK_IMAGE_USAGE_SAMPLED_BIT or_b VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT or_b VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT
+		img.format = VK_FORMAT_R32G32B32A32_SFLOAT
 	})
 
 	//create deth
@@ -167,37 +157,50 @@ CreateFB := !() -> void
 	})
 
 
-	attmDesc := new VkAttachmentDescription[2] ; $temp
-	attmDesc[0].format = VK_FORMAT_R8G8B8A8_UNORM
-	attmDesc[0].samples = VK_SAMPLE_COUNT_1_BIT
-	attmDesc[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR
-	attmDesc[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE
-	attmDesc[0].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE
-	attmDesc[0].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE
-	attmDesc[0].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED
-	attmDesc[0].finalLayout  = 1000001002//1000111000//VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
-
-	attmDesc[1].format = VK_FORMAT_D16_UNORM
+	attmDesc := new VkAttachmentDescription[3] ; $temp
+	attmDesc[1].format = VK_FORMAT_R8G8B8A8_UNORM
 	attmDesc[1].samples = VK_SAMPLE_COUNT_1_BIT
 	attmDesc[1].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR
-	attmDesc[1].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE
+	attmDesc[1].storeOp = VK_ATTACHMENT_STORE_OP_STORE
 	attmDesc[1].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE
 	attmDesc[1].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE
 	attmDesc[1].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED
-	attmDesc[1].finalLayout  =VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
+	attmDesc[1].finalLayout  = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+	attmDesc[1].finalLayout  = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
 
-	attmRef := new VkAttachmentReference ; $temp
-	attmRef.attachment = 0
-	attmRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+	attmDesc[2].format = VK_FORMAT_R32G32B32A32_SFLOAT
+	attmDesc[2].samples = VK_SAMPLE_COUNT_1_BIT
+	attmDesc[2].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR
+	attmDesc[2].storeOp = VK_ATTACHMENT_STORE_OP_STORE
+	attmDesc[2].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE
+	attmDesc[2].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE
+	attmDesc[2].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED
+	attmDesc[2].finalLayout  = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+	attmDesc[2].finalLayout  = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+
+	attmDesc[0].format = VK_FORMAT_D16_UNORM
+	attmDesc[0].samples = VK_SAMPLE_COUNT_1_BIT
+	attmDesc[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR
+	attmDesc[0].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE
+	attmDesc[0].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE
+	attmDesc[0].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE
+	attmDesc[0].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED
+	attmDesc[0].finalLayout  =VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
+
+	attmRef := new VkAttachmentReference[2] ; $temp
+	attmRef[0].attachment = 1
+	attmRef[0].layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+	attmRef[1].attachment = 2
+	attmRef[1].layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
 	attmRef2 := new VkAttachmentReference ; $temp
-	attmRef2.attachment = 1
+	attmRef2.attachment = 0
 	attmRef2.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
 
 	subpass := new VkSubpassDescription ; $temp
 	subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS
 	subpass.inputAttachmentCount = 0
 	subpass.pInputAttachments = null
-	subpass.colorAttachmentCount = 1
+	subpass.colorAttachmentCount = 2
 	subpass.pColorAttachments = attmRef
 	subpass.pResolveAttachments = null
 	subpass.pDepthStencilAttachment = attmRef2
@@ -205,7 +208,7 @@ CreateFB := !() -> void
 	subpass.pPreserveAttachments = null
 
 	rpC := new VkRenderPassCreateInfo() ; $temp
-	rpC.attachmentCount = 2
+	rpC.attachmentCount = 3
 	rpC.pAttachments = attmDesc
 	rpC.subpassCount = 1
 	rpC.pSubpasses = subpass
@@ -214,12 +217,13 @@ CreateFB := !() -> void
 
 	vkFuncs.vkCreateRenderPass(vkLogCard,rpC,null,gRenderPassModel&)
 
-	extrV := VkImageView[2]
-	extrV[0] = fbTexture.View()
-	extrV[1] = depthTexture.View()
+	extrV := VkImageView[3]
+	extrV[1] = fbTextures[0].View()
+	extrV[2] = fbTextures[1].View()
+	extrV[0] = depthTexture.View()
 	fbC := new VkFramebufferCreateInfo() ; $temp
 	fbC.renderPass = gRenderPassModel
-	fbC.attachmentCount = 2
+	fbC.attachmentCount = 3
 	fbC.pAttachments = extrV[0]&
 	fbC.width = nowW
 	fbC.height = nowH
@@ -227,12 +231,17 @@ CreateFB := !() -> void
 
 	vkFuncs.vkCreateFramebuffer(vkLogCard,fbC,null,gModelFramebuffer&)
 
-	twoDesc := new VkDescriptorSetLayoutBinding ; $temp
-	twoDesc.binding = 0
-	twoDesc.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
-	twoDesc.descriptorCount = 1
-	twoDesc.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT
-	twoDesc.pImmutableSamplers = null
+	twoDesc := new VkDescriptorSetLayoutBinding[2] ; $temp
+	twoDesc[0].binding = 0
+	twoDesc[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
+	twoDesc[0].descriptorCount = 1
+	twoDesc[0].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT
+	twoDesc[0].pImmutableSamplers = null
+	twoDesc[1].binding = 1
+	twoDesc[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
+	twoDesc[1].descriptorCount = 1
+	twoDesc[1].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT
+	twoDesc[1].pImmutableSamplers = null
 
 	set2Desc := new VkDescriptorSetLayoutCreateInfo() ; $temp
 	set2Desc.bindingCount = 1
@@ -275,10 +284,13 @@ CreateFB := !() -> void
 
 	vkFuncs.vkAllocateDescriptorSets(vkLogCard,newSetCR,gGBufferTextureSet&)
 
-	imgI := new VkDescriptorImageInfo ; $temp
-	imgI.sampler = gSamplerNearest
-	imgI.imageView = fbTexture.View()
-	imgI.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+	imgI := new VkDescriptorImageInfo[2] ; $temp
+	imgI[0].sampler = gSamplerNearest
+	imgI[0].imageView = fbTextures[0].View()
+	imgI[0].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+	imgI[1].sampler = gSamplerNearest
+	imgI[1].imageView = fbTextures[1].View()
+	imgI[1].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
 
 	wrT := new VkWriteDescriptorSet() ; $temp
 	wrT.descriptorCount = 1
@@ -304,22 +316,31 @@ StartDraw := !() -> bool
 	mainCmd.Reset()
 	mainCmd.Start()
 
+
 	rpC := new VkRenderPassBeginInfo() ; $temp
 
-	clrValues := new float[8] ; $temp
+	clrValues := new float[13] ; $temp
 
 	clrValues[0] = 1.0f
-	clrValues[1] = 0.5f
+	clrValues[1] = 0.0f
 	clrValues[2] = 0.0f
 	clrValues[3] = 1.0f
+
 	clrValues[4] = 1.0f
 	clrValues[5] = 0.0f
+	clrValues[6] = 0.0f
+	clrValues[7] = 1.0f
+
+	clrValues[8] = 0.0f
+	clrValues[9] = 1.0f
+	clrValues[10] = 0.0f
+	clrValues[11] = 0.0f
 
 	rpC.renderPass = gRenderPassModel
 	rpC.framebuffer = gModelFramebuffer
 	rpC.renderArea.extent.width = gVulkanWindowW //surfAb.currentExtent.width
 	rpC.renderArea.extent.height = gVulkanWindowH //surfAb.currentExtent.height
-	rpC.clearValueCount = 2
+	rpC.clearValueCount = 3
 	rpC.pClearValues = clrValues->{void^}
 	
 	vkFuncs.vkCmdBeginRenderPass(mainCmd.Get(),rpC,VK_SUBPASS_CONTENTS_INLINE)
@@ -330,39 +351,23 @@ StopDraw := !() -> void
 
 	vkFuncs.vkCmdEndRenderPass(mainCmd.Get())
 		
-	imgBarC := new VkImageMemoryBarrier() ; $temp
-	imgBarC.srcAccessMask = VK_ACCESS_MEMORY_READ_BIT
-	imgBarC.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT//VK_ACCESS_COLOR_ATTACHMENT_READ_BIT or_b VK_ACCESS_MEMORY_READ_BIT
-	imgBarC.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED
-	imgBarC.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
-	imgBarC.srcQueueFamilyIndex = 0
-	imgBarC.dstQueueFamilyIndex = 0
-	imgBarC.image = fbTexture.Img()
-	imgBarC.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT
-	imgBarC.subresourceRange.baseMipLevel = 0
-	imgBarC.subresourceRange.levelCount = 1
-	imgBarC.subresourceRange.baseArrayLayer = 0
-	imgBarC.subresourceRange.layerCount = 1
+	imgBarCPre := new VkImageMemoryBarrier[2] ; $temp
 
-	vkFuncs.vkCmdPipelineBarrier(mainCmd.Get(),VK_PIPELINE_STAGE_TRANSFER_BIT,VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,0,0,null,0,null,1,imgBarC)
 
 	rpC := new VkRenderPassBeginInfo() ; $temp
 
-	clrValues := new float[8] ; $temp
+	clrValues := float[3]
 
-	clrValues[0] = 1.0f
+	clrValues[0] = 0.0f
 	clrValues[1] = 0.5f
-	clrValues[2] = 0.0f
-	clrValues[3] = 1.0f
-	clrValues[4] = 1.0f
-	clrValues[5] = 0.0f
+	clrValues[2] = 1.0f
 
 	rpC.renderPass = gRenderPassLight
 	rpC.framebuffer = vkFramebuffers[nowImg]
 	rpC.renderArea.extent.width = gVulkanWindowW //surfAb.currentExtent.width
 	rpC.renderArea.extent.height = gVulkanWindowH //surfAb.currentExtent.height
 	rpC.clearValueCount = 1
-	rpC.pClearValues = clrValues->{void^}
+	rpC.pClearValues = clrValues[0]&->{void^}
 	
 	vkFuncs.vkCmdBeginRenderPass(mainCmd.Get(),rpC,VK_SUBPASS_CONTENTS_INLINE)
 
@@ -390,22 +395,11 @@ StopDraw := !() -> void
 	vkFuncs.vkCmdPipelineBarrier(mainCmd.Get(),VK_PIPELINE_STAGE_TRANSFER_BIT,VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,0,0,null,0,null,1,imgBarC)
 	mainCmd.Stop()
 
-	//waitMsk := VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT
-	//submInf := new VkSubmitInfo() ; $temp
-	//submInf.waitSemaphoreCount = 0
-	//submInf.pWaitSemaphores = null
-	//submInf.pWaitDstStageMask = waitMsk&->{void^}
-	//submInf.commandBufferCount = 1
-  	//submInf.pCommandBuffers = vkCmdBufs[nowImg]&;
-  	//submInf.signalSemaphoreCount = 0;
-  	//submInf.pSignalSemaphores = null
-	//vkFuncs.vkQueueSubmit(vkQueue, 1, submInf, null)
 	mainCmd.Submit()
 	vkFuncs.vkQueueWaitIdle(vkQueue)
 
 	res := VkResult
 	pI := new VkPresentInfoKHR() ; $temp
-	//pI.sType = 1000001001//VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 	pI.pNext = null
 	pI.waitSemaphoreCount = 0
 	pI.pWaitSemaphores = null

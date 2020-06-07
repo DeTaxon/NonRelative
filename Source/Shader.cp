@@ -126,19 +126,27 @@ vShader := class
 		//  VK_FALSE,   VkBool32              alphaToCoverageEnable
 		//  VK_FALSE    VkBool32              alphaToOneEnable
 
-		blndPre := new VkPipelineColorBlendAttachmentState ; $temp
-		blndPre.srcColorBlendFactor = VK_BLEND_FACTOR_ONE
-		blndPre.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO
-		blndPre.colorBlendOp = VK_BLEND_OP_ADD
-		blndPre.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE
-		blndPre.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO
-		blndPre.alphaBlendOp = VK_BLEND_OP_ADD
-		blndPre.colorWriteMask = VK_COLOR_COMPONENT_R_BIT or_b VK_COLOR_COMPONENT_G_BIT or_b VK_COLOR_COMPONENT_B_BIT or_b VK_COLOR_COMPONENT_A_BIT
+		blndPre := new VkPipelineColorBlendAttachmentState[2] ; $temp
+		blndPre[0].srcColorBlendFactor = VK_BLEND_FACTOR_ONE
+		blndPre[0].dstColorBlendFactor = VK_BLEND_FACTOR_ZERO
+		blndPre[0].colorBlendOp = VK_BLEND_OP_ADD
+		blndPre[0].srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE
+		blndPre[0].dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO
+		blndPre[0].alphaBlendOp = VK_BLEND_OP_ADD
+		blndPre[0].colorWriteMask = VK_COLOR_COMPONENT_R_BIT or_b VK_COLOR_COMPONENT_G_BIT or_b VK_COLOR_COMPONENT_B_BIT or_b VK_COLOR_COMPONENT_A_BIT
+
+		blndPre[1].srcColorBlendFactor = VK_BLEND_FACTOR_ONE
+		blndPre[1].dstColorBlendFactor = VK_BLEND_FACTOR_ZERO
+		blndPre[1].colorBlendOp = VK_BLEND_OP_ADD
+		blndPre[1].srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE
+		blndPre[1].dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO
+		blndPre[1].alphaBlendOp = VK_BLEND_OP_ADD
+		blndPre[1].colorWriteMask = VK_COLOR_COMPONENT_R_BIT or_b VK_COLOR_COMPONENT_G_BIT or_b VK_COLOR_COMPONENT_B_BIT or_b VK_COLOR_COMPONENT_A_BIT
 		//  VK_FALSE,  VkBool32   blendEnable
 
 		blndC := new VkPipelineColorBlendStateCreateInfo() ; $temp
 		blndC.logicOp = VK_LOGIC_OP_COPY
-		blndC.attachmentCount = 1
+		blndC.attachmentCount = 2
 		blndC.pAttachments = blndPre
 		//  VK_FALSE,                     VkBool32   logicOpEnable
 		//  { 0.0f, 0.0f, 0.0f, 0.0f }    float      blendConstants[4]
@@ -282,7 +290,7 @@ vShader := class
 		dsC := new VkPipelineDepthStencilStateCreateInfo() ; $temp
 		//dsC.depthTestEnable = VK_TRUE
 		dsC.depthTestEnable = VK_FALSE
-		dsC.depthWriteEnable = VK_TRUE
+		dsC.depthWriteEnable = VK_FALSE
 		dsC.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL
 		dsC.depthBoundsTestEnable = VK_FALSE
 		dsC.minDepthBounds = 0.0f
