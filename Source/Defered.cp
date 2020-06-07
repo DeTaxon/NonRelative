@@ -59,7 +59,6 @@ CreateSwapchain := !(int inW,int inH) -> void
 	vkFuncs.vkGetSwapchainImagesKHR(vkLogCard,vkSwapchain,imgCount&,vkImages)
 
 	attmDesc := new VkAttachmentDescription[1] ; $temp
-	//attmDesc[0].format = SwapImageFormat
 	attmDesc[0].format = SwapImageFormat
 	attmDesc[0].samples = VK_SAMPLE_COUNT_1_BIT
 	attmDesc[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR
@@ -165,7 +164,6 @@ CreateFB := !() -> void
 	attmDesc[1].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE
 	attmDesc[1].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE
 	attmDesc[1].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED
-	attmDesc[1].finalLayout  = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
 	attmDesc[1].finalLayout  = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
 
 	attmDesc[2].format = VK_FORMAT_R32G32B32A32_SFLOAT
@@ -175,7 +173,6 @@ CreateFB := !() -> void
 	attmDesc[2].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE
 	attmDesc[2].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE
 	attmDesc[2].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED
-	attmDesc[2].finalLayout  = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
 	attmDesc[2].finalLayout  = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
 
 	attmDesc[0].format = VK_FORMAT_D16_UNORM
@@ -244,7 +241,7 @@ CreateFB := !() -> void
 	twoDesc[1].pImmutableSamplers = null
 
 	set2Desc := new VkDescriptorSetLayoutCreateInfo() ; $temp
-	set2Desc.bindingCount = 1
+	set2Desc.bindingCount = 2
 	set2Desc.pBindings = twoDesc->{void^}
 
 	vkFuncs.vkCreateDescriptorSetLayout(vkLogCard,set2Desc,null,gLightObjectLayout&)
@@ -268,7 +265,7 @@ CreateFB := !() -> void
 
 	poolSize := u32[2] 
 	poolSize[0] = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
-	poolSize[1] = 1
+	poolSize[1] = 2
 
 	nPool := new VkDescriptorPoolCreateInfo() ; $temp
 	nPool.maxSets = 1
@@ -293,7 +290,7 @@ CreateFB := !() -> void
 	imgI[1].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
 
 	wrT := new VkWriteDescriptorSet() ; $temp
-	wrT.descriptorCount = 1
+	wrT.descriptorCount = 2
 	wrT.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
 	wrT.pImageInfo = imgI->{void^}
 	wrT.dstSet = gGBufferTextureSet

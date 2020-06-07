@@ -8,6 +8,7 @@ layout(push_constant) uniform PushConsts{
 }consts;
 
 layout(location = 0) out vec2 o_uv;
+layout(location = 1) out vec3 o_norm;
 
 layout(set = 0,binding = 0) uniform perspInfo
 {
@@ -46,4 +47,5 @@ void main() {
 	gl_Position.z = -(prePosition.z*prespData.z + prespData.w);
 	gl_Position.w = -prePosition.z;
 	o_uv = vec2(i_uv.x,1.0 - i_uv.y);
+	o_norm = i_Normal;
 }
