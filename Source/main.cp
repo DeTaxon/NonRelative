@@ -1,4 +1,3 @@
-titleBuf := char[256]
 
 gQuit := false
 gUV := uvLoop^
@@ -30,9 +29,9 @@ main := !(int argc, char^^ argv) -> int
 
 	nMap := vGetMap("FirstMap")
 
-	mt := vAddProp("DatFace")
+	mt := nMap.AddProp("DatFace")
 
-	cnvs := vAddProp("Canvas")
+	cnvs := nMap.AddProp("Canvas")
 	cnvs.modelPos.pos = vec4f(-2.0f,2.0f,2.0f,1.0f)
 	cnvs.modelPos.ang = quantfAt(0.0f,1.0f,0.0f,90deg)
 
@@ -72,7 +71,6 @@ main := !(int argc, char^^ argv) -> int
 
 			nowTime := glfwGetTime()
 
-
 			//if resizeState 
 			//{
 			//	if nowTime - gLastTimeResized > 1.0
@@ -84,15 +82,6 @@ main := !(int argc, char^^ argv) -> int
 			//		yield void
 			//	}
 			//}
-			
-			if nowTime - prevTime > 1.0
-			{
-				ttlPre := "Hi again! fps = "sbt + fpsCounter
-				strcpy(titleBuf[0]&,ttlPre.Str()) ; $temp
-				glfwSetWindowTitle(glfwWindow,titleBuf[0]&)
-				fpsCounter = 0
-				prevTime = nowTime
-			}
 
 			if glfwWindowShouldClose(glfwWindow)
 			{

@@ -298,8 +298,6 @@
 
 		newMap := ref itMaps[StrCopy(mapName)]
 
-		preSetProps := List.{vProp^}()
-		
 		for itPreList : cc.SubList
 		{
 			if itPreList.Name == "prop"
@@ -314,13 +312,11 @@
 						newMod := vGenModel("anon",md,asF)
 						if newMod == null throw new Exception("Can not load map  , incorrect model file")
 
-						newProp := vAddProp(newMod,true)
-						preSetProps.Push(newProp) ; $temp
+						newProp := vAddProp(newMod,newMap&)
 					}
 				}
 			}
 		}
-		newMap.mapProps = preSetProps.ToArray()
 		return newMap&
 	}
 	vPhysStage := !(double deltaTime) -> void

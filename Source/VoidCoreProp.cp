@@ -2,17 +2,19 @@ vAddProp := !(char^ modelName) -> vProp^
 {
 	itMod := vGetModel(modelName)
 	if itMod == null return null
-	return vAddProp(itMod,false)
+	return vAddProp(itMod,null)
 }
-vAddProp := !(vModel^ itModel,bool mapCreated) -> vProp^
+vAddProp := !(vModel^ itModel,vMap^ mapObj) -> vProp^
 {
 	//pVoidMP.Push()
 	//defer pVoidMP.Pop()
 
 	newProp := vProp^()
-	if mapCreated
+	if mapObj != null
 	{
+
 		newProp = new vProp
+		mapObj.mapProps.Push(newProp)
 	}else{
 		itProps.Emplace()
 		newProp = itProps.Back()&

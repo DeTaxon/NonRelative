@@ -14,10 +14,6 @@ void main()
 	// Get G-Buffer values
 	//vec3 fragColor = texture(Gcolor, inUV*vec2(1700.0 / 2048,900.0 / 1024.0)).rgb;
 	vec3 fragColor = texture(Gcolor, inUV).rgb;
-	if (inUV.x > 0.5)
-	{
-		 fragColor = texture(Gnormal, inUV).rgb;
-	}
 	
  	outFragcolor = vec4(fragColor, 1.0);	
 }

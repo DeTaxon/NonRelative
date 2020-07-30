@@ -79,7 +79,7 @@ CreateSwapchain := !(int inW,int inH) -> void
 	subpass.colorAttachmentCount = 1
 	subpass.pColorAttachments = attmRef
 	subpass.pResolveAttachments = null
-	subpass.pDepthStencilAttachment = null //attmRef2
+	subpass.pDepthStencilAttachment = null
 	subpass.preserveAttachmentCount = 0
 	subpass.pPreserveAttachments = null
 
