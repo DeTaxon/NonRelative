@@ -43,6 +43,7 @@ sq_pushstring := !(void^,char^,s64)^ -> void
 sq_getinteger := !(void^,s64,s64^)^ -> void
 sq_getfloat := !(void^,s64,float^)^ -> void
 sq_getthread := !(void^,s64,void^^)^ -> void
+sq_getstring := !(void^,s64,void^^)^ -> void
 sq_pop := !(void^,s64)^ -> void
 
 SqInit := !() -> void
@@ -86,6 +87,7 @@ SqInit := !() -> void
 	sq_getinteger = sLib.Get("sq_getinteger")
 	sq_getfloat = sLib.Get("sq_getfloat")
 	sq_getthread = sLib.Get("sq_getthread")
+	sq_getstring = sLib.Get("sq_getstring")
 	sq_pop = sLib.Get("sq_pop")
 
 	sqstd_register_bloblib  = sLib.Get("sqstd_register_bloblib")
@@ -118,16 +120,16 @@ PrintDataError := !(void^ vm, char^ frmt,...) -> void
 iRunScript := !(ScriptThread^ itScriptT) -> bool
 {
 	vm := itScriptT.thrdVM
-	itProp := itScriptT.thrdProp
+	itProp := itScriptT.thrdVObject
 	vmState := sq_getvmstate(vm)
 	switch(vmState->{int})
 	{
 		case 0: //IDLE
-			ScriptSetProp(itScriptT,vm)
+			ScriptSetThis(itScriptT,vm)
 			//sq_pushroottable(vm)
 			sq_call(vm,1,true,true)
 		case 2: //SUSPENDED
-			ScriptSetProp(itScriptT,gMainVM)
+			ScriptSetThis(itScriptT,gMainVM)
 			sq_wakeupvm(vm,false,false,true,false)
 	}
 	vmState = sq_getvmstate(vm)
@@ -137,42 +139,6 @@ iRunScript := !(ScriptThread^ itScriptT) -> bool
 
 gsNowScript := ScriptThread^
 
-CodeSpawn := !(void^ vm) -> int
-{
-	newNode := ref gsNowScript.thrdProp.sThreads.Emplace()
-	newNode.thrdProp = gsNowScript.thrdProp
-	
-	res2 := sq_gettype(vm,2)
-	if res2 == 0x8001000
-	{
-		sq_getstackobj(vm,2,newNode.thrdObj&)
-		sq_addref(vm,newNode.thrdObj&)
-
-		sq_getthread(vm,2,newNode.thrdVM&)
-	}else{
-		//0x8000100
-		vm2 := vm
-		newNode.thrdVM = sq_newthread(vm2,1024)
-		sq_getstackobj(vm2,-1,newNode.thrdObj&)
-		sq_addref(vm2,newNode.thrdObj&)
-		sq_pop(vm2,1)
-		sq_move(newNode.thrdVM,vm2,2)
-		sq_pushroottable(newNode.thrdVM)
-	}
-
-	if gHotload
-		gsNowScript.thrdProp.modelPtr.hlRunThreads.Insert(newNode&)
-
-	
-	newEv := gUV.Once(0,newNode&,(x) => {
-		asSc := x->{ScriptThread^}
-		asSc.onceTimer = null
-		asProp := asSc.thrdProp
-		iRunScript(asSc)
-	})
-	newNode.onceTimer = newEv
-	return 0
-}
 //The typemask consists in a zero teminated string that represent the expected parameter type. 
 //The types are expressed as follows: 'o' null, 'i' integer, 'f' float, 'n' integer or float, 's' string, 't' table, 'a' array, 'u' userdata,
 //'c' closure and nativeclosure, 'g' generator, 'p' userpointer, 'v' thread, 'x' instance(class instance), 'y' class, 'b' bool. and '.' any type. 
@@ -185,7 +151,7 @@ ScriptThread := class
 {
 	thrdObj := s64[16]
 	thrdVM := void^
-	thrdProp := vProp^
+	thrdVObject := ScriptBox^
 
 	onceTimer := uvTimer^
 
@@ -194,10 +160,11 @@ ScriptThread := class
 	}
 	Destroy := !() -> void
 	{
-		if gHotload
-		{
-			thrdProp.modelPtr.hlRunThreads.Remove(this&)
-		}
+		//TODO
+		//if gHotload
+		//{
+		//	thrdProp.modelPtr.hlRunThreads.Remove(this&)
+		//}
 		if onceTimer != null
 		{
 			onceTimer.Stop()
@@ -207,11 +174,12 @@ ScriptThread := class
 		//sq_close(thrdVM)
 
 		i := 0
-		for thrdProp.sThreads
+		if thrdVObject != null
+		for thrdVObject.sThreads
 		{
 			if it& == this&
 			{
-				thrdProp.sThreads.DeleteAt(i)
+				thrdVObject.sThreads.DeleteAt(i)
 				break
 			}
 			i += 1
@@ -221,14 +189,15 @@ ScriptThread := class
 
 gMainVM  := void^
 
-ScriptSetProp := !(ScriptThread^ sThread,void^ vm) -> void
+ScriptSetThis := !(ScriptThread^ sThread,void^ vm) -> void
 {
-	itProp := sThread.thrdProp
+	itProp := sThread.thrdVObject
+	assert(itProp != null)
 	gsNowScript = sThread
 	sq_pushroottable(vm)
 	sq_pushstring(vm,"Prop",-1)
 	sq_get(vm,-2)
-	sq_pushstring(vm,"ThisProp",-1)
+	sq_pushstring(vm,"This",-1)
 	sq_createinstance(vm,-2)
 	sq_setinstanceup(vm,-1,itProp)
 	sq_newslot(vm,-4,false)
@@ -247,59 +216,7 @@ ScriptInit := !() -> void
 
 	InitPropClass(gMainVM)
 	ScriptInitGlobals(gMainVM)
-}
-ScriptInitGlobals := !(void^ vm) -> void
-{
-	sq_pushroottable(vm)
-
-	sq_pushstring(vm,"Spawn",-1)
-	sq_newclosure(vm,CodeSpawn,0)
-	sq_setparamscheck(vm,2,".v|c")
-	sq_setnativeclosurename(vm,2,"Spawn")
-	sq_newslot(vm,-3,true)
-
-	sq_pushstring(vm,"ASleep",-1)
-	sq_newclosure(vm,iScriptASleep,0)
-	sq_setparamscheck(vm,2,".f")
-	sq_setnativeclosurename(vm,2,"ASleep")
-	sq_newslot(vm,-3,true)
-
-	sq_pop(vm,1)
-}
-
-PropSetPos := !(void^ vm) -> void
-{
-	itProp := vProp^
-	sq_getinstanceup(vm,1,itProp&->{void^^},0)
-	resPos := vec4f(0.0f,0.0f,0.0f,1.0f)
-	midlObj := float
-	sq_getfloat(vm,2,midlObj&)
-	resPos.x = midlObj
-	sq_getfloat(vm,3,midlObj&)
-	resPos.y = midlObj
-	sq_getfloat(vm,4,midlObj&)
-	resPos.z = midlObj
-
-	itProp.modelPos.pos = resPos
-}
-
-
-InitPropClass := !(void^ vm) -> void
-{
-	sq_pushroottable(vm)
-	sq_pushstring(vm,"Prop",-1)
-	sq_newclass(vm,false)
-
-	sq_pushstring(vm,"SetPos",-1)
-	sq_newclosure(vm,PropSetPos,0)
-	sq_newslot(vm,-3,false)
-	
-	sq_pushstring(vm,"constructor",-1)
-	sq_newclosure(vm,PropSetPos,0)
-	sq_newslot(vm,-3,false)
-
-	sq_newslot(vm,-3,false)
-	sq_pop(vm,1)
+	ScriptInitMap(gMainVM)
 }
 
 ScriptUnit := class
@@ -325,11 +242,11 @@ ScriptCompile := !(vRepoFile^ itF) -> ScripObj^
 
 	return scrp
 }
-ScriptRun := !(ScriptUnit^ unit,vProp^ itProp) -> void
+ScriptRun := !(ScriptUnit^ unit, ScriptBox^ itBox) -> void
 {
-	newThread := ref itProp.sThreads.Emplace()
+	newThread := ref itBox.sThreads.Emplace()
 	newThread.thrdVM = sq_newthread(gMainVM,1024)
-	newThread.thrdProp = itProp
+	newThread.thrdVObject = itBox
 	sq_getstackobj(gMainVM,-1,newThread.thrdObj&)
 	sq_addref(gMainVM,newThread.thrdObj&)
 	sq_pop(gMainVM,1)
@@ -339,18 +256,8 @@ ScriptRun := !(ScriptUnit^ unit,vProp^ itProp) -> void
 	iRunScript(newThread&)
 }
 
-iScriptASleep := !(void^ vm) -> s64
+
+ScriptBox := class extend vObject
 {
-	waitTime := float
-	sq_getfloat(vm,2,waitTime&)
-	if(waitTime < 0) waitTime = 0
-	newOnce := gUV.Once(waitTime,gsNowScript,(x) => {
-		if gQuit return void //TODO: remove
-		asSc := x->{ScriptThread^}
-		asSc.onceTimer = null
-		iRunScript(asSc)
-	})
-	gsNowScript.onceTimer = newOnce
-	resVal := sq_suspendvm(vm)
-	return resVal
+	sThreads := List.{ScriptThread}
 }

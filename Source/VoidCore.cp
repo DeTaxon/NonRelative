@@ -1,3 +1,8 @@
+vObject := class
+{
+	Destroy := virtual !() -> void {}
+}
+
 //VoidCore := class
 //{
 	gRepo := vRepo
@@ -300,6 +305,12 @@
 
 		for itPreList : cc.SubList
 		{
+			if itPreList.Name == "script"
+			{
+				//scFile := asF.GetFile(itPreList.ValueStr)
+				//scObj := ScriptCompile(scFile)
+				//ScriptRun(scObj,null)
+			}
 			if itPreList.Name == "prop"
 			{
 				for md : itPreList.SubList

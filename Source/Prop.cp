@@ -1,4 +1,4 @@
-vProp := class 
+vProp := class extend ScriptBox //TODO:  
 {	
 	modelPos := centf
 	calculatedPos := centf
@@ -8,8 +8,6 @@ vProp := class
 	modelTextureSet := VkDescriptorSet
 
 	physObj := PhysCommon^
-
-	sThreads := List.{ScriptThread}
 
 	AddToCmdBuffer := !(VkCommandBuffer cmdB) -> void
 	{

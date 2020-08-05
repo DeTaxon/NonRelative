@@ -4,7 +4,6 @@ gFsMap := AVLMap.{uvFsEvent^,vRepoFolder^}
 gFsPreTest := List.{vRepoFile^} ; $keep
 gFsTextures := RBMap.{vRepoFile^,vTexture^}
 gFsModelsModel := AVLMap.{vRepoFile^,vModel^}
-gFsModelsScript := AVLMap.{vRepoFile^,vModel^}
 
 gHotloadInit := !() -> void
 {
@@ -64,12 +63,12 @@ gHotloadCheck := !() -> void
 			fndInModelsModel^.ReloadModel(onTest)
 		}
 
-		fndInModelsScript := gFsModelsScript.TryFind(onTest)
-		if fndInModelsScript != null
-		{
-			printf("reloading model.script %s\n",onTest.GetPath())
-			fndInModelsScript^.ReloadScript(onTest)
-		}
+		//fndInModelsScript := gFsModelsScript.TryFind(onTest)
+		//if fndInModelsScript != null
+		//{
+		//	printf("reloading model.script %s\n",onTest.GetPath())
+		//	fndInModelsScript^.ReloadScript(onTest)
+		//}
 
 	}
 }

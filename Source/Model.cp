@@ -12,8 +12,6 @@ vModel := class
 	scriptFile := vRepoFile^
 	scriptUnit := ScriptUnit^
 
-	hlRunThreads := AVLSet.{ScriptThread^}
-
 	LoadFile := !(vRepoFile^ itFl) -> bool
 	{
 		fPoint := itFl.Map()
@@ -102,35 +100,36 @@ vModel := class
 		DestroyVK()
 		LoadFile(itFl)
 	}
-	ReloadScript := !(vRepoFile^ itFl) -> void
-	{
-		scr := ScriptCompile(itFl)
-		if scr != null
-		{
-			cpy := new List.{ScriptThread^} ; $temp
-			prp := new AVLSet.{vProp^} ; $temp
-			for it : hlRunThreads
-			{
-				cpy.Push(it)
-				prp.Insert(it.thrdProp)
-			}
+	//ReloadScript := !(vRepoFile^ itFl) -> void
+	//{
+	//	scr := ScriptCompile(itFl)
+	//	if scr != null
+	//	{
+	//		cpy := new List.{ScriptThread^} ; $temp
+	//		prp := new AVLSet.{vProp^} ; $temp
 
-			for it : cpy^
-			{
-				it.Destroy()
-			}
+	//		for it : hlRunThreads
+	//		{
+	//			cpy.Push(it)
+	//			prp.Insert(it.thrdVObject->{vProp^})
+	//		}
 
-			for it : prp^
-			{
-				ScriptRun(scr,it)
-			}
-			//TODO: destroy CompileUnit
-			
-			printf("reloaded script\n")
-		}else{
-			printf("failed reload\n")
-		}
-	}
+	//		for it : cpy^
+	//		{
+	//			it.Destroy()
+	//		}
+
+	//		for it : prp^
+	//		{
+	//			ScriptRun(scr,it)
+	//		}
+	//		//TODO: destroy CompileUnit
+	//		
+	//		printf("reloaded script\n")
+	//	}else{
+	//		printf("failed reload\n")
+	//	}
+	//}
 	AddToCmdBuffer := !(VkCommandBuffer cmdB) -> void
 	{
 		offsets := new VkDeviceSize() ; $temp

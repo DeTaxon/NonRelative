@@ -110,7 +110,7 @@ vGenModel := !(char^ modelName,InfoNode^ itObj,vRepoFile^ itFile) -> vModel^
 				itMd.scriptFile = itFile.GetFile(it.ValueStr)
 				if itMd.scriptFile != null
 				{
-					if gHotload gFsModelsScript[itMd.scriptFile] = itMd&
+					//if gHotload gFsModelsScript[itMd.scriptFile] = itMd&
 					itMd.scriptUnit = ScriptCompile(itMd.scriptFile)
 				}
 			}else{
