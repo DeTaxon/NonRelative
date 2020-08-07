@@ -29,12 +29,6 @@ main := !(int argc, char^^ argv) -> int
 
 	nMap := vGetMap("FirstMap")
 
-	mt := nMap.AddProp("DatFace")
-
-	cnvs := nMap.AddProp("Canvas")
-	cnvs.modelPos.pos = vec4f(-2.0f,2.0f,2.0f,1.0f)
-	cnvs.modelPos.ang = quantfAt(0.0f,1.0f,0.0f,90deg)
-
 	drawState := false
 	drawMutex := new uvMutex()
 	drawCond := new uvCond()

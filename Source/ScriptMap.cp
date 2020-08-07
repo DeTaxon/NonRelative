@@ -1,11 +1,23 @@
 
 scriptCurrentMap := vMap^
 
-ScriptSpawnProp := !(void^ vm) -> void
+ScriptSpawnProp := !(void^ vm) -> s64
 {
 	itStr := char^
-	sq_getstring(vm,1,itStr&)
-	printf("%s\n",itStr)
+	sq_getstring(vm,2,itStr&)
+	//TODO: check if vMap
+	propObj := gsNowScript.thrdVObject->{vMap^}.AddProp(itStr)
+	if propObj != null
+	{
+		//TODO: remove pust root table
+		sq_pushroottable(vm)
+		sq_pushstring(vm,"Prop",-1)
+		sq_get(vm,-2)
+		sq_createinstance(vm,-1)
+		sq_setinstanceup(vm,-1,propObj)
+		return 1
+	}
+	return 0
 }
 
 ScriptInitMap := !(void^ vm) -> void

@@ -307,9 +307,9 @@ vObject := class
 		{
 			if itPreList.Name == "script"
 			{
-				//scFile := asF.GetFile(itPreList.ValueStr)
-				//scObj := ScriptCompile(scFile)
-				//ScriptRun(scObj,null)
+				scFile := asF.GetFile(itPreList.ValueStr)
+				scObj := ScriptCompile(scFile)
+				ScriptRun(scObj,newMap&)
 			}
 			if itPreList.Name == "prop"
 			{
