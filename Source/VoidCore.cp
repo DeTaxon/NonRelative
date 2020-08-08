@@ -260,75 +260,52 @@ vObject := class
 
 		vkFuncs.vkUpdateDescriptorSets(vkLogCard,1,wrT,0,null)
 	}
+
+	iDrawedMaps :=  AVLMap.{vMap^,List.{centf}}^ ; $temp
 	vDraw := !() -> void
 	{
-		for itProps
+		//for itProps
+		//{
+		//	it.modelShader.ApplyShaderToQueue(mainCmd.Get())
+		//	it.AddToCmdBuffer(mainCmd.Get())
+		//}
+
+		iDrawedMaps = new AVLMap.{vMap^,List.{centf}} ; $temp
+
+		initPos := centf()
+		for itMaps //TODO: players map
 		{
-			it.modelShader.ApplyShaderToQueue(mainCmd.Get())
-			it.AddToCmdBuffer(mainCmd.Get())
-		}
-		for itMaps //??
-		{
-			for mod : it.mapProps
-			{
-				mod.modelShader.ApplyShaderToQueue(mainCmd.Get())
-				mod.AddToCmdBuffer(mainCmd.Get())
-			}
+			vDrawMap(it&,5,initPos) //TODO: number to config
 		}
 	}
-	vGetMap := !(char^ mapName) -> vMap^
+	vDrawMap := !(vMap^ someMap,int depth,centf relPos) -> void
 	{
-		if itMaps.Contain(mapName)
-			return itMaps[mapName]&
-
-		//pVoidMP.Push()
-		//defer pVoidMP.Pop()
-
-		flName := char^
-		stB := "Maps/"sbt << mapName << ".inf"
-
-		asF := gRepo.GetFile(stB)
-
-		if asF == null 
+		if depth < 0 
+			return void
+		for it : iDrawedMaps^[someMap]
 		{
-			asF = gRepo.GetFile("Maps/"sbt + mapName + "/" + mapName + ".inf")
-			if asF == null
-				return null
+			if it.NearDistance(relPos) < 1 //TODO: unconst
+				return void
 		}
+		iDrawedMaps^[someMap].Emplace() = relPos
 
-		mapFile := asF.Map()
-		defer asF.Unmap()
 
-		cc := ParseInfoFile(mapFile,asF.Size()) ; $temp
 
-		newMap := ref itMaps[StrCopy(mapName)]
-
-		for itPreList : cc.SubList
+		for mod : someMap.mapProps
 		{
-			if itPreList.Name == "script"
-			{
-				scFile := asF.GetFile(itPreList.ValueStr)
-				scObj := ScriptCompile(scFile)
-				ScriptRun(scObj,newMap&)
-			}
-			if itPreList.Name == "prop"
-			{
-				for md : itPreList.SubList
-				{
-					if md.isValue
-					{
-						//TODO?
-					}else{
-						//TODO: not anon
-						newMod := vGenModel("anon",md,asF)
-						if newMod == null throw new Exception("Can not load map  , incorrect model file")
-
-						newProp := vAddProp(newMod,newMap&)
-					}
-				}
-			}
+			mod.modelShader.ApplyShaderToQueue(mainCmd.Get())
+			mod.AddToCmdBuffer(mainCmd.Get(),relPos)
 		}
-		return newMap&
+		for it : linksFromMap[someMap]
+		{
+			newPos := relPos<*>it.relativePos
+			vDrawMap(it.linkTo,depth - it.renderCost,newPos) 
+		}
+		for it : linksToMap[someMap]
+		{
+			newPos := relPos<*>it.relativePos.Inverse()
+			vDrawMap(it.linkFrom,depth - it.renderCost,newPos) 
+		}
 	}
 	vPhysStage := !(double deltaTime) -> void
 	{

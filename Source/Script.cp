@@ -147,9 +147,30 @@ gsNowScript := ScriptThread^
 //For instance to check a function that espect a table as 'this' a string as first parameter and a number or a userpointer as second parameter, 
 //the string would be "tsn|p" (table,string,number or userpointer). If the parameters mask is contains less parameters than 'nparamscheck' the remaining parameters will not be typechecked.
 
+SqObject := class
+{
+	itData := s64[2]
+	Get := !(void^ vm, int stackPos) -> void
+	{
+		sq_getstackobj(gMainVM,stackPos,itData&)
+	}
+	Push := !(void^ vm) -> void
+	{
+		sq_pushobject2(vm,itData&)
+	}
+	IncRef := !(void^ vm) -> void
+	{
+		sq_addref(gMainVM,itData&)
+	}
+	DecRef := !(void^ vm) -> void
+	{
+		sq_release(vm,itData&)
+	}
+}
+
 ScriptThread := class
 {
-	thrdObj := s64[16]
+	thrdObj := SqObject
 	thrdVM := void^
 	thrdVObject := ScriptBox^
 
@@ -170,7 +191,7 @@ ScriptThread := class
 			onceTimer.Stop()
 		}
 		
-		sq_release(gMainVM,thrdObj&)
+		thrdObj.DecRef(gMainVM)
 		//sq_close(thrdVM)
 
 		i := 0
@@ -188,6 +209,7 @@ ScriptThread := class
 }
 
 gMainVM  := void^
+gsClassProp := SqObject
 
 ScriptSetThis := !(ScriptThread^ sThread,void^ vm) -> void
 {
@@ -247,10 +269,10 @@ ScriptRun := !(ScriptUnit^ unit, ScriptBox^ itBox) -> void
 	newThread := ref itBox.sThreads.Emplace()
 	newThread.thrdVM = sq_newthread(gMainVM,1024)
 	newThread.thrdVObject = itBox
-	sq_getstackobj(gMainVM,-1,newThread.thrdObj&)
-	sq_addref(gMainVM,newThread.thrdObj&)
+	newThread.thrdObj.Get(gMainVM,-1)
+	newThread.thrdObj.IncRef(gMainVM)
 	sq_pop(gMainVM,1)
-	
+
 	sq_pushobject2(newThread.thrdVM,unit.funcObj&)
 	sq_pushroottable(newThread.thrdVM)
 	iRunScript(newThread&)

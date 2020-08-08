@@ -9,12 +9,13 @@ vProp := class extend ScriptBox //TODO:
 
 	physObj := PhysCommon^
 
-	AddToCmdBuffer := !(VkCommandBuffer cmdB) -> void
+	AddToCmdBuffer := !(VkCommandBuffer cmdB, centf relativePos) -> void
 	{
-		if gHotload
-			vSetTexture(modelTextureSet,modelPtr.ReqTexture,gSamplerNearest)
+		//if gHotload
+		//	vSetTexture(modelTextureSet,modelPtr.ReqTexture,gSamplerNearest)
 
-		gCam.ApplyCamera(modelPos,calculatedPos)
+		globalPos := relativePos<*>modelPos
+		gCam.ApplyCamera(globalPos,calculatedPos)
 		sts := VkDescriptorSet[2]
 		sts[0] = vkPerspSet
 		sts[1] = modelTextureSet

@@ -29,6 +29,13 @@ main := !(int argc, char^^ argv) -> int
 
 	nMap := vGetMap("FirstMap")
 
+	diffLink := centf()
+	diffLink.SetPos(vec4f(46.0,0.0,0.0,1.0))
+	vAddMapLink("FirstMap","FirstMap",diffLink)
+
+	diffLink.SetPos(vec4f(0,46.0,0.0,1.0))
+	vAddMapLink("FirstMap","FirstMap",diffLink)
+
 	drawState := false
 	drawMutex := new uvMutex()
 	drawCond := new uvCond()

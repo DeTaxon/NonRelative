@@ -5,14 +5,13 @@ ScriptSpawnProp := !(void^ vm) -> s64
 {
 	itStr := char^
 	sq_getstring(vm,2,itStr&)
-	//TODO: check if vMap
+	//if not gsNowScript.thrdVObject is vMap
+	//	return 0
 	propObj := gsNowScript.thrdVObject->{vMap^}.AddProp(itStr)
 	if propObj != null
 	{
-		//TODO: remove pust root table
-		sq_pushroottable(vm)
-		sq_pushstring(vm,"Prop",-1)
-		sq_get(vm,-2)
+		//TODO: remove class after use
+		gsClassProp.Push(vm)
 		sq_createinstance(vm,-1)
 		sq_setinstanceup(vm,-1,propObj)
 		return 1

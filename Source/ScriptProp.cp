@@ -39,6 +39,9 @@ InitPropClass := !(void^ vm) -> void
 	sq_pushstring(vm,"Prop",-1)
 	sq_newclass(vm,false)
 
+	gsClassProp.Get(vm,-1)
+	gsClassProp.IncRef(vm)
+
 	sq_pushstring(vm,"SetPos",-1)
 	sq_newclosure(vm,PropSetPos,0)
 	sq_newslot(vm,-3,false)
