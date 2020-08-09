@@ -315,34 +315,39 @@ sqrta := !(float inp) -> float
 
 
 
-PhysCheckPlayerVSHMap := !(PhysPlayer^ p,PhysHeightMap^ hMap) -> void
+PhysCheckPlayerVSHMap := !(PhysPlayer^ p,PhysHeightMap^ hMap,centf mapPosition) -> int
 {
+	fixes := 0
 	triC := 0
 	tris := u16[32]
 
-	tHeight := p.Height*p.System.pos.w
+	invPos := mapPosition.Inverse()
+	pPos := invPos.Apply(p.System.pos)
+	tHeight := p.Height*pPos.w
 
 	onMap := false
-	hMap.GetTris(p.System.pos,tris&,triC&,0)
+	hMap.GetTris(pPos,tris&,triC&,0)
 	for i : triC
 	{
 		hV := vec4f
-		nowT := hMap.TriangleDistanceH(p.System.pos,tris[i],hV&)
+		nowT := hMap.TriangleDistanceH(pPos,tris[i],hV&)
 		if nowT
 		{
 			itH := p.System.pos.z - hV.z
-			if itH < 0.0f and itH > -p.System.pos.w //UNCONST
+			if itH < 0.0f and itH > -pPos.w //UNCONST
 			{
 				p.MapTouchTime = gNowTime
 				if p.ImpulseV.z < 0.0f
 				{
 					p.ImpulseV.z = 0.0f
-					p.System.pos.z = hV.z
+					p.System.pos.z = mapPosition.Apply(hV).z
+					fixes += 1
 				}
 				onMap = true
 			}
 		}
 	}
+	return fixes
 }
 
 PhysCheckPlayerVSSphere := !(PhysSphere^ p,PhysHeightMap^ hMap) -> void
@@ -436,20 +441,20 @@ PhysCheckSvS := !(PhysSphere^ o1,PhysSphere^ o2) -> void
 		}
 	}
 }
-PhysVsPhys := !(PhysCommon^ a, PhysCommon^ b) -> void
+PhysVsPhys := !(PhysCommon^ a, PhysCommon^ b,centf offset) -> int
 {
 	if a.PhysType < b.PhysType
 	{
-		PhysVsPhys(b,a)
-		return void
+		return PhysVsPhys(b,a,offset.Inverse())
 	}
 	//TODO: phys to table
 	if a.PhysType == PhysType_player
 	{
 		if b.PhysType == PhysType_hmap
 		{
-			PhysCheckPlayerVSHMap(a->{PhysPlayer^},b->{PhysHeightMap^})
+			return PhysCheckPlayerVSHMap(a->{PhysPlayer^},b->{PhysHeightMap^},offset)
 		}
 	}
+	return 0
 }
 

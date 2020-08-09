@@ -28,12 +28,13 @@ main := !(int argc, char^^ argv) -> int
 	gHotloadInit()
 
 	nMap := vGetMap("FirstMap")
+	gPlayerMap = nMap
 
 	diffLink := centf()
-	diffLink.SetPos(vec4f(46.0,0.0,0.0,1.0))
+	diffLink.SetPos(vec4f(45.0,0.0,0.0,1.0))
 	vAddMapLink("FirstMap","FirstMap",diffLink)
 
-	diffLink.SetPos(vec4f(0,46.0,0.0,1.0))
+	diffLink.SetPos(vec4f(0,45.0,0.0,1.0))
 	vAddMapLink("FirstMap","FirstMap",diffLink)
 
 	drawState := false

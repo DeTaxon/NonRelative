@@ -12,9 +12,14 @@ ifeq ($(OS),Windows_NT)
 	Result := wengi.exe
 endif
 
+
+CmpLL :=  clang++ -g Objs/engi.ll -IFLibs $(Libs) -o $(Result)
+
 ifeq ($(Cross),win32)
 	Prefix := -p win32
 	Result := wengi.exe
+	Triplet := --target=x86_64-w64-mingw32-gnu 
+	CmpLL := clang++ $(Triplet) -c -g Objs/engi.ll -IFLibs $(Libs) -o ./Objs/engi.o; x86_64-w64-mingw32-g++ ./Objs/engi.o -o $(Result)
 endif
 
 WinCompiler := x86_64-w64-mingw32-gcc 
@@ -22,7 +27,7 @@ WinCompiler := x86_64-w64-mingw32-gcc
 SLibs := -C0 "Libs/$$" -C0 "StandartLib/$$"
 
 $(Result): Objs/engi.ll
-	clang++ -g Objs/engi.ll -IFLibs $(Libs) -o engi
+	$(CmpLL)
 
 Objs/engi.ll: 
 	$(Compiler) -g $(Prefix) Source/main.cp $(SLibs) -C0 "FLibs/$$" -C1 "Source/$$" --vk vk.xml -o Objs/engi.ll

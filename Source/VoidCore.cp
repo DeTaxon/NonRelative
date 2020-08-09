@@ -31,6 +31,7 @@ vObject := class
 	gNowTime := double
 
 	gPlayer := PhysPlayer^
+	gPlayerMap := vMap^
 
 	gHotload := bool
 
@@ -273,10 +274,7 @@ vObject := class
 		iDrawedMaps = new AVLMap.{vMap^,List.{centf}} ; $temp
 
 		initPos := centf()
-		for itMaps //TODO: players map
-		{
-			vDrawMap(it&,5,initPos) //TODO: number to config
-		}
+		vDrawMap(gPlayerMap,5,initPos) //TODO: number to config
 	}
 	vDrawMap := !(vMap^ someMap,int depth,centf relPos) -> void
 	{
@@ -306,27 +304,6 @@ vObject := class
 			newPos := relPos<*>it.relativePos.Inverse()
 			vDrawMap(it.linkFrom,depth - it.renderCost,newPos) 
 		}
-	}
-	vPhysStage := !(double deltaTime) -> void
-	{
-		oldPlayerImpz := gPlayer.ImpulseV.z
-		forw := 0.0f
-		lft := 0.0f
-		if buttons['w'] forw += 2.0f
-		if buttons['s'] forw -= 2.0f
-		if buttons['a'] lft += 2.0f
-		if buttons['d'] lft -= 2.0f
-		if buttons['S'] forw *= 3.0f
-		gPlayer.ImpulseV = quantfAt(0.0f,0.0f,-1.0f,gCam.leftRightAng)*vec4f(-forw,-lft,0.0f,0.0f)
-		gPlayer.ImpulseV.z = oldPlayerImpz - 9.8f*deltaTime
-		if gPlayer.ImpulseV.z < -20.0
-			gPlayer.ImpulseV.z = -20
-		//TODO current map
-		PhysVsPhys(gPlayer->{PhysCommon^},itMaps[^].mapProps[^].physObj?)
-		gPlayer.System.pos += gPlayer.ImpulseV*deltaTime
-		PhysVsPhys(gPlayer->{PhysCommon^},itMaps[^].mapProps[^].physObj?)
-		gCam.camPos = gPlayer.System.pos + vec4f(0.0f,0.0f,1.7f,0.0f)
-
 	}
 
 //}
