@@ -104,7 +104,10 @@ PrintData := !(void^ vm, char^ frmt,...) -> void
 {
 	vars := int[32]
 	va_start(vars&)
-	vprintf(frmt,vars&)
+	if $posix
+		vprintf(frmt,vars&)
+	if $win32
+		vprintf(frmt,vars&->{void^^}^)
 	va_end(vars&)
 }
 gScriptErrorCount := 0
@@ -113,7 +116,10 @@ PrintDataError := !(void^ vm, char^ frmt,...) -> void
 	gScriptErrorCount += 1
 	vars := int[32]
 	va_start(vars&)
-	vprintf(frmt,vars&)
+	if $posix
+		vprintf(frmt,vars&)
+	if $win32
+		vprintf(frmt,vars&->{void^^}^)
 	va_end(vars&)
 }
 

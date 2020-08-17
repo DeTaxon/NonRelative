@@ -274,7 +274,7 @@ vObject := class
 		iDrawedMaps = new AVLMap.{vMap^,List.{centf}} ; $temp
 
 		initPos := centf()
-		vDrawMap(gPlayerMap,5,initPos) //TODO: number to config
+		vDrawMap(gPlayerMap,10,initPos) //TODO: number to config
 	}
 	vDrawMap := !(vMap^ someMap,int depth,centf relPos) -> void
 	{

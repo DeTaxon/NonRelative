@@ -21,12 +21,6 @@ CodeSpawn := !(void^ vm) -> int
 		sq_move(newNode.thrdVM,vm2,2)
 		sq_pushroottable(newNode.thrdVM)
 	}
-
-	//TODO:
-	//if gHotload
-		//gsNowScript.thrdProp.modelPtr.hlRunThreads.Insert(newNode&)
-
-
 	
 	newEv := gUV.Once(0,newNode&,(x) => {
 		asSc := x->{ScriptThread^}

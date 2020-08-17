@@ -319,8 +319,8 @@ StartDraw := !() -> bool
 	clrValues := new float[13] ; $temp
 
 	clrValues[0] = 1.0f
-	clrValues[1] = 0.0f
-	clrValues[2] = 0.0f
+	clrValues[1] = 1.0f
+	clrValues[2] = 1.0f
 	clrValues[3] = 1.0f
 
 	clrValues[4] = 1.0f
@@ -374,22 +374,22 @@ StopDraw := !() -> void
 	vkFuncs.vkCmdBindDescriptorSets(mainCmd.Get(),VK_PIPELINE_BIND_POINT_GRAPHICS,gLightLayout,0,1,sts[0]&,0,null)
 	vkFuncs.vkCmdDraw(mainCmd.Get(),3,1,0,0)
 
-	imgBarC := new VkImageMemoryBarrier() ; $temp
-	imgBarC.srcAccessMask = VK_ACCESS_MEMORY_READ_BIT
-	imgBarC.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT//VK_ACCESS_COLOR_ATTACHMENT_READ_BIT or_b VK_ACCESS_MEMORY_READ_BIT
-	imgBarC.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED
-	imgBarC.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
-	imgBarC.srcQueueFamilyIndex = 0
-	imgBarC.dstQueueFamilyIndex = 0
-	imgBarC.image = vkImages[nowImg]
-	imgBarC.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT
-	imgBarC.subresourceRange.baseMipLevel = 0
-	imgBarC.subresourceRange.levelCount = 1
-	imgBarC.subresourceRange.baseArrayLayer = 0
-	imgBarC.subresourceRange.layerCount = 1
+	//imgBarC := new VkImageMemoryBarrier() ; $temp
+	//imgBarC.srcAccessMask = VK_ACCESS_MEMORY_READ_BIT
+	//imgBarC.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT//VK_ACCESS_COLOR_ATTACHMENT_READ_BIT or_b VK_ACCESS_MEMORY_READ_BIT
+	//imgBarC.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED
+	//imgBarC.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
+	//imgBarC.srcQueueFamilyIndex = 0
+	//imgBarC.dstQueueFamilyIndex = 0
+	//imgBarC.image = vkImages[nowImg]
+	//imgBarC.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT
+	//imgBarC.subresourceRange.baseMipLevel = 0
+	//imgBarC.subresourceRange.levelCount = 1
+	//imgBarC.subresourceRange.baseArrayLayer = 0
+	//imgBarC.subresourceRange.layerCount = 1
 
 	vkFuncs.vkCmdEndRenderPass(mainCmd.Get())
-	vkFuncs.vkCmdPipelineBarrier(mainCmd.Get(),VK_PIPELINE_STAGE_TRANSFER_BIT,VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,0,0,null,0,null,1,imgBarC)
+	//vkFuncs.vkCmdPipelineBarrier(mainCmd.Get(),VK_PIPELINE_STAGE_TRANSFER_BIT,VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,0,0,null,0,null,1,imgBarC)
 	mainCmd.Stop()
 
 	mainCmd.Submit()
@@ -406,4 +406,5 @@ StopDraw := !() -> void
 	pI.pResults = res&
 
 	vkFuncs.vkQueuePresentKHR(vkQueue,pI)
+	vkFuncs.vkQueueWaitIdle(vkQueue)
 }
