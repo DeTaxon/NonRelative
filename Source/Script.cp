@@ -32,6 +32,8 @@ sq_newclosure := !(void^,void^,int)^ -> void
 sq_newclass := !(void^,bool)^ -> void
 sq_setparamscheck := !(void^,s64,char^)^ -> void
 sq_setnativeclosurename := !(void^,s64,char^)^ -> void
+sq_setreleasehook := !(void^,s64,void^)^ -> void
+//hook sq64 hook(squerpointer,sqint)
 sq_newslot := !(void^,s64,bool)^->s64
 
 sq_get := !(void^,s64)^ -> s64
@@ -39,6 +41,7 @@ sq_createinstance := !(void^,s64)^ -> void
 sq_setinstanceup := !(void^,s64,void^)^ -> void
 sq_getinstanceup := !(void^,s64,void^^,s64)^ -> void
 sq_pushinteger := !(void^,s64)^ -> void
+sq_pushfloat := !(void^,float)^ -> void
 sq_pushstring := !(void^,char^,s64)^ -> void
 sq_getinteger := !(void^,s64,s64^)^ -> void
 sq_getfloat := !(void^,s64,float^)^ -> void
@@ -76,6 +79,7 @@ SqInit := !() -> void
 	sq_newclass = sLib.Get("sq_newclass")
 	sq_setparamscheck = sLib.Get("sq_setparamscheck")
 	sq_setnativeclosurename = sLib.Get("sq_setnativeclosurename")
+	sq_setreleasehook = sLib.Get("sq_setreleasehook")
 	sq_newslot = sLib.Get("sq_newslot")
 	
 	sq_get = sLib.Get("sq_get")
@@ -83,6 +87,7 @@ SqInit := !() -> void
 	sq_setinstanceup = sLib.Get("sq_setinstanceup")
 	sq_getinstanceup = sLib.Get("sq_getinstanceup")
 	sq_pushinteger = sLib.Get("sq_pushinteger")
+	sq_pushfloat = sLib.Get("sq_pushfloat")
 	sq_pushstring = sLib.Get("sq_pushstring")
 	sq_getinteger = sLib.Get("sq_getinteger")
 	sq_getfloat = sLib.Get("sq_getfloat")
@@ -245,6 +250,7 @@ ScriptInit := !() -> void
 	InitPropClass(gMainVM)
 	ScriptInitGlobals(gMainVM)
 	ScriptInitMap(gMainVM)
+	ScriptInitMath(gMainVM)
 }
 
 ScriptUnit := class

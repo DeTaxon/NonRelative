@@ -61,8 +61,9 @@ main := !(int argc, char^^ argv) -> int
 	lastCheckedTime := 0.0
 
 	resizeState := false
+	preQuit := false
 
-	gUV.Timer(0,0.01, (x) ==> [fpsCounter&]{
+	gUV.Timer(0,0.01, (x) ==> [fpsCounter&,preQuit&]{
 		
 		prevTime := glfwGetTime()
 		
@@ -87,7 +88,8 @@ main := !(int argc, char^^ argv) -> int
 
 			if glfwWindowShouldClose(glfwWindow)
 			{
-				gQuit = true
+				preQuit = true
+				//gQuit = true
 				gHotloadStop()
 				x.Stop()
 			}
@@ -134,13 +136,17 @@ main := !(int argc, char^^ argv) -> int
 	{
 		
 	}else{
-		uvThread(() ==> [drawState&,drawMutex,drawCond]{
+		uvThread(() ==> [drawState&,drawMutex,drawCond,preQuit&]{
 			while not gQuit
 			{
 				drawMutex.Lock()
 				while drawState
 				{
 					drawCond.Wait(drawMutex^,0.1)
+				}
+				if preQuit
+				{
+					gQuit = true	
 				}
 				if gQuit {
 					ev.Emit()

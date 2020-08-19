@@ -280,7 +280,7 @@ vObject := class
 	{
 		if depth < 0 
 			return void
-		for it : iDrawedMaps^[someMap]
+		for it : iDrawedMaps^[someMap] ; $temp
 		{
 			if it.NearDistance(relPos) < 1 //TODO: unconst
 				return void
