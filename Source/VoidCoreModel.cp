@@ -103,6 +103,7 @@ vGenModel := !(char^ modelName,InfoNode^ itObj,vRepoFile^ itFile) -> vModel^
 				//TODO
 			}else{
 				itMd.ReqTexture = vGenTexture(it,itFile)
+				assert(itMd.ReqTexture != null)
 			}
 		case "script"
 			if it.IsValue()

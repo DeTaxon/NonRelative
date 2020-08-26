@@ -40,6 +40,9 @@ vObject := class
 	slOutputFile := char^
 	slKeepResult := bool
 
+	gWinStartW := 100
+	gWinStartH := 100
+
 	pLoadCommonSettings := !() -> void
 	{
 		itSet := gRepo.GetFile("commonsettings.inf")
@@ -57,6 +60,14 @@ vObject := class
 		{
 			switch sets.Name
 			{
+				case "start_window"
+					switch sets.SubList[^].Name
+					{
+						case "w"
+							gWinStartW = ToInt(it.ValueStr)
+						case "h"
+							gWinStartH = ToInt(it.ValueStr)
+					}
 				case "present_priority"
 					switch sets.SubList[^].ValueStr
 					{
@@ -120,7 +131,7 @@ vObject := class
 		vkFuncs.vkBindBufferMemory(vkLogCard,gStageMemBuffer,gStageMem.Get(),0)
 
 		gCam."this"()
-		gCam.SetPerspective(700.0f,700.0f,0.01f,100.0f,90deg)
+		gCam.SetPerspective(gWindowW,gWindowH,0.01f,100.0f,90deg)
 
 		poolSize := u32[2] 
 		poolSize[0] = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER

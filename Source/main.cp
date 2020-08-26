@@ -12,7 +12,7 @@ main := !(int argc, char^^ argv) -> int
 
 	gUV = new uvLoop()
 
-	CreateWindow(1700,900)
+	CreateWindow(gWinStartW,gWinStartH)
 	defer DestroyWindow() 
 
 	InitVulkan()

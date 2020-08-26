@@ -3,11 +3,15 @@
 #extension GL_ARB_separate_shader_objects : enable
 #extension GL_ARB_shading_language_420pack : enable
 
+layout(push_constant) uniform PushConsts{
+	vec2 screenScales;
+}consts;
+
 layout (location = 0) out vec2 outUV;
 
 void main() 
 {
 	outUV = vec2((gl_VertexIndex << 1) & 2, gl_VertexIndex & 2);
 	gl_Position = vec4(outUV * 2.0f - 1.0f, 0.0f, 1.0f);
-	outUV *= vec2(1700.0 / 2048,900.0 / 1024.0);
+	outUV *= consts.screenScales;
 }

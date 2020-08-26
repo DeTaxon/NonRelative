@@ -63,9 +63,14 @@ vTexture := class
 		vi.subresourceRange.layerCount = 1
 
 		createSettings(newImg,vi)
+		vi.format = newImg.format 
 
 		memInfp := VkMemoryRequirements
 		vkFuncs.vkCreateImage(vkLogCard,newImg,null,itImg&)
+
+		if itImg == null
+			throw new Exception("Could not create texture")
+
 		vkFuncs.vkGetImageMemoryRequirements(vkLogCard,itImg,memInfp&)
 
 		memObj.CreateObject(memInfp.size,memInfp.memoryTypeBits,null)
@@ -73,11 +78,34 @@ vTexture := class
 		vkFuncs.vkBindImageMemory(vkLogCard,itImg,memObj.Get(),0)
 
 		vi.image = itImg
-		vi.format = newImg.format 
 
 		vkFuncs.vkCreateImageView(vkLogCard,vi,null,itImgView&)
 
 		return memInfp.memoryTypeBits
+	}
+	Recolor := !(u8^ arr,int pixels, int strip) -> void
+	{
+		return void
+
+		for i : pixels
+		{
+			//Y := 0.299*arr[0] + 0.587*arr[1] + 0.114*arr[2]
+			//U := (arr[2] - Y)*0.565
+			//V := (arr[0] - Y)*0.713
+			Y := 16 + (65.738*arr[0] + 129.057*arr[1] + 25.064*arr[2]) / 256
+			Cb := 128 + (-37.945*arr[0] - 74.494*arr[1] + 112.439*arr[2]) / 256
+			Cr := 128 + (112.439*arr[0] - 94.154*arr[2] - 18.285*arr[2]) / 256
+
+			// R = Y + 1.403*V
+			// G = Y - 0.344*U - 0.714*V
+			// B = Y + 1.770*U
+
+			arr[0] = Y->{int}->{u8}
+			arr[1] = Cb->{int}->{u8}
+			arr[2] = Cr->{int}->{u8}
+
+			arr = arr[strip]&
+		}
 	}
 	CreateTexture := !(vRepoFile^ itFile) -> void
 	{	
@@ -123,6 +151,7 @@ vTexture := class
 					offToData = offToData[4]&
 				}
 			}
+			Recolor(ptrToSet,itW*itH,4)
 			gStageMem.Unmap()
 			vStageCpyToImage(itImg,itW,itH)
 		}else 
@@ -133,16 +162,34 @@ vTexture := class
 			mp := itFile.Map()->{u8^}
 			defer itFile.Unmap()
 
-			webpInf := int[3] // width,height,has_alpha
+			webpInf := int[10] // width,height,has_alpha, has_animation,type, 5 x for feature
 
 			webpGetFeatures(mp,itFile.Size(),webpInf&,0x0208)
 
-			memTyp := CreateObject(webpInf[0],webpInf[1])
-			ptrToSet := gStageMem.Map()->{u8^}
+			has_alpha := webpInf[2] != 0
+			has_animation := webpInf[3] != 0
 
-			webpGetDataRGBA(mp,itFile.Size(),ptrToSet,itW*itH*4,itW*4)
-			gStageMem.Unmap()
-			vStageCpyToImage(itImg,itW,itH)
+			if has_animation
+			{
+				//FEATURE:
+			}else{
+				memTyp := CreateObject(webpInf[0],webpInf[1],(x,y) ==> {
+					x.format = VK_FORMAT_R8G8B8_UNORM
+					if has_alpha x.format = VK_FORMAT_R8G8B8A8_UNORM
+				})
+				ptrToSet := gStageMem.Map()->{u8^}
+
+				if has_alpha
+				{
+					webpGetDataRGBA(mp,itFile.Size(),ptrToSet,itW*itH*4,itW*4)
+					Recolor(ptrToSet,itW*itH,4)
+				}else{
+					webpGetDataRGB(mp,itFile.Size(),ptrToSet,itW*itH*3,itW*3)
+					Recolor(ptrToSet,itW*itH,3)
+				}
+				gStageMem.Unmap()
+				vStageCpyToImage(itImg,itW,itH)
+			}
 		}
 
 	}
@@ -188,6 +235,7 @@ vTexture := class
 				ptrToSet[c + 3] = 255
 			}
 		}
+		Recolor(ptrToSet,itW*itH,4)
 		gStageMem.Unmap()
 
 		vStageCpyToImage(itImg,itW,itH)

@@ -8,23 +8,23 @@ Result := engi
 ifeq ($(OS),Windows_NT)
 	Compiler := ./halfvoid.exe
 	Prefix := -p win32
-	Libs := ""
+	Libs := 
 	Result := wengi.exe
 endif
 
 
-CmpLL :=  clang++ -g Objs/engi.ll -IFLibs $(Libs) -o $(Result)
+CmpLL :=  clang++ -g Objs/engi.ll $(Libs) -o $(Result)
 
 ifeq ($(Cross),win32)
 	Prefix := -p win32
 	Result := wengi.exe
 	Triplet := --target=x86_64-w64-mingw32-gnu 
-	CmpLL := clang++ $(Triplet) -c -g Objs/engi.ll -IFLibs $(Libs) -o ./Objs/engi.o; x86_64-w64-mingw32-g++ ./Objs/engi.o -o $(Result)
+	CmpLL := clang++ $(Triplet) -c -g Objs/engi.ll $(Libs) -o ./Objs/engi.o; x86_64-w64-mingw32-g++ ./Objs/engi.o -o $(Result)
 endif
 
 WinCompiler := x86_64-w64-mingw32-gcc 
 
-SLibs := -C0 "Libs/$$" -C0 "StandartLib/$$"
+SLibs := -C0 "Libs/$$" -C0 "../Lanq2_1/StandartLib/$$"
 
 $(Result): Objs/engi.ll
 	$(CmpLL)

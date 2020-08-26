@@ -191,6 +191,7 @@ ParseInfoFile := !(void^ dat,int siz) .{} ->  InfoNode^
 		}
 		if nameStart == -1
 			continue
+		nameEnd = nameStart
 		while k < it.Size()
 		{
 			if it[k] == ':'

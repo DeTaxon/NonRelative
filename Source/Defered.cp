@@ -125,11 +125,10 @@ CreateSwapchain := !(int inW,int inH) -> void
 		vkFuncs.vkCreateFramebuffer(vkLogCard,fbC,null,vkFramebuffers[i]&)
 	}
 }
+gFBW := 2048
+gFBH := 1024
 CreateFB := !() -> void
 {
-	nowW := 2048
-	nowH := 1024
-
 	if depthTexture != null
 	{
 		depthTexture.Destroy()
@@ -138,18 +137,18 @@ CreateFB := !() -> void
 	}
 
 	fbTextures[0] = new vTexture
-	fbTextures[0].CreateObject(nowW,nowH, (img,viw) ==> {
+	fbTextures[0].CreateObject(gFBW,gFBH, (img,viw) ==> {
 		img.usage = VK_IMAGE_USAGE_SAMPLED_BIT or_b VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT or_b VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT
 	})
 	fbTextures[1] = new vTexture
-	fbTextures[1].CreateObject(nowW,nowH, (img,viw) ==> {
+	fbTextures[1].CreateObject(gFBW,gFBH, (img,viw) ==> {
 		img.usage = VK_IMAGE_USAGE_SAMPLED_BIT or_b VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT or_b VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT
 		img.format = VK_FORMAT_R32G32B32A32_SFLOAT
 	})
 
 	//create deth
 	depthTexture = new vTexture
-	depthTexture.CreateObject(nowW,nowH,(img,viv)==> {
+	depthTexture.CreateObject(gFBW,gFBH,(img,viv)==> {
 		img.format = VK_FORMAT_D16_UNORM
 		img.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT
 		viv.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT
@@ -222,8 +221,8 @@ CreateFB := !() -> void
 	fbC.renderPass = gRenderPassModel
 	fbC.attachmentCount = 3
 	fbC.pAttachments = extrV[0]&
-	fbC.width = nowW
-	fbC.height = nowH
+	fbC.width = gFBW
+	fbC.height = gFBH
 	fbC.layers = 1
 
 	vkFuncs.vkCreateFramebuffer(vkLogCard,fbC,null,gModelFramebuffer&)
@@ -249,13 +248,14 @@ CreateFB := !() -> void
 	layouts := new void^[2] ; $temp
 	layouts[0] = gLightObjectLayout
 
-	//pcrC := new VkPushConstantRange ; $temp
-	//pcrC.stageFlags = VK_SHADER_STAGE_VERTEX_BIT
-	//pcrC.offset = 0
-	//pcrC.size = 2*4*4
+	pcrC := new VkPushConstantRange ; $temp
+	pcrC.stageFlags = VK_SHADER_STAGE_VERTEX_BIT
+	pcrC.offset = 0
+	pcrC.size = 2*4
+
 	ppC := new VkPipelineLayoutCreateInfo() ; $temp
-	ppC.pushConstantRangeCount = 0
-	ppC.pPushConstantRanges = null
+	ppC.pushConstantRangeCount = 1
+	ppC.pPushConstantRanges = pcrC->{void^}
 	ppC.setLayoutCount = 1
 	ppC.pSetLayouts = layouts->{void^}
 
@@ -368,10 +368,17 @@ StopDraw := !() -> void
 	
 	vkFuncs.vkCmdBeginRenderPass(mainCmd.Get(),rpC,VK_SUBPASS_CONTENTS_INLINE)
 
+
 	gLightShader.ApplyShaderToQueue(mainCmd.Get())
 	sts := VkDescriptorSet[2]
 	sts[0] = gGBufferTextureSet
 	vkFuncs.vkCmdBindDescriptorSets(mainCmd.Get(),VK_PIPELINE_BIND_POINT_GRAPHICS,gLightLayout,0,1,sts[0]&,0,null)
+
+	scales := float[2]
+	scales[0] = gVulkanWindowW / gFBW
+	scales[1] = gVulkanWindowH / gFBH
+	vkFuncs.vkCmdPushConstants(mainCmd.Get(),gLightLayout,VK_SHADER_STAGE_VERTEX_BIT,0,4*2,scales&)
+
 	vkFuncs.vkCmdDraw(mainCmd.Get(),3,1,0,0)
 
 	//imgBarC := new VkImageMemoryBarrier() ; $temp
