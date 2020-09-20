@@ -79,7 +79,7 @@ slCompileShaderFile := !(vRepoFile^ itF,char^ typ) -> vShaderModule^
 
 	cpFile := cFile == null
 
-	if cFile != null and gHotload
+	if cFile != null
 	{
 		cachPath := Path(cFile.GetPath())
 		orgPath := Path(itF.GetPath())

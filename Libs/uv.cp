@@ -449,6 +449,11 @@ uvLoop := class
 	
 	//stAlloc := StaticSizeAllocator.{1024,16}
 
+	this := !(bool sm) -> void
+	{
+		loopPtr = new u8[1024]
+		uv_loop_init(loopPtr)
+	}
 	this := !() -> void
 	{
 		loopPtr = uv_default_loop()

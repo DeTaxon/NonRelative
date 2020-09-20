@@ -12,18 +12,12 @@ layout (location = 0) out vec4 outFragcolor;
 void main() 
 {
 	// Get G-Buffer values
-	//vec3 fragColor = texture(Gcolor, inUV*vec2(1700.0 / 2048,900.0 / 1024.0)).rgb;
 	vec3 fragColor = texture(Gcolor, inUV).rgb;
-	
- 	outFragcolor = vec4(fragColor, 1.0);	
+	//fragColor += vec3(0.0,-0.5,-0.5);
  	//outFragcolor = vec4(
-	//	fragColor.x + 1.403*fragColor.z,
-	//	fragColor.x - 0.344*fragColor.y - 0.714*fragColor.z,
-	//	fragColor.x + 1.770*fragColor.y 
-	//, 1.0);	
- 	//outFragcolor = vec4(
-	//	(fragColor.x*298.082 + 408.583*fragColor.z - 222.921) / 256,
-	//	(fragColor.x*298.082 - 100.291*fragColor.y - 208.120*fragColor.z + 135.576) / 256,
-	//	(fragColor.x*298.082 + 516.412*fragColor.y) / 256 ,
+	//	(fragColor.x + 1.402*fragColor.z),
+	//	(fragColor.x - 0.344136*fragColor.y - 0.714136*fragColor.z),
+	//	(fragColor.x + 1.772*fragColor.y),
 	//	1.0);	
+ 	outFragcolor = vec4(fragColor, 1.0);	
 }

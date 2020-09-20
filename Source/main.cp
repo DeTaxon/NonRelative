@@ -108,7 +108,6 @@ main := !(int argc, char^^ argv) -> int
 				return void
 			}
 
-
 			nowTime := glfwGetTime()
 			gNowTime = nowTime
 			deltaTime := nowTime - prevTime

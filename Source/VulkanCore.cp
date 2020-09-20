@@ -317,8 +317,9 @@ InitVulkan := !() -> bool
 			}
 	}
 
-	SwapImageFormat = formts[0].format
-	SwapImageColorSpace = formts[0].colorSpace
+	//TODO: format priority
+	SwapImageFormat = formts[1].format
+	SwapImageColorSpace = formts[1].colorSpace
 	SwapImageMode = reqMod
 	//CreateSwapchain(gWindowW,gWindowH)
 
