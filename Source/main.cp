@@ -4,6 +4,17 @@ gUV := uvLoop^
 
 gDisableMouse := false
 
+DebugLog := !(char^ frmt,...) -> void
+{
+	vars := int[32]
+	va_start(vars&)
+	if $posix
+		vprintf(frmt,vars&)
+	if $win32
+		vprintf(frmt,vars&->{void^^}^)
+	va_end(vars&)
+}
+
 main := !(int argc, char^^ argv) -> int
 {
 	vPreInit()

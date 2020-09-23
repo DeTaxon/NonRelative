@@ -8,6 +8,7 @@ vAddProp := !(vModel^ itModel,vMap^ mapObj) -> vProp^
 {
 	//pVoidMP.Push()
 	//defer pVoidMP.Pop()
+	DebugLog("Created Prop Model:%p Map:%p\n",itModel,mapObj)
 
 	newProp := vProp^()
 	if mapObj != null

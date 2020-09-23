@@ -160,22 +160,24 @@ gsNowScript := ScriptThread^
 
 SqObject := class
 {
-	itData := s64[2]
+	//itData := s64[2]
+	itData := void^
 	Get := !(void^ vm, int stackPos) -> void
 	{
-		sq_getstackobj(gMainVM,stackPos,itData&)
+		itData = new u8[1024]
+		sq_getstackobj(gMainVM,stackPos,itData)
 	}
 	Push := !(void^ vm) -> void
 	{
-		sq_pushobject2(vm,itData&)
+		sq_pushobject2(vm,itData)
 	}
 	IncRef := !(void^ vm) -> void
 	{
-		sq_addref(gMainVM,itData&)
+		sq_addref(gMainVM,itData)
 	}
 	DecRef := !(void^ vm) -> void
 	{
-		sq_release(vm,itData&)
+		sq_release(vm,itData)
 	}
 }
 
