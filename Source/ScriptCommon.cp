@@ -21,14 +21,10 @@ CodeSpawn := !(void^ vm) -> int
 		sq_move(newNode.thrdVM,vm2,2)
 		sq_pushroottable(newNode.thrdVM)
 	}
-	
-	newEv := gUV.Once(0,newNode&,(x) => {
-		asSc := x->{ScriptThread^}
-		asSc.onceTimer = null
-		asProp := asSc.thrdVObject
-		iRunScript(asSc)
+	gTask.Spawn(() ==>[newNode&] {
+		asProp := newNode.thrdVObject
+		iRunScript(newNode&)
 	})
-	newNode.onceTimer = newEv
 	return 0
 }
 
@@ -37,15 +33,16 @@ iScriptASleep := !(void^ vm) -> s64
 	waitTime := float
 	sq_getfloat(vm,2,waitTime&)
 	if(waitTime < 0) waitTime = 0
-	newOnce := gUV.Once(waitTime,gsNowScript,(x) => {
-		if gQuit return void //TODO: remove
-		asSc := x->{ScriptThread^}
-		asSc.onceTimer = null
-		iRunScript(asSc)
-	})
-	gsNowScript.onceTimer = newOnce
-	resVal := sq_suspendvm(vm)
-	return resVal
+	TSleep(waitTime)
+	//newOnce := gUV.Once(waitTime,gsNowScript,(x) => {
+	//	if gQuit return void //TODO: remove
+	//	asSc := x->{ScriptThread^}
+	//	asSc.onceTimer = null
+	//	iRunScript(asSc)
+	//})
+	//resVal := sq_suspendvm(vm)
+	//return resVal
+	return 0
 }
 
 ScriptInitGlobals := !(void^ vm) -> void

@@ -56,7 +56,7 @@ vTexture := class
 		vi := new VkImageViewCreateInfo() ; $temp
 		vi.image = itImg
 		vi.viewType = VK_IMAGE_VIEW_TYPE_2D
-		vi.format = VK_FORMAT_R8G8B8A8_UNORM //TODO: non alpha types and other
+		vi.format = VK_FORMAT_R8G8B8A8_UNORM
 		//vi.components = VK_COM
 		vi.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT
 		vi.subresourceRange.levelCount = 1
@@ -167,6 +167,7 @@ vTexture := class
 
 			has_alpha := webpInf[2] != 0
 			has_animation := webpInf[3] != 0
+			has_alpha = true
 
 			if has_animation
 			{

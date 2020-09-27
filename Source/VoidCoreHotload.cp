@@ -9,35 +9,35 @@ gHotloadInit := !() -> void
 {
 	if not gHotload return void
 
-	htl := new List.{vRepoFolder^} ; $temp
+	//htl := new List.{vRepoFolder^} ; $temp
 
 
-	htl.Push(gRepo.rootFolder)
-	while htl.Size() != 0
-	{
-		str := htl.Pop()
-		gRepo.ExamineFolder(str)
+	//htl.Push(gRepo.rootFolder)
+	//while htl.Size() != 0
+	//{
+	//	str := htl.Pop()
+	//	gRepo.ExamineFolder(str)
 
-		if (not str.IsVirtual()) and (str.objName[0] != '.' or str.objName == "./")
-		{
-			mntr := str.GetPath()
-			newEv := gUV.DirectoryMonitor(str.GetPath(),(x,name) ==>{
+	//	if (not str.IsVirtual()) and (str.objName[0] != '.' or str.objName == "./")
+	//	{
+	//		mntr := str.GetPath()
+	//		//newEv := gUV.DirectoryMonitor(str.GetPath(),(x,name) ==>{
 
-				itF := gRepo.GetFile(name,gFsMap[x])
+	//		//	itF := gRepo.GetFile(name,gFsMap[x])
 
-				if itF != null
-				{
-					gFsPreTest.Push(itF)
-				}
-			})
-			gFsMap[newEv] = str
+	//		//	if itF != null
+	//		//	{
+	//		//		gFsPreTest.Push(itF)
+	//		//	}
+	//		//})
+	//		gFsMap[newEv] = str
 
-			for it : str.subFolders
-			{
-				htl.Push(it)
-			}
-		}
-	}
+	//		for it : str.subFolders
+	//		{
+	//			htl.Push(it)
+	//		}
+	//	}
+	//}
 
 }
 

@@ -1,6 +1,6 @@
 
 gQuit := false
-gUV := uvLoop^
+gTask := TaskBox^
 
 gDisableMouse := false
 
@@ -17,11 +17,12 @@ DebugLog := !(char^ frmt,...) -> void
 
 main := !(int argc, char^^ argv) -> int
 {
+	gTask = CreateTaskBox()
+	gTask.ExpectWorkers(1)
+
 	vPreInit()
 
 	uvInit()
-
-	gUV = new uvLoop()
 
 	CreateWindow(gWinStartW,gWinStartH)
 	defer DestroyWindow() 
@@ -52,19 +53,19 @@ main := !(int argc, char^^ argv) -> int
 	drawMutex := new uvMutex()
 	drawCond := new uvCond()
 
-	gUV.Timer(0,0.001,(x) ==> {
+	gTask.Spawn(() ==> {
 		prevTime := glfwGetTime()
 		while true
 		{
+			FlushTempMemory()
 			if gQuit {
-				x.Stop()
 				return void
 			}
 			nowTime := glfwGetTime()
 			deltaTime := nowTime - prevTime
 			vPhysStage(deltaTime)
 			prevTime = nowTime
-			yield void
+			TSleep(0.001)
 		}
 	})
 
@@ -74,7 +75,7 @@ main := !(int argc, char^^ argv) -> int
 	resizeState := false
 	preQuit := false
 
-	gUV.Timer(0,0.01, (x) ==> [fpsCounter&,preQuit&]{
+	gTask.Spawn( () ==> [fpsCounter&,preQuit&]{
 		
 		prevTime := glfwGetTime()
 		
@@ -100,25 +101,28 @@ main := !(int argc, char^^ argv) -> int
 			if glfwWindowShouldClose(glfwWindow)
 			{
 				preQuit = true
+				//gTask.Quit()
 				//gQuit = true
-				gHotloadStop()
-				x.Stop()
+				//gHotloadStop()
+				return void
 			}
-			yield void
+			TSleep(0.01)
 		}
 	})
 
-	ev := gUV.Event(() ==> [drawState&,drawMutex,drawCond,fpsCounter&,ev&]{
+	gTask.Spawn(() ==> [drawState&,drawMutex,drawCond,fpsCounter&,preQuit&]{
 
 		prevTime := glfwGetTime()
 
 		while  true 
 		{
 			if gQuit {
-				ev.Close()
 				return void
 			}
-
+			FlushTempMemory()
+			AwaitWork(() ==>{
+				StartDraw()
+			})
 			nowTime := glfwGetTime()
 			gNowTime = nowTime
 			deltaTime := nowTime - prevTime
@@ -128,54 +132,54 @@ main := !(int argc, char^^ argv) -> int
 			gCam.BindDescriptor(mainCmd.Get())
 			
 			vDraw()
-
+		
 			StopDraw()
+
+			if preQuit
+			{
+				gTask.Quit()
+				return void
+			}
 
 			gHotloadCheck()
 			fpsCounter++
 
-			drawMutex.Lock()
-			drawState = false
-			drawCond.Notify()
-			drawMutex.Unlock()
-
-			yield void
 		}
 	})
-	if false
-	{
-		
-	}else{
-		uvThread(() ==> [drawState&,drawMutex,drawCond,preQuit&]{
-			while not gQuit
-			{
-				drawMutex.Lock()
-				while drawState
-				{
-					drawCond.Wait(drawMutex^,0.1)
-				}
-				if preQuit
-				{
-					gQuit = true	
-				}
-				if gQuit {
-					ev.Emit()
-					drawMutex.Unlock()
-					return void
-				}
-				drawMutex.Unlock()
+	//if false
+	//{
+	//	
+	//}else{
+	//	uvThread(() ==> [drawState&,drawMutex,drawCond,preQuit&]{
+	//		while not gQuit
+	//		{
+	//			drawMutex.Lock()
+	//			while drawState
+	//			{
+	//				drawCond.Wait(drawMutex^,0.1)
+	//			}
+	//			if preQuit
+	//			{
+	//				gQuit = true	
+	//			}
+	//			if gQuit {
+	//				ev.Emit()
+	//				drawMutex.Unlock()
+	//				return void
+	//			}
+	//			drawMutex.Unlock()
 
-				if StartDraw()
-				{
-					drawState = true
-					ev.Emit()
-				}else{
-					TSleep(0.1)
-				}
-			}
-		})
-	}
-	gUV.Run()
+	//			if StartDraw()
+	//			{
+	//				drawState = true
+	//				ev.Emit()
+	//			}else{
+	//				TSleep(0.1)
+	//			}
+	//		}
+	//	})
+	//}
+	gTask.Run()
 		
 	return 0
 
