@@ -173,7 +173,6 @@ vObject := class
 		CreateSwapchain(gWindowW,gWindowH)
 		CreateFB()
 
-
 		gPlayer = new PhysPlayer()
 		gPlayer.Height = 1.7f
 		gPlayer.System.pos = vec4f(1.0f,1.0f,2.0f,1.0f)

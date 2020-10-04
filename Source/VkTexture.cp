@@ -167,7 +167,8 @@ vTexture := class
 
 			has_alpha := webpInf[2] != 0
 			has_animation := webpInf[3] != 0
-			has_alpha = true
+			if not vkRGB8Support
+				has_alpha = true
 
 			if has_animation
 			{

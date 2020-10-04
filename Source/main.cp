@@ -65,7 +65,7 @@ main := !(int argc, char^^ argv) -> int
 			deltaTime := nowTime - prevTime
 			vPhysStage(deltaTime)
 			prevTime = nowTime
-			TSleep(0.001)
+			TSleep(0.005)
 		}
 	})
 

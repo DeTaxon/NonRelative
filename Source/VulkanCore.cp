@@ -28,6 +28,8 @@ vkPerspSet := VkDescriptorSet
 mainCmd := CmdBuffer
 
 
+vkRGB8Support := bool
+
 vkCpuMemId := int
 vkGpuMemId := int
 
@@ -403,6 +405,11 @@ InitVulkan := !() -> bool
 	allDesc.pSetLayouts = vkPerspLayout&
 
 	vkFuncs.vkAllocateDescriptorSets(vkLogCard,allDesc,vkPerspSet&)
+
+	testTextureFormat := VkFormatProperties
+	vkFuncs.vkGetPhysicalDeviceFormatProperties(vkPhysCard,VK_FORMAT_R8G8B8_UNORM,testTextureFormat&)
+	vkRGB8Support = (testTextureFormat.linearTilingFeatures and_b VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT) != 0
+	//printf("with alpha %x %x %x\n",tst.linearTilingFeatures,tst.optimalTilingFeatures,tst.bufferFeatures)
 
 	printf("finished\n")
 
