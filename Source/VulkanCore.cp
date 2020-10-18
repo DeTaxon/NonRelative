@@ -29,6 +29,7 @@ mainCmd := CmdBuffer
 
 
 vkRGB8Support := bool
+vkHalfFloatSupport := bool
 
 vkCpuMemId := int
 vkGpuMemId := int
@@ -51,10 +52,10 @@ InitVulkan := !() -> bool
 	vkCpuMemId = -1
 	vkDllHandle = OpenLib("libvulkan.so")
 
-	if vkDllHandle == 0
+	if vkDllHandle == null
 	{
 		vkDllHandle = OpenLib("vulkan-1.dll")
-		if vkDllHandle == 0
+		if vkDllHandle == null
 		{
 			printf("fail at loading dll\n")
 			return false
@@ -108,6 +109,9 @@ InitVulkan := !() -> bool
 	wantedExtensions << "VK_KHR_xlib_surface"
 	wantedExtensions << "VK_KHR_win32_surface"
 	wantedExtensions << "VK_KHR_surface"
+	wantedExtensions << "VK_KHR_get_physical_device_properties2" 
+	wantedExtensions << "VK_KHR_storage_buffer_storage_class"
+
 	//wantedExtensions << "VK_KHR_get_physical_device_properties2"
 	
 	toUseLayers := List.{string}() ; $temp $uniq 
@@ -195,6 +199,7 @@ InitVulkan := !() -> bool
 		}
 	}
 	vkPhysCard = devs[0]
+	devSupports := AVLSet.{char^}() ; $temp
 
 	devExtsCount := 0
 	vkFuncs.vkEnumerateDeviceExtensionProperties(vkPhysCard,null,devExtsCount&,null)
@@ -206,14 +211,25 @@ InitVulkan := !() -> bool
 		printf("dev extensions\n")
 		for devExtsCount
 		{
+			devSupports.Insert(devExts[it].extensionName)
 			printf("- %s\n",devExts[it].extensionName&)
 		}
 	}else{
 		printf("no device extensions found\n")
 	}
 
+	
 	physExts := List.{string}() ; $temp
 	physExts << "VK_KHR_swapchain"
+
+	halfFloatExt := "VK_KHR_16bit_storage"
+	if devSupports.Contain(halfFloatExt)
+	{
+		physExts << halfFloatExt 
+		//physExts << "VK_KHR_get_physical_device_properties2" 
+		physExts << "VK_KHR_storage_buffer_storage_class"
+		vkHalfFloatSupport = true
+	}
 
 	queueCreateInf := new VkDeviceQueueCreateInfo() ; $temp
 	queueCreateInf.queueFamilyIndex = 0
@@ -410,6 +426,9 @@ InitVulkan := !() -> bool
 	vkFuncs.vkGetPhysicalDeviceFormatProperties(vkPhysCard,VK_FORMAT_R8G8B8_UNORM,testTextureFormat&)
 	vkRGB8Support = (testTextureFormat.linearTilingFeatures and_b VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT) != 0
 	//printf("with alpha %x %x %x\n",tst.linearTilingFeatures,tst.optimalTilingFeatures,tst.bufferFeatures)
+
+	printf("RGB8SUpport %s\n",vkRGB8Support ?: "yes" : "no")
+	printf("HalfFloat support %s\n",vkHalfFloatSupport ?: "yes" : "no")
 
 	printf("finished\n")
 

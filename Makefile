@@ -13,7 +13,7 @@ ifeq ($(OS),Windows_NT)
 endif
 
 
-CmpLL :=  clang++ -g Objs/engi.ll $(Libs) -o $(Result)
+CmpLL :=  clang++ -g Objs/engi.ll $(Libs) -o $(Result) -march=native
 
 ifeq ($(cross),win32)
 	Prefix := -p win32

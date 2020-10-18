@@ -1,4 +1,5 @@
 #version 420
+#extension GL_AMD_gpu_shader_half_float : enable
 
 #VERT_INPUT_DATA_VARS
 

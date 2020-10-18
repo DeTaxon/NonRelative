@@ -1,10 +1,19 @@
 
-slModules := AVLMap.{vRepoFile^,vShaderModule}
+itShaders := AVLMap.{vShaderVertexOptions,AVLMap.{char^,vShader}}
 
 vGetShader := !(char^ sName) -> vShader^
 {
-	if itShaders.Contain(sName)
-		return itShaders[sName]&
+	return vGetShader(sName,x ==> {})
+}
+vGetShader := !(char^ sName,!(vShaderVertexOptions^)& -> void vertSet ) -> vShader^
+{
+	opts := new vShaderVertexOptions ; $temp
+	vertSet(opts)
+
+	thisOpt := ref itShaders[opts^]
+
+	if thisOpt.Contain(sName)
+		return thisOpt[sName]&
 
 	//pVoidMP.Push()
 	//defer pVoidMP.Pop()
@@ -58,16 +67,18 @@ vGetShader := !(char^ sName) -> vShader^
 	vertMod := slCompileShaderFile(fl.GetFile(vertName),"vert")
 	fragMod := slCompileShaderFile(fl.GetFile(fragName),"frag")
 
-	itSh := ref itShaders[StrCopy(sName)]
+	itSh := ref thisOpt[StrCopy(sName)]
 	
 	if isLight
 	{
 		itSh.LoadShaderLight(vertMod,fragMod)
 	}else{
-		itSh.LoadShader(vertMod,fragMod)
+		itSh.LoadShader(vertMod,fragMod,opts)
 	}
 	return itSh&
 }
+slModules := AVLMap.{vRepoFile^,vShaderModule}
+
 slCompileShaderFile := !(vRepoFile^ itF,char^ typ) -> vShaderModule^
 {
 	if slModules.Contain(itF)

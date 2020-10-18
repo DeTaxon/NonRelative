@@ -7,7 +7,6 @@ vObject := class
 //{
 	gRepo := vRepo
 
-	itShaders := AVLMap.{char^,vShader}
 	itModels := AVLMap.{char^,vModel}
 	itMaps := AVLMap.{char^,vMap}
 	itProps := List.{vProp}

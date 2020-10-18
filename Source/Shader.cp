@@ -1,6 +1,21 @@
+vShaderVertexOptions := class
+{
+	vertexInputIsHalfFloat := bool
+
+	"<=>" := !(vShaderVertexOptions toCmp) -> int
+	{
+		return vertexInputIsHalfFloat <=> toCmp.vertexInputIsHalfFloat
+	}
+	"=" := !(vShaderVertexOptions toSet) -> void
+	{
+		vertexInputIsHalfFloat = toSet.vertexInputIsHalfFloat
+	}
+}
+
 vShaderModule := class
 {
 	itModule := VkShaderModule
+	vertInputIsHalf := bool
 
 	LoadShaderModule := !(void^ modPoint,int modSize,char^ typ) -> void
 	{
@@ -40,7 +55,7 @@ vShader := class
 		vkFuncs.vkCmdSetViewport(itBuf,0,1,vp&)
 		vkFuncs.vkCmdSetScissor(itBuf,0,1,sc&)
 	}
-	LoadShader := !(vShaderModule^ vertModule,vShaderModule^ fragModule) -> void
+	LoadShader := !(vShaderModule^ vertModule,vShaderModule^ fragModule,vShaderVertexOptions^ opts) -> void
 	{
 
 		vert := vertModule.Get()
@@ -59,26 +74,36 @@ vShader := class
 
 		inputsBind := new VkVertexInputBindingDescription ; $temp
 
+		componentSize := 4
+		vec2Typ := VK_FORMAT_R32G32_SFLOAT
+		vec3Typ := VK_FORMAT_R32G32B32_SFLOAT
+		if opts.vertexInputIsHalfFloat
+		{
+			componentSize = 2
+			vec2Typ = VK_FORMAT_R16G16_SFLOAT
+			vec3Typ = VK_FORMAT_R16G16B16_SFLOAT
+		}
+
 		inputsBind.binding = 0
-		inputsBind.stride = 8*4
+		inputsBind.stride = 8*componentSize
 		inputsBind.inputRate = VK_VERTEX_INPUT_RATE_VERTEX
 
 		inputsStuf := new VkVertexInputAttributeDescription[3] ; $temp
 		//vertex
 		inputsStuf[0].location = 0
 		inputsStuf[0].binding = inputsBind.binding
-		inputsStuf[0].format = VK_FORMAT_R32G32B32_SFLOAT
+		inputsStuf[0].format = vec3Typ
 		inputsStuf[0].offset = 0
 		//normal
 		inputsStuf[1].location = 1
 		inputsStuf[1].binding = inputsBind.binding
-		inputsStuf[1].format = VK_FORMAT_R32G32B32_SFLOAT
-		inputsStuf[1].offset = 4*3
+		inputsStuf[1].format = vec3Typ
+		inputsStuf[1].offset = componentSize*3
 		//texture
 		inputsStuf[2].location = 2
 		inputsStuf[2].binding = inputsBind.binding
-		inputsStuf[2].format = VK_FORMAT_R32G32_SFLOAT
-		inputsStuf[2].offset = 6*4
+		inputsStuf[2].format = vec2Typ
+		inputsStuf[2].offset = componentSize*6
 	
 		plC := new VkPipelineVertexInputStateCreateInfo() ; $temp
 
