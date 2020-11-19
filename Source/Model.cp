@@ -12,6 +12,9 @@ vModel := class
 	scriptFile := vRepoFile^
 	scriptUnit := ScriptUnit^
 
+	vertexInfo := vShaderVertexOptions
+
+
 	LoadFile := !(vRepoFile^ itFl) -> bool
 	{
 		fPoint := itFl.Map()
@@ -24,6 +27,9 @@ vModel := class
 			printf("nope\n")
 			return false
 		}
+		vertexInfo.positionType = Vert_vec3f
+		vertexInfo.normalType = Vert_vec3f
+		vertexInfo.textureType = Vert_vec2f
 	
 		indexCount = rFile.inds->len
 		

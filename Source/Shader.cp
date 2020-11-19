@@ -1,15 +1,41 @@
+Vert_none := 0
+Vert_vec3f := 1
+Vert_vec3h := 2
+Vert_vec4f := 3
+Vert_vec4h := 4
+Vert_vec2f := 5
+Vert_vec2h := 6
+
+VertexToVulkan := ![
+0,
+VK_FORMAT_R32G32B32_SFLOAT,
+VK_FORMAT_R16G16B16_SFLOAT,
+VK_FORMAT_R32G32B32A32_SFLOAT,
+VK_FORMAT_R16G16B16A16_SFLOAT,
+VK_FORMAT_R32G32_SFLOAT,
+VK_FORMAT_R16G16_SFLOAT
+]
+
+VertexToVulkanSize := ![
+0,
+12,
+6,
+16,
+8,
+8,
+4
+]
+
+
 vShaderVertexOptions := class
 {
-	vertexInputIsHalfFloat := bool
+	positionType := u8
+	normalType := u8
+	textureType := u8
 
-	"<=>" := !(vShaderVertexOptions toCmp) -> int
-	{
-		return vertexInputIsHalfFloat <=> toCmp.vertexInputIsHalfFloat
-	}
-	"=" := !(vShaderVertexOptions toSet) -> void
-	{
-		vertexInputIsHalfFloat = toSet.vertexInputIsHalfFloat
-	}
+
+	"<=>" := default
+	"=" := default
 }
 
 vShaderModule := class
@@ -74,37 +100,33 @@ vShader := class
 
 		inputsBind := new VkVertexInputBindingDescription ; $temp
 
-		componentSize := 4
-		vec2Typ := VK_FORMAT_R32G32_SFLOAT
-		vec3Typ := VK_FORMAT_R32G32B32_SFLOAT
-		if opts.vertexInputIsHalfFloat
-		{
-			componentSize = 2
-			vec2Typ = VK_FORMAT_R16G16_SFLOAT
-			vec3Typ = VK_FORMAT_R16G16B16_SFLOAT
-		}
-
 		inputsBind.binding = 0
-		inputsBind.stride = 8*componentSize
 		inputsBind.inputRate = VK_VERTEX_INPUT_RATE_VERTEX
 
+
+		offset := 0
 		inputsStuf := new VkVertexInputAttributeDescription[3] ; $temp
 		//vertex
 		inputsStuf[0].location = 0
 		inputsStuf[0].binding = inputsBind.binding
-		inputsStuf[0].format = vec3Typ
-		inputsStuf[0].offset = 0
+		inputsStuf[0].format = VertexToVulkan[opts.positionType]
+		inputsStuf[0].offset = offset
+		offset += VertexToVulkanSize[opts.positionType]
 		//normal
 		inputsStuf[1].location = 1
 		inputsStuf[1].binding = inputsBind.binding
-		inputsStuf[1].format = vec3Typ
-		inputsStuf[1].offset = componentSize*3
+		inputsStuf[1].format = VertexToVulkan[opts.normalType]
+		inputsStuf[1].offset = offset
+		offset += VertexToVulkanSize[opts.normalType]
 		//texture
 		inputsStuf[2].location = 2
 		inputsStuf[2].binding = inputsBind.binding
-		inputsStuf[2].format = vec2Typ
-		inputsStuf[2].offset = componentSize*6
+		inputsStuf[2].format = VertexToVulkan[opts.textureType]
+		inputsStuf[2].offset = offset
+		offset += VertexToVulkanSize[opts.textureType]
 	
+		inputsBind.stride = offset
+
 		plC := new VkPipelineVertexInputStateCreateInfo() ; $temp
 
 		plC.vertexBindingDescriptionCount = 1

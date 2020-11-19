@@ -38,6 +38,30 @@ vGenModel := !(char^ modelName,InfoNode^ itObj,vRepoFile^ itFile) -> vModel^
 
 	switch itObj.SubList[^].Name
 	{
+		case "model"
+			switch it.SubList.Size()
+			{
+				case 1
+					switch it.SubList[0].Name
+					{
+						case "file"
+							cdP := ref it.SubList[0]
+							itF := itFile.GetFile(cdP.ValueStr)
+							if itF == null 
+								return null
+							itMd.LoadFile(itF)
+							if gHotload gFsModelsModel[itF] = itMd&
+							
+						case void
+							return null
+
+					}
+				case void
+					return null
+			}
+	}
+	switch itObj.SubList[^].Name
+	{
 		case "phys"
 			if it.SubList.Size() != 0
 			{
@@ -69,31 +93,10 @@ vGenModel := !(char^ modelName,InfoNode^ itObj,vRepoFile^ itFile) -> vModel^
 					}
 				}
 			}
-		case "model"
-			switch it.SubList.Size()
-			{
-				case 1
-					switch it.SubList[0].Name
-					{
-						case "file"
-							cdP := ref it.SubList[0]
-							itF := itFile.GetFile(cdP.ValueStr)
-							if itF == null 
-								return null
-							itMd.LoadFile(itF)
-							if gHotload gFsModelsModel[itF] = itMd&
-							
-						case void
-							return null
-
-					}
-				case void
-					return null
-			}
 		case "shader"
 			if it.IsValue()
 			{
-				reqShader = vGetShader(it.ValueStr)
+				reqShader = vGetShader(it.ValueStr, x ==> x^ = itMd.vertexInfo)
 			}else{
 				//TODO
 			}
