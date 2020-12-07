@@ -22,7 +22,7 @@ main := !(int argc, char^^ argv) -> int
 
 	vPreInit()
 
-	uvInit()
+	//uvInit()
 
 	CreateWindow(gWinStartW,gWinStartH)
 	defer DestroyWindow() 
@@ -48,10 +48,6 @@ main := !(int argc, char^^ argv) -> int
 
 	diffLink.SetPos(vec4f(0,45.0,0.0,1.0))
 	vAddMapLink("FirstMap","FirstMap",diffLink)
-
-	drawState := false
-	drawMutex := new uvMutex()
-	drawCond := new uvCond()
 
 	gTask.Spawn(() ==> {
 		prevTime := glfwGetTime()
@@ -110,7 +106,7 @@ main := !(int argc, char^^ argv) -> int
 		}
 	})
 
-	gTask.Spawn(() ==> [drawState&,drawMutex,drawCond,fpsCounter&,preQuit&]{
+	gTask.Spawn(() ==> [fpsCounter&,preQuit&]{
 
 		prevTime := glfwGetTime()
 

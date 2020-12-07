@@ -289,6 +289,16 @@ vObject := class
 	{
 		if depth < 0 
 			return void
+
+		diffToPlayer := relPos.pos - gCam.camPos
+		diffToPlayer.w = 0
+
+		//if diffToPlayer.Length() > 15 //TODO: unconst
+		//{
+		//	if diffToPlayer <+> gCam.AtVector < 0
+		//		return void
+		//}
+	
 		for it : iDrawedMaps^[someMap] ; $temp
 		{
 			if it.NearDistance(relPos) < 1 //TODO: unconst

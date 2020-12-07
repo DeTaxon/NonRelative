@@ -11,6 +11,8 @@ vCamera := class
 	mouseCamX := double
 	mouseCamY := double
 
+	AtVector := vec4f
+
 	this := !() -> void
 	{
 		upDownAng = 0.0f
@@ -116,6 +118,8 @@ vCamera := class
 		tempCent.ang = camQuant()
 		tempCent.pos = camPos
 
+		AtVector = tempCent.ang*vec4f(1.0,0.0,0.0,0.0)
+
 		invC := tempCent.Inverse()
 		posRes = invC<*>propPos
 	}
@@ -146,8 +150,7 @@ vCamera := class
 		mouseSense := 0.4
 		if not gDisableMouse
 			AddAngs(deltaTime*msXDiff*mouseSense,-deltaTime*msYDiff*mouseSense)
-
-		addLocal(vec4f(-addFB,addLR,0.0f,0.0f))
+		addLocal(vec4f(addFB,addLR,0.0f,0.0f))
 	}
 }
 
