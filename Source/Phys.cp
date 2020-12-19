@@ -123,6 +123,7 @@ PhysHeightMap := class
 				cand := i
 				candDist := 10000000000.0
 				candPos := vec4f
+				candPos.w = 0.0
 				candBool := bool^
 				
 				for cn,j : phase^

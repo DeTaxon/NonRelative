@@ -34,5 +34,7 @@ Objs/engi.ll:
 	
 clean: 
 	rm -f out.ll WinObj.o a.exe a.out engig
+grind:
+	valgrind --log-file=grind.txt --leak-check=full --leak-resolution=med ./engi
 
 .PHONY: clean engi Objs/engi.ll

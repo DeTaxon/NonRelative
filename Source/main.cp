@@ -97,9 +97,6 @@ main := !(int argc, char^^ argv) -> int
 			if glfwWindowShouldClose(glfwWindow)
 			{
 				preQuit = true
-				//gTask.Quit()
-				//gQuit = true
-				//gHotloadStop()
 				return void
 			}
 			TSleep(0.01)
