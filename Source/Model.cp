@@ -27,9 +27,9 @@ vModel := class
 			printf("nope\n")
 			return false
 		}
-		vertexInfo.positionType = Vert_vec3f
-		vertexInfo.normalType = Vert_vec3f
-		vertexInfo.textureType = Vert_vec2f
+		vertexInfo.positionType = VKType(VType_Float,3)
+		vertexInfo.normalType = VKType(VType_Float,3)
+		vertexInfo.textureType = VKType(VType_Float,2)
 	
 		indexCount = rFile.inds->len
 		

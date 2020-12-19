@@ -1,37 +1,63 @@
-Vert_none := 0
-Vert_vec3f := 1
-Vert_vec3h := 2
-Vert_vec4f := 3
-Vert_vec4h := 4
-Vert_vec2f := 5
-Vert_vec2h := 6
 
-VertexToVulkan := ![
-0,
-VK_FORMAT_R32G32B32_SFLOAT,
-VK_FORMAT_R16G16B16_SFLOAT,
-VK_FORMAT_R32G32B32A32_SFLOAT,
-VK_FORMAT_R16G16B16A16_SFLOAT,
-VK_FORMAT_R32G32_SFLOAT,
-VK_FORMAT_R16G16_SFLOAT
-]
+VType_None := 0
+VType_Float := 1
+VType_Half := 2
+VKType := class
+{
+	BaseType := u8
+	TypeCount := u8
+	
+	"this" := !(int itType,int itCount) -> void
+	{
+		BaseType = itType
+		TypeCount = itCount
+	}
 
-VertexToVulkanSize := ![
-0,
-12,
-6,
-16,
-8,
-8,
-4
-]
+
+	GetVKType := !() -> int
+	{
+		if BaseType == VType_Float
+		{
+			//assert(TypeCount >= 2 and TypeCount <= 4)
+			switch TypeCount
+			{	
+				case 2 return VK_FORMAT_R32G32_SFLOAT
+				case 3 return VK_FORMAT_R32G32B32_SFLOAT
+				case 4 return VK_FORMAT_R32G32B32A32_SFLOAT
+			}
+		}
+		if BaseType == VType_Half
+		{
+			//assert(TypeCount >= 2 and TypeCount <= 4)
+			switch TypeCount
+			{	
+				case 2 return VK_FORMAT_R16G16_SFLOAT
+				case 3 return VK_FORMAT_R16G16B16_SFLOAT
+				case 4 return VK_FORMAT_R16G16B16A16_SFLOAT
+			}
+		}
+		assert(false)
+		return 0
+	}
+	GetSize := !() -> int
+	{
+		itTypeSize := 0
+		if BaseType == VType_Float itTypeSize = 4
+		if BaseType == VType_Half itTypeSize = 2
+		assert(itTypeSize != 0)
+		return itTypeSize*TypeCount
+	}
+
+	"<=>" := default
+	"=" := default
+}
 
 
 vShaderVertexOptions := class
 {
-	positionType := u8
-	normalType := u8
-	textureType := u8
+	positionType := VKType
+	normalType := VKType
+	textureType := VKType
 
 
 	"<=>" := default
@@ -109,21 +135,21 @@ vShader := class
 		//vertex
 		inputsStuf[0].location = 0
 		inputsStuf[0].binding = inputsBind.binding
-		inputsStuf[0].format = VertexToVulkan[opts.positionType]
+		inputsStuf[0].format = opts.positionType.GetVKType()
 		inputsStuf[0].offset = offset
-		offset += VertexToVulkanSize[opts.positionType]
+		offset += opts.positionType.GetSize()
 		//normal
 		inputsStuf[1].location = 1
 		inputsStuf[1].binding = inputsBind.binding
-		inputsStuf[1].format = VertexToVulkan[opts.normalType]
+		inputsStuf[1].format = opts.normalType.GetVKType()
 		inputsStuf[1].offset = offset
-		offset += VertexToVulkanSize[opts.normalType]
+		offset += opts.normalType.GetSize()
 		//texture
 		inputsStuf[2].location = 2
 		inputsStuf[2].binding = inputsBind.binding
-		inputsStuf[2].format = VertexToVulkan[opts.textureType]
+		inputsStuf[2].format = opts.textureType.GetVKType()
 		inputsStuf[2].offset = offset
-		offset += VertexToVulkanSize[opts.textureType]
+		offset += opts.textureType.GetSize()
 	
 		inputsBind.stride = offset
 
