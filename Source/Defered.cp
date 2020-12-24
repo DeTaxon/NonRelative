@@ -298,7 +298,8 @@ CreateFB := !() -> void
 	vkFuncs.vkUpdateDescriptorSets(vkLogCard,1,wrT,0,null)
 }
 nowImg := int
-StartDraw := !() -> bool
+
+DrawGetImage := !() -> bool
 {
 	vkFuncs.vkResetFences(vkLogCard,1,vkFence&)
 	resAq := vkFuncs.vkAcquireNextImageKHR(vkLogCard,vkSwapchain,not_b 0U,null,vkFence,nowImg&)
@@ -307,6 +308,16 @@ StartDraw := !() -> bool
 	{
 		return false
 	}
+	return true
+}
+
+rpC := VkRenderPassBeginInfo
+clrValues := float[13]
+StartDraw := !() -> bool
+{
+
+	memset(rpC&,0,VkRenderPassBeginInfo->TypeSize)
+	rpC."this"()
 
 	vkFuncs.vkWaitForFences(vkLogCard,1,vkFence&,1,10000000)
 
@@ -314,9 +325,6 @@ StartDraw := !() -> bool
 	mainCmd.Start()
 
 
-	rpC := new VkRenderPassBeginInfo() ; $temp
-
-	clrValues := new float[13] ; $temp
 
 	clrValues[0] = 1.0f
 	clrValues[1] = 1.0f
@@ -340,7 +348,7 @@ StartDraw := !() -> bool
 	rpC.clearValueCount = 3
 	rpC.pClearValues = clrValues->{void^}
 	
-	vkFuncs.vkCmdBeginRenderPass(mainCmd.Get(),rpC,VK_SUBPASS_CONTENTS_INLINE)
+	vkFuncs.vkCmdBeginRenderPass(mainCmd.Get(),rpC&,VK_SUBPASS_CONTENTS_INLINE)
 	return true
 }
 StopDraw := !() -> void

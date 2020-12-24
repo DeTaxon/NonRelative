@@ -66,7 +66,7 @@ PhysHeightMap := class
 		PhysType = PhysType_hmap
 	}
 	
-	CreateDots := !(RawModel^ mdlValue) -> void
+	CreateDots := !(RawModel^ mdlValue) -> int
 	{
 		vSize := mdlValue.GetVertSize()
 		nDots := new vec4f[mdlValue.verts->len div vSize + 1] ; $temp
@@ -100,10 +100,7 @@ PhysHeightMap := class
 			aDs := Distance(a,center)
 			bDs := Distance(b,center)
 			cDs := Distance(c,center)
-			center.w = aDs
-			if center.w < bDs center.w = bDs
-			if center.w < cDs center.w = cDs
-			center.w *= 1.01
+			center.w = max(aDs,bDs,cDs)*1.01
 			ns.PosAndSize = center
 			ns.TriCount = 1
 			ns.Triangles[0] = i
@@ -208,6 +205,10 @@ PhysHeightMap := class
 		memcpy(Dots,nDots->{void^},asIntP[0])
 		memcpy(Spheres,resSpheres->{void^},asIntP[1])
 		memcpy(Triangles,Triangles2->{void^},asIntP[2])
+
+		assert((Triangles->{void^}->{u64} + asIntP[2]->{u32}) == (Dots->{void^}->{u64} + resSize))
+
+		return resSize
 	}
 	GetTris := !(vec4f pos,u16[32]^ triBuf, int^ triSize,int sInd)-> void
 	{

@@ -17,16 +17,9 @@ vModel := class
 
 	LoadFile := !(vRepoFile^ itFl) -> bool
 	{
-		fPoint := itFl.Map()
-		defer itFl.Unmap()
-		fSize := itFl.Size()
-
 		rFile := new RawModel ; $temp
-		if not rFile.MapFromPLY(fPoint,fSize)
-		{
-			printf("nope\n")
+		if not rFile.LoadFromFile(itFl)
 			return false
-		}
 		vertexInfo.positionType = VKType(VType_Float,3)
 		vertexInfo.normalType = VKType(VType_Float,3)
 		vertexInfo.textureType = VKType(VType_Float,2)

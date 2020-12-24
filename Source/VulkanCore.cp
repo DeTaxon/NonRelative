@@ -100,7 +100,7 @@ InitVulkan := !() -> bool
 	wantedLayers << "VK_LAYER_LUNARG_standard_validation"
 	wantedLayers << "VK_LAYER_MESA_overlay"
 	wantedLayers << "VK_LAYER_KHRONOS_validation"
-	//wantedLayers << "VK_LAYER_LUNARG_vktrace"
+	wantedLayers << "VK_LAYER_LUNARG_vktrace"
 
 	wantedExtensions := AVLSet.{string}() ; $temp
 	wantedExtensions << "VK_EXT_debug_report"

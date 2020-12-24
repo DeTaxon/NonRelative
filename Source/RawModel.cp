@@ -8,13 +8,10 @@ MODEL_UV := 4
 
 RawModel := class
 {
-	id := int
 	verts := float[]
 	vertItems := int
 
 	inds := int[]
-
-	modelState := int
 
 	GetVertSize := !() -> int
 	{
@@ -29,15 +26,68 @@ RawModel := class
 	{
 		verts = null
 		inds = null
-		id = 0
 		vertItems = 0
-
-		modelState = MODEL_NONE
 	}
 	Clear := !() -> void
 	{
 		if inds != null delete inds
 		if verts != null delete verts
+	}
+
+	SaveAsMF1 := !(char^ flName) -> void
+	{
+		fileSize := verts->len*float->TypeSize + inds->len*int->TypeSize + 4*int->TypeSize
+
+		outFile := MappedFile(flName,FILE_CREATE,fileSize)
+		defer outFile.Close()
+
+		outData := outFile.Get()->{int^}
+		outData[0] = VType_Float
+		outData[1] = verts->len
+		outData[2] = VType_UInt32
+		outData[3] = inds->len
+
+		vertSize := verts->len*4
+		toWr := outData[4]&->{u8^}
+		memcpy(toWr,verts->{void^},vertSize)
+
+		toWr = toWr[vertSize]&
+		indSize := inds->len*4
+		memcpy(toWr,inds->{void^},indSize)
+	}
+	MapFromMF1 := !(void^ flP,u64 itSize) -> bool
+	{
+		itData := flP->{int^}
+		verts = new float[itData[1]] ; $temp
+		memcpy(verts->{void^},flP + 4*4,verts->len*4)
+		inds = new int[itData[3]] ; $temp
+		memcpy(inds->{void^},flP + (4*4 + verts->len*4),inds->len*4)
+
+		vertItems = MODEL_POSITION + MODEL_NORMAL + MODEL_UV
+
+		return true
+	}
+	LoadFromFile := !(vRepoFile^ fl) -> bool
+	{
+		ext := fl.GetName()[-3..0]
+		ptr := fl.Map()
+		defer fl.Unmap()
+		if ext == "ply" return MapFromPLY(ptr,fl.Size())
+		if ext == "mf1" return MapFromMF1(ptr,fl.Size())
+		return false
+	}
+	LoadFromFile := !(char^ flName) -> bool
+	{
+		fl := MappedFile(flName)
+		defer fl.Close()
+
+		if flName[-3..0] == "ply"
+		{
+			return MapFromPLY(fl.Get(),fl.Size()->{u64})
+		}else if flName[-3..0] == "mf1"{
+			return MapFromMF1(fl.Get(),fl.Size()->{u64})
+		}
+		return false
 	}
 	MapFromPLY := !(void^ flP,u64 itSize) -> bool
 	{

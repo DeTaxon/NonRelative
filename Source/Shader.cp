@@ -2,6 +2,8 @@
 VType_None := 0
 VType_Float := 1
 VType_Half := 2
+VType_UInt32 := 102
+
 VKType := class
 {
 	BaseType := u8
@@ -18,7 +20,7 @@ VKType := class
 	{
 		if BaseType == VType_Float
 		{
-			//assert(TypeCount >= 2 and TypeCount <= 4)
+			assert(TypeCount >= 2 and TypeCount <= 4)
 			switch TypeCount
 			{	
 				case 2 return VK_FORMAT_R32G32_SFLOAT
@@ -28,7 +30,7 @@ VKType := class
 		}
 		if BaseType == VType_Half
 		{
-			//assert(TypeCount >= 2 and TypeCount <= 4)
+			assert(TypeCount >= 2 and TypeCount <= 4)
 			switch TypeCount
 			{	
 				case 2 return VK_FORMAT_R16G16_SFLOAT

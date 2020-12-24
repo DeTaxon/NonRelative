@@ -17,6 +17,9 @@ DebugLog := !(char^ frmt,...) -> void
 
 main := !(int argc, char^^ argv) -> int
 {
+	if ToolMain(argc,argv)
+		return 0
+
 	gTask = CreateTaskBox()
 	gTask.ExpectWorkers(1)
 
@@ -37,17 +40,20 @@ main := !(int argc, char^^ argv) -> int
 	gCam.upDownAng = 0.0f
 	gCam.leftRightAng = 0.0f
 
-	gHotloadInit()
+	//gHotloadInit()
+	//VoidAudioInit()
+	//StartTroll()
 
 	nMap := vGetMap("FirstMap")
+	//nMap := vGetMap("Flat")
 	gPlayerMap = nMap
 
 	diffLink := centf()
 	diffLink.SetPos(vec4f(45.0,0.0,0.0,1.0))
-	vAddMapLink("FirstMap","FirstMap",diffLink)
+	//vAddMapLink("FirstMap","FirstMap",diffLink)
 
 	diffLink.SetPos(vec4f(0,45.0,0.0,1.0))
-	vAddMapLink("FirstMap","FirstMap",diffLink)
+	//vAddMapLink("FirstMap","FirstMap",diffLink)
 
 	gTask.Spawn(() ==> {
 		prevTime := glfwGetTime()
@@ -114,7 +120,8 @@ main := !(int argc, char^^ argv) -> int
 			}
 			FlushTempMemory()
 			AwaitWork(() ==>{
-				StartDraw()
+				DrawGetImage()
+			StartDraw()
 			})
 			nowTime := glfwGetTime()
 			gNowTime = nowTime
@@ -139,39 +146,6 @@ main := !(int argc, char^^ argv) -> int
 
 		}
 	})
-	//if false
-	//{
-	//	
-	//}else{
-	//	uvThread(() ==> [drawState&,drawMutex,drawCond,preQuit&]{
-	//		while not gQuit
-	//		{
-	//			drawMutex.Lock()
-	//			while drawState
-	//			{
-	//				drawCond.Wait(drawMutex^,0.1)
-	//			}
-	//			if preQuit
-	//			{
-	//				gQuit = true	
-	//			}
-	//			if gQuit {
-	//				ev.Emit()
-	//				drawMutex.Unlock()
-	//				return void
-	//			}
-	//			drawMutex.Unlock()
-
-	//			if StartDraw()
-	//			{
-	//				drawState = true
-	//				ev.Emit()
-	//			}else{
-	//				TSleep(0.1)
-	//			}
-	//		}
-	//	})
-	//}
 	gTask.Run()
 		
 	return 0
