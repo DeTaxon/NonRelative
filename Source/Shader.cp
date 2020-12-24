@@ -1,13 +1,21 @@
 
-VType_None := 0
-VType_Float := 1
-VType_Half := 2
+VType_Void := 0
+VType_UInt8 := 100
+VType_UInt16 := 101
 VType_UInt32 := 102
+VType_UInt64 := 103
+VType_Int8 := 200
+VType_Int16 := 201
+VType_Int32 := 202
+VType_Int64 := 203
+VType_Half := 400
+VType_Float := 401
+VType_Double := 402
 
 VKType := class
 {
-	BaseType := u8
-	TypeCount := u8
+	BaseType := u16
+	TypeCount := u16
 	
 	"this" := !(int itType,int itCount) -> void
 	{
@@ -41,11 +49,30 @@ VKType := class
 		assert(false)
 		return 0
 	}
+	GetBaseIndexType := !() -> int
+	{
+		switch BaseType
+		{
+			//case VType_UInt8 return VK_INDEX_TYPE_UINT8_KHR //NOT SUPPORTED BY DEFAULT
+			case VType_UInt16 return VK_INDEX_TYPE_UINT16
+			case VType_UInt32 return VK_INDEX_TYPE_UINT32
+		}
+		assert(false)
+		return 0
+	}
 	GetSize := !() -> int
 	{
 		itTypeSize := 0
 		if BaseType == VType_Float itTypeSize = 4
 		if BaseType == VType_Half itTypeSize = 2
+		if BaseType == VType_Int8 itTypeSize = 1
+		if BaseType == VType_Int16 itTypeSize = 2
+		if BaseType == VType_Int32 itTypeSize = 4
+		if BaseType == VType_Int64 itTypeSize = 8
+		if BaseType == VType_UInt8 itTypeSize = 1
+		if BaseType == VType_UInt16 itTypeSize = 2
+		if BaseType == VType_UInt32 itTypeSize = 4
+		if BaseType == VType_UInt64 itTypeSize = 8
 		assert(itTypeSize != 0)
 		return itTypeSize*TypeCount
 	}

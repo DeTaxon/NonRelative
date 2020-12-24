@@ -76,15 +76,16 @@ PhysHeightMap := class
 			if j == 0 continue
 			memcpy(i&,mdlValue.verts[(j-1)*vSize]&,vec4f->TypeSize)
 		}
-		
-		triCount := mdlValue.inds->len div 3
+	
+		inds32 := mdlValue.GetIndsU32()
+		triCount := inds32->len div 3
 		Triangles2 := new u16[3][triCount]
 		
 		for i : triCount
 		{
-			Triangles2[i][0] = mdlValue.inds[i*3    ] + 1
-			Triangles2[i][1] = mdlValue.inds[i*3 + 1] + 1
-			Triangles2[i][2] = mdlValue.inds[i*3 + 2] + 1
+			Triangles2[i][0] = inds32[i*3    ] + 1
+			Triangles2[i][1] = inds32[i*3 + 1] + 1
+			Triangles2[i][2] = inds32[i*3 + 2] + 1
 		}
 		
 		SpheresStart := new List.{PhysHightSphere^} ; $temp

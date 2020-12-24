@@ -14,17 +14,21 @@ vModel := class
 
 	vertexInfo := vShaderVertexOptions
 
+	indexType := VKType
+
 
 	LoadFile := !(vRepoFile^ itFl) -> bool
 	{
 		rFile := new RawModel ; $temp
 		if not rFile.LoadFromFile(itFl)
 			return false
-		vertexInfo.positionType = VKType(VType_Float,3)
-		vertexInfo.normalType = VKType(VType_Float,3)
-		vertexInfo.textureType = VKType(VType_Float,2)
+
+		vertexInfo.positionType = rFile.PositionType
+		vertexInfo.normalType = rFile.NormalType
+		vertexInfo.textureType = rFile.UVType
 	
-		indexCount = rFile.inds->len
+		indexType = rFile.IndexType
+		indexCount = rFile.IndexCount
 		
 		vertSize :=  rFile.verts->len*4
 
@@ -67,7 +71,7 @@ vModel := class
 		memO.Unmap()
 		if isVertGpu
 			vStageCpyToBuffer(hndls[0],vertSize)
-		indSize := rFile.inds->len*4
+		indSize := rFile.IndexCount*rFile.IndexType.GetSize()
 		bufC.size = indSize
 		bufC.usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT or_b VK_BUFFER_USAGE_TRANSFER_DST_BIT
 		vkFuncs.vkCreateBuffer(vkLogCard,bufC,null,hndls[1]&)
@@ -133,7 +137,7 @@ vModel := class
 	{
 		offsets := new VkDeviceSize() ; $temp
 		vkFuncs.vkCmdBindVertexBuffers(cmdB,0,1,hndls[0]&,offsets)
-		vkFuncs.vkCmdBindIndexBuffer(cmdB,hndls[1],0,VK_INDEX_TYPE_UINT32)
+		vkFuncs.vkCmdBindIndexBuffer(cmdB,hndls[1],0,indexType.GetBaseIndexType())
 		vkFuncs.vkCmdDrawIndexed(cmdB,indexCount,1,0,0,0)
 	}
 }

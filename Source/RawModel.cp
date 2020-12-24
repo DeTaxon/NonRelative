@@ -9,9 +9,15 @@ MODEL_UV := 4
 RawModel := class
 {
 	verts := float[]
+	PositionType := VKType
+	NormalType := VKType
+	UVType := VKType
+
 	vertItems := int
 
-	inds := int[]
+	inds := void^
+	IndexType := VKType
+	IndexCount := int
 
 	GetVertSize := !() -> int
 	{
@@ -28,40 +34,36 @@ RawModel := class
 		inds = null
 		vertItems = 0
 	}
-	Clear := !() -> void
-	{
-		if inds != null delete inds
-		if verts != null delete verts
-	}
-
 	SaveAsMF1 := !(char^ flName) -> void
 	{
-		fileSize := verts->len*float->TypeSize + inds->len*int->TypeSize + 4*int->TypeSize
+		//fileSize := verts->len*float->TypeSize + inds->len*int->TypeSize + 4*int->TypeSize
 
-		outFile := MappedFile(flName,FILE_CREATE,fileSize)
-		defer outFile.Close()
+		//outFile := MappedFile(flName,FILE_CREATE,fileSize)
+		//defer outFile.Close()
 
-		outData := outFile.Get()->{int^}
-		outData[0] = VType_Float
-		outData[1] = verts->len
-		outData[2] = VType_UInt32
-		outData[3] = inds->len
+		//outData := outFile.Get()->{int^}
+		//outData[0] = typeVert.BaseType
+		//outData[1] = typeNormal.BaseType
+		//outData[2] = typeUV.BaseType
+		//outData[3] = verts->len
+		//outData[4] = typeInds
+		//outData[5] = inds->len
 
-		vertSize := verts->len*4
-		toWr := outData[4]&->{u8^}
-		memcpy(toWr,verts->{void^},vertSize)
+		//vertSize := verts->len*4
+		//toWr := outData[4]&->{u8^}
+		//memcpy(toWr,verts->{void^},vertSize)
 
-		toWr = toWr[vertSize]&
-		indSize := inds->len*4
-		memcpy(toWr,inds->{void^},indSize)
+		//toWr = toWr[vertSize]&
+		//indSize := inds->len*4
+		////memcpy(toWr,inds->{void^},indSize)
 	}
 	MapFromMF1 := !(void^ flP,u64 itSize) -> bool
 	{
 		itData := flP->{int^}
 		verts = new float[itData[1]] ; $temp
 		memcpy(verts->{void^},flP + 4*4,verts->len*4)
-		inds = new int[itData[3]] ; $temp
-		memcpy(inds->{void^},flP + (4*4 + verts->len*4),inds->len*4)
+		//inds = new int[itData[3]] ; $temp
+		//memcpy(inds,flP + (4*4 + verts->len*4),inds->len*4)
 
 		vertItems = MODEL_POSITION + MODEL_NORMAL + MODEL_UV
 
@@ -147,9 +149,21 @@ RawModel := class
 
 		vertSize := 0
 
-		if vertItems and_b MODEL_POSITION vertSize += 3
-		if vertItems and_b MODEL_NORMAL vertSize += 3
-		if vertItems and_b MODEL_UV vertSize += 2
+		if vertItems and_b MODEL_POSITION 
+		{
+			PositionType = VKType(VType_Float,3)
+			vertSize += 3
+		}
+		if vertItems and_b MODEL_NORMAL 
+		{
+			NormalType = VKType(VType_Float,3)
+			vertSize += 3
+		}
+		if vertItems and_b MODEL_UV 
+		{
+			UVType = VKType(VType_Float,2)
+			vertSize += 2
+		}
 
 		if vertItems != 7 return false //TODO: normalless support
 
@@ -205,7 +219,7 @@ RawModel := class
 		}
 
 
-		preInd := List.{int}() ; $temp
+		preInd := List.{u32}() ; $temp
 		miniBox := int[16]
 		miniPos := 0
 		nowValue := 0
@@ -263,8 +277,51 @@ RawModel := class
 			pos += 1
 		}
 		inds = preInd.ToArray()
+		IndexType = VKType(VType_UInt32,1)
+		IndexCount = preInd.Size()
 
 		return true
+	}
+
+	GetIndsU32 := !() -> u32[]
+	{
+		switch IndexType.BaseType
+		{
+		case VType_UInt32
+				return inds->{u32[]}
+		case VType_UInt16
+			{
+				asU16 := inds->{u16[]}
+				preRet := new u32[asU16->len] ; $temp
+				preRet[^i] = asU16[i]
+				return preRet
+			}
+		case VType_UInt8
+			{
+				asU8 := inds->{u8[]}
+				preRet := new u32[asU8->len] ; $temp
+				preRet[^i] = asU8[i]
+				return preRet
+			}
+		}
+		assert(false)
+		return null->{u32[]}
+	}
+	IndsRefit := !() -> void
+	{
+		if IndexType.BaseType == VType_UInt16
+			return void
+		assert(IndexType.BaseType == VType_UInt32)
+		asU32 := inds->{u32[]}
+		
+		if asU32[^] >= 65535
+			return void
+
+		//Transforming to U16
+		itU16 := new u16[asU32->len] ; $temp
+		itU16[^i] = asU32[i]
+		inds = itU16
+		IndexType = VKType(VType_UInt16,1)
 	}
 }
 
