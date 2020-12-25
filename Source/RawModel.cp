@@ -8,7 +8,8 @@ MODEL_UV := 4
 
 RawModel := class
 {
-	verts := float[]
+	verts := void^
+	VertexCount := int
 	PositionType := VKType
 	NormalType := VKType
 	UVType := VKType
@@ -19,12 +20,49 @@ RawModel := class
 	IndexType := VKType
 	IndexCount := int
 
+	GetVertFloat := !() -> float[]
+	{
+		floatCount := PositionType.TypeCount + NormalType.TypeCount + UVType.TypeCount
+
+		preRetI := 0
+		preRet := new float[floatCount*VertexCount] ; $temp
+
+		from := verts->{u8^}
+		moves := new int[floatCount->{int}] ; $temp
+		for j : VertexCount
+		{
+			for typ : ![PositionType&,NormalType&,UVType&]
+			{
+				if typ.BaseType == VType_Void
+					continue
+				for i : typ.TypeCount
+				{
+					switch typ.BaseType
+					{
+						case VType_Half
+							asHalf := from->{half^}
+							preRet[preRetI] = asHalf^
+							from = (asHalf + 1)->{u8^}
+						case VType_Float
+							asFloat := from->{float^}
+							preRet[preRetI] = asFloat^
+							from = (asFloat + 1)->{u8^}
+						case void
+							assert(false)
+					}
+					preRetI += 1
+				}
+			}
+		}
+
+		return preRet
+	}
 	GetVertSize := !() -> int
 	{
 		preRet := 0
-		if (vertItems and_b MODEL_POSITION) != 0 preRet += 3
-		if (vertItems and_b MODEL_NORMAL) != 0 preRet += 3
-		if (vertItems and_b MODEL_UV) != 0 preRet += 2
+		if (vertItems and_b MODEL_POSITION) != 0 preRet += PositionType.GetSize()
+		if (vertItems and_b MODEL_NORMAL) != 0 preRet += NormalType.GetSize()
+		if (vertItems and_b MODEL_UV) != 0 preRet += UVType.GetSize()
 
 		return preRet
 	}
@@ -36,32 +74,34 @@ RawModel := class
 	}
 	SaveAsMF1 := !(char^ flName) -> void
 	{
-		//fileSize := verts->len*float->TypeSize + inds->len*int->TypeSize + 4*int->TypeSize
+		vertSize := VertexCount*GetVertSize()
+		indSize := IndexCount*IndexType.GetSize()
+		fileSize := vertSize + indSize + 8*int->TypeSize
 
-		//outFile := MappedFile(flName,FILE_CREATE,fileSize)
-		//defer outFile.Close()
+		outFile := MappedFile(flName,FILE_CREATE,fileSize)
+		defer outFile.Close()
 
-		//outData := outFile.Get()->{int^}
-		//outData[0] = typeVert.BaseType
-		//outData[1] = typeNormal.BaseType
-		//outData[2] = typeUV.BaseType
-		//outData[3] = verts->len
-		//outData[4] = typeInds
-		//outData[5] = inds->len
+		outData := outFile.Get()->{int^}
+		outData[0] = 0 //BlockType
+		outData[1] = VertexCount
+		outData[2] = PositionType.BaseType
+		outData[3] = NormalType.BaseType
+		outData[4] = UVType.BaseType
+		outData[5] = 0 //animation index?
+		outData[6] = IndexCount
+		outData[7] = IndexType.BaseType
 
-		//vertSize := verts->len*4
-		//toWr := outData[4]&->{u8^}
-		//memcpy(toWr,verts->{void^},vertSize)
+		toWr := outData[8]&->{u8^}
+		memcpy(toWr,verts,vertSize)
 
-		//toWr = toWr[vertSize]&
-		//indSize := inds->len*4
-		////memcpy(toWr,inds->{void^},indSize)
+		toWr = toWr[vertSize]&
+		memcpy(toWr,inds,indSize)
 	}
 	MapFromMF1 := !(void^ flP,u64 itSize) -> bool
 	{
 		itData := flP->{int^}
 		verts = new float[itData[1]] ; $temp
-		memcpy(verts->{void^},flP + 4*4,verts->len*4)
+		//memcpy(verts,flP + 4*4,verts->len*4)
 		//inds = new int[itData[3]] ; $temp
 		//memcpy(inds,flP + (4*4 + verts->len*4),inds->len*4)
 
@@ -168,7 +208,9 @@ RawModel := class
 		if vertItems != 7 return false //TODO: normalless support
 
 		totalVerts := vertsCount*vertSize
-		verts = new float[totalVerts] ; $temp
+		thisVerts := new float[totalVerts] ; $temp
+		verts = thisVerts
+		VertexCount = vertsCount
 
 		posInVerts := 0
 
@@ -204,9 +246,9 @@ RawModel := class
 					hiValue = hiValue*10 + daFile[pos] - '0'
 					lowValue *= 10
 				}else{
-					verts[posInVerts] = hiValue / lowValue
+					thisVerts[posInVerts] = hiValue / lowValue
 					if isNeg  {
-						verts[posInVerts] *= -1.0f
+						thisVerts[posInVerts] *= -1.0f
 					}
 					isNeg = false
 					lowValue = 1
