@@ -81,9 +81,14 @@ vGenModel := !(char^ modelName,InfoNode^ itObj,vRepoFile^ itFile) -> vModel^
 								hFile := itFile.GetFile(fileName) 
 								if hFile == null throw new Exception("Incorrect phys data, can not find file")
 								hMap := new PhysHeightMap()
-								mdl := new RawModel ; $temp
-								mdl.MapFromPLY(hFile.Map(),hFile.Size())
-								hMap.CreateDots(mdl)
+								if fileName[-5..0] == "hmap1"
+								{
+									hMap.LoadFromHMap1(hFile)
+								}else{
+									mdl := new RawModel ; $temp
+									mdl.MapFromPLY(hFile.Map(),hFile.Size())
+									hMap.CreateDots(mdl)
+								}
 								itMd.physExtraData = hMap->{PhysCommon^}
 								itMd.physType = "hmap"
 							case void

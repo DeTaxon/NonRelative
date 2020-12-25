@@ -65,7 +65,7 @@ PhysHeightMap := class
 	{
 		PhysType = PhysType_hmap
 	}
-	
+
 	CreateDots := !(RawModel^ mdlValue) -> int
 	{
 		floats := mdlValue.GetVertAsFloat()
@@ -211,6 +211,30 @@ PhysHeightMap := class
 
 		return resSize
 	}
+	LoadFromHMap1 := !(vRepoFile^ fl) -> void
+	{
+		ptr := fl.Map()
+		defer fl.Unmap() //TODO: keep map
+
+		asInt := ptr->{int^}
+		resSize := asInt[0] + asInt[1] + asInt[2]
+		resPtr := malloc(resSize) //TODO: 16 byte align
+		memcpy(resPtr,ptr,resSize)
+
+		Dots = resPtr
+		Spheres = resPtr + asInt[0]
+		Triangles = resPtr + asInt[0] + asInt[1]
+	}
+	SaveToHMap1 := !(char^ flName) -> void
+	{
+		assert(Dots != null)
+		asInts := Dots->{int^}
+		resSize := asInts[0] + asInts[1] + asInts[2]
+		toSet := MappedFile(flName,FILE_CREATE,resSize)
+		defer toSet.Close()
+		memcpy(toSet.Get(),Dots,resSize)
+	}
+
 	GetTris := !(vec4f pos,u16[32]^ triBuf, int^ triSize,int sInd)-> void
 	{
 		itSphere := ref Spheres[sInd]

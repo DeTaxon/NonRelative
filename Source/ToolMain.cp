@@ -43,5 +43,14 @@ ToolMain := !(int argc, char^^ argv) -> bool
 		rf2.SaveAsMF1(argv[3])
 		return true
 	}
+	if argc >= 4 and argv[1] == "hmap1create"
+	{
+		rf2 := new RawModel ; $temp
+		rf2.LoadFromFile(argv[2])
+		hm := new PhysHeightMap() ; $temp
+		hm.CreateDots(rf2)
+		hm.SaveToHMap1(argv[3])
+		return true
+	}
 	return false
 }
