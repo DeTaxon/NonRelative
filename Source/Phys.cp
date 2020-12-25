@@ -68,7 +68,7 @@ PhysHeightMap := class
 	
 	CreateDots := !(RawModel^ mdlValue) -> int
 	{
-		floats := mdlValue.GetVertFloat()
+		floats := mdlValue.GetVertAsFloat()
 		nDots := new vec4f[mdlValue.VertexCount + 1] ; $temp
 		
 		for i,j : nDots

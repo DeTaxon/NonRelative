@@ -20,7 +20,7 @@ RawModel := class
 	IndexType := VKType
 	IndexCount := int
 
-	GetVertFloat := !() -> float[]
+	GetVertAsFloat := !() -> float[]
 	{
 		floatCount := PositionType.TypeCount + NormalType.TypeCount + UVType.TypeCount
 
@@ -76,20 +76,20 @@ RawModel := class
 	{
 		vertSize := VertexCount*GetVertSize()
 		indSize := IndexCount*IndexType.GetSize()
-		fileSize := vertSize + indSize + 8*int->TypeSize
+		fileSize := vertSize + indSize + 8*4
 
 		outFile := MappedFile(flName,FILE_CREATE,fileSize)
 		defer outFile.Close()
 
-		outData := outFile.Get()->{int^}
+		outData := outFile.Get()->{u32^}
 		outData[0] = 0 //BlockType
 		outData[1] = VertexCount
-		outData[2] = PositionType.BaseType
-		outData[3] = NormalType.BaseType
-		outData[4] = UVType.BaseType
+		outData[2] = PositionType.ToU32()
+		outData[3] = NormalType.ToU32()
+		outData[4] = UVType.ToU32()
 		outData[5] = 0 //animation index?
 		outData[6] = IndexCount
-		outData[7] = IndexType.BaseType
+		outData[7] = IndexType.ToU32()
 
 		toWr := outData[8]&->{u8^}
 		memcpy(toWr,verts,vertSize)
@@ -100,10 +100,18 @@ RawModel := class
 	MapFromMF1 := !(void^ flP,u64 itSize) -> bool
 	{
 		itData := flP->{int^}
-		verts = new float[itData[1]] ; $temp
-		//memcpy(verts,flP + 4*4,verts->len*4)
-		//inds = new int[itData[3]] ; $temp
-		//memcpy(inds,flP + (4*4 + verts->len*4),inds->len*4)
+		VertexCount = itData[1]
+		IndexCount = itData[6]
+		PositionType.FromU32(itData[2])
+		NormalType.FromU32(itData[3])
+		UVType.FromU32(itData[4])
+		vertSize := GetVertSize()*VertexCount
+		verts = new u8[vertSize] ; $temp
+		memcpy(verts,flP + 8*4,vertSize)
+		IndexType.FromU32(itData[7])
+		indSize := IndexType.GetSize()*IndexCount
+		inds = new u8[indSize] ; $temp
+		memcpy(inds,flP + (8*4 + vertSize),indSize)
 
 		vertItems = MODEL_POSITION + MODEL_NORMAL + MODEL_UV
 
@@ -365,6 +373,79 @@ RawModel := class
 		inds = itU16
 		IndexType = VKType(VType_UInt16,1)
 	}
+	CheckSupport := !() -> void
+	{
+		if not vkHalfFloatSupport
+		{
+			ReVert(x ==> {
+				if x[^].BaseType == VType_Half
+					it.BaseType = VType_Float
+			})
+		}
+	}
+	ReVert := !( !(VKType[])&->void conf ) -> void
+	{
+		preSet := new VKType[3] ; $temp
+		preSet[0] = PositionType
+		preSet[1] = NormalType
+		preSet[2] = UVType
+
+		conf(preSet)
+
+		changed := false
+		changed = changed or preSet[0] != PositionType
+		changed = changed or preSet[1] != NormalType
+		changed = changed or preSet[2] != UVType
+
+		if not changed
+			return void
+
+		conf(preSet)
+
+		if PositionType.BaseType == VType_Void preSet[0] = VKType(VType_Void,0)
+		if NormalType.BaseType == VType_Void preSet[1] = VKType(VType_Void,0)
+		if UVType.BaseType == VType_Void preSet[2] = VKType(VType_Void,0)
+
+		itVerts := GetVertAsFloat()
+
+		sumSize := 0
+		sumSize += preSet[^].GetSize()
+
+		preRet := new u8[sumSize*VertexCount] ; $temp
+		resIter := preRet[0]&
+
+		vInd := 0
+		for i : VertexCount
+		{
+			for it : preSet
+			{
+				if it.BaseType == VType_Void
+					continue
+				for j : it.TypeCount
+				{
+					switch it.BaseType
+					{
+						case VType_Half
+							asHalf := resIter->{half^}
+							asHalf^ = itVerts[vInd]
+							resIter = asHalf[1]&->{u8^}
+						case VType_Float
+							asFloat := resIter->{float^}
+							asFloat^ = itVerts[vInd]
+							resIter = asFloat[1]&->{u8^}
+						case void
+							assert(false)
+					}
+					vInd += 1
+				}
+			}
+		}
+		verts = preRet
+		PositionType = preSet[0]
+		NormalType = preSet[1]
+		UVType = preSet[2]
+	}
+
 }
 
 

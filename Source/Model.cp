@@ -23,6 +23,8 @@ vModel := class
 		if not rFile.LoadFromFile(itFl)
 			return false
 
+		rFile.CheckSupport()
+
 		vertexInfo.positionType = rFile.PositionType
 		vertexInfo.normalType = rFile.NormalType
 		vertexInfo.textureType = rFile.UVType

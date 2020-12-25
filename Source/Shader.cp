@@ -23,7 +23,15 @@ VKType := class
 		TypeCount = itCount
 	}
 
-
+	ToU32 := !() -> u32
+	{
+		return (TypeCount->{u32} << 16) + BaseType
+	}
+	FromU32 := !(u32 val) -> void
+	{
+		TypeCount = (val >> 16) and_b 0xFFFF
+		BaseType = val and_b 0xFFFF
+	}
 	GetVKType := !() -> int
 	{
 		if BaseType == VType_Float
