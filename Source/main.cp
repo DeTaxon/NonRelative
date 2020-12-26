@@ -20,7 +20,7 @@ main := !(int argc, char^^ argv) -> int
 	if ToolMain(argc,argv)
 		return 0
 
-	gTask = CreateTaskBox()
+	gTask = CreateTaskBox(1024*1024)
 	gTask.ExpectWorkers(1)
 
 	vPreInit()
@@ -44,8 +44,8 @@ main := !(int argc, char^^ argv) -> int
 	//VoidAudioInit()
 	//StartTroll()
 
-	nMap := vGetMap("FirstMap")
-	//nMap := vGetMap("Flat")
+	//nMap := vGetMap("FirstMap")
+	nMap := vGetMap("Flat")
 	gPlayerMap = nMap
 
 	diffLink := centf()
@@ -121,8 +121,8 @@ main := !(int argc, char^^ argv) -> int
 			FlushTempMemory()
 			AwaitWork(() ==>{
 				DrawGetImage()
-			StartDraw()
 			})
+			StartDraw()
 			nowTime := glfwGetTime()
 			gNowTime = nowTime
 			deltaTime := nowTime - prevTime
