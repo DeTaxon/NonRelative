@@ -25,6 +25,12 @@ main := !(int argc, char^^ argv) -> int
 
 	vPreInit()
 
+	mainScript := gRepo.GetFile("main.sq")
+	if mainScript == null
+	{
+		printf("main script not found\n")
+		return 0
+	}
 	//uvInit()
 
 	CreateWindow(gWinStartW,gWinStartH)
@@ -44,16 +50,17 @@ main := !(int argc, char^^ argv) -> int
 	//VoidAudioInit()
 	//StartTroll()
 
-	//nMap := vGetMap("FirstMap")
-	nMap := vGetMap("Flat")
-	gPlayerMap = nMap
 
-	diffLink := centf()
-	diffLink.SetPos(vec4f(45.0,0.0,0.0,1.0))
-	//vAddMapLink("FirstMap","FirstMap",diffLink)
+	mainScriptObject := ScriptCompile(mainScript)
+	if mainScriptObject == null
+	{
+		printf("script not compiled\n")
+		return 0
+	}
+	mainSBox := ScriptBox
+	memset(mainSBox&,0,ScriptBox->TypeSize)
+	ScriptRun(mainScriptObject,mainSBox&)
 
-	diffLink.SetPos(vec4f(0,45.0,0.0,1.0))
-	//vAddMapLink("FirstMap","FirstMap",diffLink)
 
 	gTask.Spawn(() ==> {
 		prevTime := glfwGetTime()
