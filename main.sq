@@ -1,1 +1,18 @@
-GetMap("FirstMap")
+itMap <- GetMap("Flat")
+
+step <- 0.4
+a <- itMap.SpawnProp("Boys")
+b <- itMap.SpawnProp("BoysB")
+function animation()
+{
+	a.SetPos(0.0,0.0,0.0)
+	b.SetPos(0.0,0.0,-100.0)
+	ASleep(step)
+	a.SetPos(0.0,0.0,-100.0)
+	b.SetPos(0.0,0.0,0.0)
+	ASleep(step)
+}
+Spawn(animation)
+
+yodl <- Audio("Maps/Flat/yodl.wav")
+yodl.PlayGlobal()

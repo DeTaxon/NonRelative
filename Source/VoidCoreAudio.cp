@@ -52,33 +52,62 @@ WAVHeader := class
 	subchunk2Size := u32
 }
 
-source := u32
+globalAudioSource := u32
 VoidAudioInit := !() -> void
 {
 	OpenALInit()
 
-	wav := MappedFile("Maps/Flat/yodl.wav")
-
-	hed := wav.Get()->{WAVHeader^}
-	wavdata := hed[1]&->{void^}
 
 	alDev := alcOpenDevice(null)
 	contx := alcCreateContext(alDev,null)
 	alcMakeContextCurrent(contx)
 
-	alGenSources(1,source&)
-
-	buffer := u32
-	alGenBuffers(1,buffer&)
-
-	dataSize := wav.Size() - WAVHeader->TypeSize
-	numberOfSamples := dataSize div (hed.numChannels * (hed.bitsPerSample div 8))
-	alBufferData(buffer,AL_FORMAT_MONO16,wavdata,dataSize,hed.sampleRate)
-	alSourcei(source,AL_LOOPING,1)
-	alSourcei(source,AL_BUFFER,buffer)
-
+	alGenSources(1,globalAudioSource&)
+	alSourcei(globalAudioSource,AL_LOOPING,1)
 }
-StartTroll := !() -> void
+
+
+AudioObject := class
 {
-	alSourcePlay(source)
+	bufferId := int
+
+	Gen := !() -> void
+	{
+		alGenBuffers(1,bufferId&)
+	}
+	LoadFromFile := !(vRepoFile^ rep) -> void
+	{
+		wav := rep.Map()
+		defer rep.Unmap()
+
+		hed := wav->{WAVHeader^}
+		wavdata := hed[1]&->{void^}
+
+		Gen()
+
+		dataSize := rep.Size() - WAVHeader->TypeSize
+		numberOfSamples := dataSize div (hed.numChannels * (hed.bitsPerSample div 8))
+		alBufferData(bufferId,AL_FORMAT_MONO16,wavdata,dataSize,hed.sampleRate)
+	}
+}
+
+audios := AVLMap.{vRepoFile^,AudioObject^}
+
+vLoadAudio := !(vRepoFile^ rep) -> AudioObject^
+{
+	if rep in audios
+		return audios[rep]
+	
+	preRet := new AudioObject
+	preRet.LoadFromFile(rep)
+
+	audios[rep] = preRet
+
+	return preRet
+}
+
+vPlayAudioGlobal := !(AudioObject^ toPlay) -> void
+{
+	alSourcei(globalAudioSource,AL_BUFFER,toPlay.bufferId)
+	alSourcePlay(globalAudioSource)
 }

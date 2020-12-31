@@ -51,7 +51,7 @@ sq_pop := !(void^,s64)^ -> void
 
 SqInit := !() -> void
 {
-	sLib := Library("libsquirrel3m.so","squirrel3m.dll")
+	sLib := Library("libsquirrel3mg.so","libsquirrel3m.so","squirrel3m.dll")
 
 	sq_open = sLib.Get("sq_open")
 	sq_close = sLib.Get("sq_close")
@@ -160,24 +160,22 @@ gsNowScript := ScriptThread^
 
 SqObject := class
 {
-	//itData := s64[2]
-	itData := void^
+	itData := s64[2]
 	Get := !(void^ vm, int stackPos) -> void
 	{
-		itData = new u8[1024]
-		sq_getstackobj(gMainVM,stackPos,itData)
+		sq_getstackobj(gMainVM,stackPos,itData[0]&)
 	}
 	Push := !(void^ vm) -> void
 	{
-		sq_pushobject2(vm,itData)
+		sq_pushobject2(vm,itData[0]&)
 	}
 	IncRef := !(void^ vm) -> void
 	{
-		sq_addref(gMainVM,itData)
+		sq_addref(gMainVM,itData[0]&)
 	}
 	DecRef := !(void^ vm) -> void
 	{
-		sq_release(vm,itData)
+		sq_release(vm,itData[0]&)
 	}
 }
 
@@ -253,6 +251,7 @@ ScriptInit := !() -> void
 	ScriptInitGlobals(gMainVM)
 	ScriptInitMap(gMainVM)
 	ScriptInitMath(gMainVM)
+	ScriptInitAudio(gMainVM)
 }
 
 ScriptUnit := class

@@ -47,8 +47,7 @@ main := !(int argc, char^^ argv) -> int
 	gCam.leftRightAng = 0.0f
 
 	//gHotloadInit()
-	//VoidAudioInit()
-	//StartTroll()
+	VoidAudioInit()
 
 
 	mainScriptObject := ScriptCompile(mainScript)
