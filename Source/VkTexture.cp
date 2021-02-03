@@ -106,13 +106,52 @@ vTexture := class
 			arr = arr[strip]&
 		}
 	}
+	toPwr2 := !(int x) -> int
+	{
+		i := 1
+		while x > i
+			i *= 2
+		return i
+	}
 	CreateTexture := !(vRepoFile^ itFile) -> void
 	{	
 
 		ext := itFile.objName[-3..0]
-	
 
-		if ext == "bmp"
+		if ext in !["tga","jpg","png"]
+		{
+			imgType := IL_TGA
+			switch ext
+			{
+				case "jpg" imgType = IL_JPG
+				case "png" imgType = IL_PNG
+			}
+
+			ptr := itFile.Map()
+			defer itFile.Unmap()
+		
+			ilImg := int
+			ilGenImages(1,ilImg&)
+			ilBindImage(ilImg)
+			ilLoadL(imgType,ptr,itFile.Size())
+			w := ilGetInteger(IL_IMAGE_WIDTH)
+			h := ilGetInteger(IL_IMAGE_HEIGHT)
+			frmt := ilGetInteger(IL_IMAGE_FORMAT)
+
+			containAlpha := frmt in ![IL_RGBA,IL_BGRA]
+			if not vkRGB8Support
+				containAlpha = true
+
+			itW = toPwr2(w)
+			itH = toPwr2(h)
+
+			ptrToSet := gStageMem.Map()->{u8^}
+		//ilCopyPixels := !(int xOff,int yOff,int zOff,int w, int h, int d,int format,int fType,void^ destin)^ -> void
+			ilCopyPixels(0,0,0,itW,itH,1,containAlpha ?: IL_RGBA : IL_RGB, IL_UNSIGNED_SHORT,ptrToSet)
+			gStageMem.Unmap()
+			vStageCpyToImage(itImg,itW,itH)
+
+		}else if ext == "bmp"
 		{
 			mp := itFile.Map()->{u8^}
 			defer itFile.Unmap()
