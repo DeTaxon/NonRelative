@@ -27,25 +27,25 @@ main := !(int argc, char^^ argv) -> int
 	
 	DevILInit()
 
-	//fil := gRepo.GetFile("duf.jpg")
-	//fil := gRepo.GetFile("Shakal.gif")
-	fil := gRepo.GetFile("animation.gif")
-	ptr := fil.Map()
+	////fil := gRepo.GetFile("duf.jpg")
+	////fil := gRepo.GetFile("Shakal.gif")
+	//fil := gRepo.GetFile("animation.gif")
+	//ptr := fil.Map()
 
-	imgId := int
-	ilGenImages(1,imgId&)
-	ilBindImage(imgId)
-	ilLoadL(IL_GIF,ptr,fil.Size())
-	printf("w %i\n",ilGetInteger(IL_IMAGE_WIDTH))
-	printf("h %i\n",ilGetInteger(IL_IMAGE_HEIGHT))
-	printf("d %i\n",ilGetInteger(IL_IMAGE_DEPTH))
-	printf("faces %i\n",ilGetInteger(IL_NUM_FACES))
-	printf("num %i\n",ilGetInteger(IL_NUM_IMAGES))
-	printf("layers %i\n",ilGetInteger(IL_NUM_LAYERS))
-	printf("dur %i\n",ilGetInteger(IL_IMAGE_DURATION))
-	printf("channels %i\n",ilGetInteger(IL_IMAGE_CHANNELS))
-	printf("cur image %i\n",ilGetInteger(IL_CUR_IMAGE))
-	return 0
+	//imgId := int
+	//ilGenImages(1,imgId&)
+	//ilBindImage(imgId)
+	//ilLoadL(IL_GIF,ptr,fil.Size())
+	//printf("w %i\n",ilGetInteger(IL_IMAGE_WIDTH))
+	//printf("h %i\n",ilGetInteger(IL_IMAGE_HEIGHT))
+	//printf("d %i\n",ilGetInteger(IL_IMAGE_DEPTH))
+	//printf("faces %i\n",ilGetInteger(IL_NUM_FACES))
+	//printf("num %i\n",ilGetInteger(IL_NUM_IMAGES))
+	//printf("layers %i\n",ilGetInteger(IL_NUM_LAYERS))
+	//printf("dur %i\n",ilGetInteger(IL_IMAGE_DURATION))
+	//printf("channels %i\n",ilGetInteger(IL_IMAGE_CHANNELS))
+	//printf("cur image %i\n",ilGetInteger(IL_CUR_IMAGE))
+	//return 0
 
 	mainScript := gRepo.GetFile("main.sq")
 	if mainScript == null

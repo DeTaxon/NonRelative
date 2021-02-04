@@ -53,8 +53,8 @@ DevILU := Library
 
 DevILInit := !() -> void
 {
-	DevIL.Open("DevIL.dll")
-	DevILU.Open("ILU.dll")
+	DevIL.Open("DevIL.dll","libIL.so")
+	DevILU.Open("ILU.dll","libILU.so")
 
 	ilInit = DevIL.Get("ilInit")
 	iluInit = DevILU.Get("iluInit")
