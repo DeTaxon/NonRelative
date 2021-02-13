@@ -116,12 +116,12 @@ vTexture := class
 	CreateTexture := !(vRepoFile^ itFile) -> void
 	{	
 
-		ext := itFile.objName[-3..0]
+		end := StringEnd(itFile.objName)
 
-		if ext in !["tga","jpg","png"]
+		if end in !["tga","jpg","png"]
 		{
 			imgType := IL_TGA
-			switch ext
+			switch end
 			{
 				case "jpg" imgType = IL_JPG
 				case "png" imgType = IL_PNG
@@ -151,7 +151,7 @@ vTexture := class
 			gStageMem.Unmap()
 			vStageCpyToImage(itImg,itW,itH)
 
-		}else if ext == "bmp"
+		}else if end == "bmp"
 		{
 			mp := itFile.Map()->{u8^}
 			defer itFile.Unmap()
@@ -193,7 +193,7 @@ vTexture := class
 			gStageMem.Unmap()
 			vStageCpyToImage(itImg,itW,itH)
 		}else 
-		if itFile.objName[-5..0] == ".webp"
+		if end == ".webp"
 		{
 			InitWebP()
 

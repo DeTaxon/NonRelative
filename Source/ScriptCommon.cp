@@ -21,7 +21,7 @@ CodeSpawn := !(void^ vm) -> int
 		sq_move(newNode.thrdVM,vm2,2)
 		sq_pushroottable(newNode.thrdVM)
 	}
-	gTask.Spawn(() ==>[newNode&] {
+	SpawnTask(() ==>[newNode&] {
 		asProp := newNode.thrdVObject
 		iRunScript(newNode&)
 	})

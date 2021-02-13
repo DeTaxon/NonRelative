@@ -1,6 +1,5 @@
 
 gQuit := false
-gTask := TaskBox^
 
 gDisableMouse := false
 
@@ -19,10 +18,8 @@ main := !(int argc, char^^ argv) -> int
 {
 	if ToolMain(argc,argv)
 		return 0
-
-	gTask = CreateTaskBox(1024*1024)
-	gTask.ExpectWorkers(1)
-
+	
+	ExpectWorkers(1)
 	vPreInit()
 	
 	DevILInit()
@@ -83,7 +80,7 @@ main := !(int argc, char^^ argv) -> int
 	ScriptRun(mainScriptObject,mainSBox&)
 
 
-	gTask.Spawn(() ==> {
+	SpawnTask(() ==> {
 		prevTime := glfwGetTime()
 		while true
 		{
@@ -105,7 +102,7 @@ main := !(int argc, char^^ argv) -> int
 	resizeState := false
 	preQuit := false
 
-	gTask.Spawn( () ==> [fpsCounter&,preQuit&]{
+	SpawnTask( () ==> [fpsCounter&,preQuit&]{
 		
 		prevTime := glfwGetTime()
 		
@@ -137,7 +134,7 @@ main := !(int argc, char^^ argv) -> int
 		}
 	})
 
-	gTask.Spawn(() ==> [fpsCounter&,preQuit&]{
+	SpawnTask(() ==> [fpsCounter&,preQuit&]{
 
 		prevTime := glfwGetTime()
 
@@ -165,7 +162,7 @@ main := !(int argc, char^^ argv) -> int
 
 			if preQuit
 			{
-				gTask.Quit()
+				//Quit()
 				return void
 			}
 
@@ -174,7 +171,8 @@ main := !(int argc, char^^ argv) -> int
 
 		}
 	})
-	gTask.Run()
+
+	while true TSleep(20)
 		
 	return 0
 

@@ -5,7 +5,6 @@ vObject := class
 
 //VoidCore := class
 //{
-	gRepo := vRepo
 
 	itModels := AVLMap.{char^,vModel}
 	itMaps := AVLMap.{char^,vMap}
