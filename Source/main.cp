@@ -22,13 +22,14 @@ resizeState := false
 preQuit := false
 main := !(int argc, char^^ argv) -> int
 {
+	gRepo.AddZipRoot("Dlls.zip")
 	if ToolMain(argc,argv)
 		return 0
 	
 	ExpectWorkers(1)
 	vPreInit()
 	
-	DevILInit()
+	//DevILInit()
 
 	////fil := gRepo.GetFile("duf.jpg")
 	////fil := gRepo.GetFile("Shakal.gif")
