@@ -305,8 +305,6 @@ vObject := class
 		}
 		iDrawedMaps^[someMap].Emplace() = relPos
 
-
-
 		for mod : someMap.mapProps
 		{
 			mod.modelShader.ApplyShaderToQueue(mainCmd.Get())

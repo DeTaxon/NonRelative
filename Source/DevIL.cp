@@ -5,12 +5,17 @@ ilGenImages := !(int num,int^ imgs)^ -> bool
 ilBindImage := !(int num)^ -> bool
 ilDeleteImages := !(int num,int^ imgs)^ -> bool
 ilLoadL := !(int fileType,void^ src, u32 fileSize)^ -> int
+ilSaveImage := !(char^ fname)^ -> void
 ilGetData := !()^ -> void^
+ilConvertImage := !(int nVec, int nType)^ -> void
 ilCopyPixels := !(int xOff,int yOff,int zOff,int w, int h, int d,int format,int fType,void^ destin)^ -> void
 ilActiveMipmap := !(int mipnum)^ -> void
 ilActiveImage := !(int imgNum)^ -> void
 ilGetInteger := !(int param)^ -> int
 iluBuildMipmaps := !()^ -> void
+
+ilGetError := !()^ -> int
+ilGetString := !(int er)^ -> char^
 
 IL_RGB := 0x1907
 IL_RGBA := 0x1908
@@ -63,10 +68,15 @@ DevILInit := !() -> void
 	ilBindImage = DevIL.Get("ilBindImage")
 	ilDeleteImages = DevIL.Get("ilDeleteImages")
 	ilLoadL = DevIL.Get("ilLoadL")
+	ilSaveImage = DevIL.Get("ilSaveImage")
 	ilGetData = DevIL.Get("ilGetData")
 	ilActiveMipmap = DevIL.Get("ilActiveMipmap")
+	ilConvertImage = DevIL.Get("ilConvertImage")
 	ilCopyPixels = DevIL.Get("ilCopyPixels")
 	ilActiveImage = DevIL.Get("ilActiveImage")
 	ilGetInteger = DevIL.Get("ilGetInteger")
 	iluBuildMipmaps = DevILU.Get("iluBuildMipmaps")
+
+	ilGetError = DevIL.Get("ilGetError")
+	ilGetString = DevIL.Get("ilGetString")
 }

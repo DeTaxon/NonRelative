@@ -145,9 +145,14 @@ vTexture := class
 			itW = toPwr2(w)
 			itH = toPwr2(h)
 
+			memTyp := CreateObject(itW,itH)
 			ptrToSet := gStageMem.Map()->{u8^}
-		//ilCopyPixels := !(int xOff,int yOff,int zOff,int w, int h, int d,int format,int fType,void^ destin)^ -> void
-			ilCopyPixels(0,0,0,itW,itH,1,containAlpha ?: IL_RGBA : IL_RGB, IL_UNSIGNED_SHORT,ptrToSet)
+			//ilCopyPixels := !(int xOff,int yOff,int zOff,int w, int h, int d,int format,int fType,void^ destin)^ -> void
+			//ilConvertImage(IL_RGBA,IL_UNSIGNED_BYTE)
+			//dat := ilGetData()
+			//memcpy(ptrToSet,dat,1024*1024*4)
+			ilCopyPixels(0,0,0,itW,itH,1,containAlpha ?: IL_RGBA : IL_RGB, IL_UNSIGNED_BYTE,ptrToSet)
+
 			gStageMem.Unmap()
 			vStageCpyToImage(itImg,itW,itH)
 

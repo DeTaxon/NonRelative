@@ -268,7 +268,6 @@ RawModel := class
 			pos += 1
 		}
 
-
 		preInd := List.{u32}() ; $temp
 		miniBox := int[16]
 		miniPos := 0

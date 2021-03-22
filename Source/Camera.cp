@@ -118,6 +118,7 @@ vCamera := class
 		tempCent.ang = camQuant()
 		tempCent.pos = camPos
 
+
 		AtVector = tempCent.ang*vec4f(1.0,0.0,0.0,0.0)
 
 		invC := tempCent.Inverse()

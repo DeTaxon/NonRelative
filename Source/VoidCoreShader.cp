@@ -131,7 +131,7 @@ slCompileShaderFile := !(vRepoFile^ itF,char^ typ) -> vShaderModule^
 		}
 	})
 
-	fWrt := file(resFileName,"w")
+	fWrt := TFile(resFileName,"w")
 	//TODO: defer close
 
 	fWrt.Write(replacedSt,StrSize(replacedSt))
@@ -145,7 +145,7 @@ slCompileShaderFile := !(vRepoFile^ itF,char^ typ) -> vShaderModule^
 
 	oFl := Path(outFileName)
 	resSize := oFl.Size()
-	fRd := file(outFileName,"r")
+	fRd := TFile(outFileName,"r")
 	defer fRd.Close()
 
 	preRes := new u8[resSize->{int}] ; $temp
@@ -159,7 +159,7 @@ slCompileShaderFile := !(vRepoFile^ itF,char^ typ) -> vShaderModule^
 	if slKeepResult
 	{
 		cName2 := ""sbt + itF.GetUpFolder().GetPath() + "/ShaderCache/" + itF.GetName() <-
-		outCFile := file(cName2,"w")
+		outCFile := TFile(cName2,"w")
 		defer outCFile.Close()
 		outCFile.Write(preRes->{void^},resSize)
 	}

@@ -435,8 +435,12 @@ InitVulkan := !() -> bool
 	return 0
 }
 
+emitedDbg := AVLSet.{StringSpan}
 VkDebugCallback := !(int flags,int bojType,u64 object,u64 location,int msgCode,char^ prefix,char^ msg,void^ usrData) -> int
 {
+	if emitedDbg.Contain(StringSpan(msg))
+		return 0
+	emitedDbg.Insert(StringSpan(StrCopy(msg)))
 	printf("VkError <%s>\n",msg)
 	return 0
 }

@@ -14,6 +14,12 @@ DebugLog := !(char^ frmt,...) -> void
 	va_end(vars&)
 }
 
+
+fpsCounter := 0
+lastCheckedTime := 0.0
+
+resizeState := false
+preQuit := false
 main := !(int argc, char^^ argv) -> int
 {
 	if ToolMain(argc,argv)
@@ -96,13 +102,7 @@ main := !(int argc, char^^ argv) -> int
 		}
 	})
 
-	fpsCounter := 0
-	lastCheckedTime := 0.0
-
-	resizeState := false
-	preQuit := false
-
-	SpawnTask( () ==> [fpsCounter&,preQuit&]{
+	SpawnTask( () ==> []{
 		
 		prevTime := glfwGetTime()
 		
@@ -134,45 +134,41 @@ main := !(int argc, char^^ argv) -> int
 		}
 	})
 
-	SpawnTask(() ==> [fpsCounter&,preQuit&]{
+	prevTime := glfwGetTime()
 
-		prevTime := glfwGetTime()
-
-		while  true 
-		{
-			if gQuit {
-				return void
-			}
-			FlushTempMemory()
-			AwaitWork(() ==>{
-				DrawGetImage()
-			})
-			StartDraw()
-			nowTime := glfwGetTime()
-			gNowTime = nowTime
-			deltaTime := nowTime - prevTime
-			
-			prevTime = nowTime
-			gCam.InputCheck(deltaTime)
-			gCam.BindDescriptor(mainCmd.Get())
-			
-			vDraw()
-		
-			StopDraw()
-
-			if preQuit
-			{
-				//Quit()
-				return void
-			}
-
-			gHotloadCheck()
-			fpsCounter++
-
+	while  true 
+	{
+		if gQuit {
+			return 0
 		}
-	})
+		FlushTempMemory()
+		AwaitWork(() ==>{
+			DrawGetImage()
+		})
+		StartDraw()
+		nowTime := glfwGetTime()
+		gNowTime = nowTime
+		deltaTime := nowTime - prevTime
+		
+		prevTime = nowTime
+		gCam.InputCheck(deltaTime)
+		gCam.BindDescriptor(mainCmd.Get())
+		
+		vDraw()
+	
+		StopDraw()
 
-	while true TSleep(20)
+		if preQuit
+		{
+			//Quit()
+			gQuit = true
+			return 0
+		}
+
+		gHotloadCheck()
+		fpsCounter++
+
+	}
 		
 	return 0
 
