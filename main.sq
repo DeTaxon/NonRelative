@@ -1,4 +1,5 @@
 itMap <- GetMap("Flat")
 
+itMap.SpawnProp("DataFace")
 //yodl <- Audio("Maps/Flat/yodl.wav")
 //yodl.PlayGlobal()

@@ -1,6 +1,0 @@
-model:
-	file: HiResBox.ply
-texture:
-	file: HiResBoxTexture.bmp
-shader: LearnShader
-
