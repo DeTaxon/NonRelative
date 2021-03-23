@@ -61,6 +61,7 @@ CreateWindow := !(int newW,int newH) -> void
 {
 	gWindowW = newW
 	gWindowH = newH
+	libGlfwInit()
 	glfwInit()
 
 	glfwWindowHint(GLFW_CLIENT_API,GLFW_NO_API)
