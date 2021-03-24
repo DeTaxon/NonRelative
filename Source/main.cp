@@ -22,13 +22,6 @@ resizeState := false
 preQuit := false
 main := !(int argc, char^^ argv) -> int
 {
-	gRepo.AddZipRoot("wut.zip")
-	fil := gRepo.GetFile("wut.webp")
-	ptr := fil.Map()
-	outF := TFile("w.webp","wb")
-	outF.Write(ptr,fil.Size())
-	outF.Close()
-	return 0
 	gRepo.AddZipRoot("Dlls.zip")
 	if ToolMain(argc,argv)
 		return 0

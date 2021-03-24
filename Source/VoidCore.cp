@@ -173,6 +173,7 @@ vObject := class
 
 		gPlayer = new PhysPlayer()
 		gPlayer.Height = 1.7f
+		gPlayer.Width = 0.25f
 		gPlayer.System.pos = vec4f(1.0f,1.0f,2.0f,1.0f)
 
 	}

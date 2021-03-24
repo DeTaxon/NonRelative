@@ -39,6 +39,7 @@ PhysInfPlane := class extend PhysCommon
 PhysPlayer := class extend PhysCommon
 {
 	Height := float
+	Width := float
 	MapTouchTime := double
 	
 	this := !() -> void {
@@ -60,6 +61,7 @@ PhysHeightMap := class
 	Dots := vec4f^ //array
 	Triangles := u16[3]^
 	Spheres := PhysHightSphere^ //array
+	Sticky := bool
 
 	this := !() -> void
 	{
@@ -342,7 +344,7 @@ sqrta := !(float inp) -> float
 
 
 
-PhysCheckPlayerVSHMap := !(PhysPlayer^ p,PhysHeightMap^ hMap,centf mapPosition) -> int
+PhysCheckPlayerVSHMap := !(PhysPlayer^ p,PhysHeightMap^ hMap,centf mapPosition) -> int //TODO
 {
 	fixes := 0
 	triC := 0
@@ -377,7 +379,7 @@ PhysCheckPlayerVSHMap := !(PhysPlayer^ p,PhysHeightMap^ hMap,centf mapPosition) 
 	return fixes
 }
 
-PhysCheckPlayerVSSphere := !(PhysSphere^ p,PhysHeightMap^ hMap) -> void
+PhysCheckPlayerVSSphere := !(PhysSphere^ p,PhysHeightMap^ hMap) -> void //TODO
 {
 	triC := int
 	tris := u16[32]
@@ -407,7 +409,7 @@ PhysCheckPlayerVSSphere := !(PhysSphere^ p,PhysHeightMap^ hMap) -> void
 }
 
 
-PhysCheckSvIP := !(PhysSphere^ o1, PhysInfPlane^ o2) -> void
+PhysCheckSvIP := !(PhysSphere^ o1, PhysInfPlane^ o2) -> void //TODO
 {
 	dist := o2.Normal<+>o1.System.pos + o2.Distance
 

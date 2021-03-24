@@ -1,6 +1,6 @@
 start_window:
-	w: 1700
-	h: 900
+	w: 10
+	h: 10
 present_priority:
 	mode: FIFO
 	mode: MAILBOX
