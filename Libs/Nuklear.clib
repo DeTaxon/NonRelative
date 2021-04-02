@@ -31,6 +31,10 @@
 		"nk_rawfb_render2" : "void,void^",
 
 		"nk_begin" : "int,void^,char^,nk_rect,int",
-		"nk_end" : "void,void^"
+		"nk_end" : "void,void^",
+
+		"nk_layout_row_dynamic" : "void,void^,int,int",
+
+		"nk_button_label" : "int,void^,char^"
 	}
 }

@@ -26,16 +26,17 @@ main := !(int argc, char^^ argv) -> int
 
 	libNuklearInit()
 
-	w := 100
-	h := 100
+	w := 200
+	h := 200
 	imageData := new u8[w*h*4]
 	fontData := new u8[512*512]
 	fbContx := nk_rawfb_init2(imageData,fontData,w,h)
 
-	rekt := nk_rect(0,0,1,2)
+	rekt := nk_rect(0,0,w,h)
 	if nk_begin(fbContx,"Test",rekt,NK_WINDOW_BORDER)
 	{
-		printf("drawnig\n")
+		nk_layout_row_dynamic(fbContx,35,4)
+		nk_button_label(fbContx,"wow")
 		nk_end(fbContx)
 	}
 
