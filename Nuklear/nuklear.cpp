@@ -5,4 +5,7 @@
 #define NK_INCLUDE_DEFAULT_ALLOCATOR
 #define NK_INCLUDE_DEFAULT_VARARGS
 #define NK_INCLUDE_FIXED_TYPES
+#define NK_INCLUDE_SOFTWARE_FONT
 #include "nuklear.h"
+#define NK_RAWFB_IMPLEMENTATION
+#include "nuklear_rawfb.h"

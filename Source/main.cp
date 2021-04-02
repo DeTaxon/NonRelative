@@ -23,6 +23,31 @@ preQuit := false
 main := !(int argc, char^^ argv) -> int
 {
 	gRepo.AddZipRoot("Dlls.zip")
+
+	libNuklearInit()
+
+	w := 100
+	h := 100
+	imageData := new u8[w*h*4]
+	fontData := new u8[512*512]
+	fbContx := nk_rawfb_init2(imageData,fontData,w,h)
+
+	rekt := nk_rect(0,0,1,2)
+	if nk_begin(fbContx,"Test",rekt,NK_WINDOW_BORDER)
+	{
+		printf("drawnig\n")
+		nk_end(fbContx)
+	}
+
+	nk_rawfb_render2(fbContx)
+
+	imgFile := TFile("tst.ppm","wb")
+	defer imgFile.Close()
+	imgFile << "P6\n" << w << " " << h << "\n255\n"
+	imgFile.Write(imageData->{void^},w*h*4)	
+
+	return 0
+
 	if ToolMain(argc,argv)
 		return 0
 	

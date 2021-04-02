@@ -1,0 +1,36 @@
+{
+	"initname" : "libNuklearInit",
+	"structs" : {
+		"nk_rect" : {
+			"x" : "float",
+			"y" : "float",
+			"w" : "float",
+			"h" : "float"
+		},
+		"nk_color" : {
+			"r" : "u8",
+			"g" : "u8",
+			"b" : "u8",
+			"a" : "u8"
+		}
+	},
+	"consts" :{
+		"NK_WINDOW_BORDER" : 1,
+		"NK_WINDOW_MOVABLE" : 2,
+		"NK_WINDOW_SCALABLE" : 4,
+		"NK_WINDOW_CLOSABLE" : 8,
+		"NK_WINDOW_MINIMIZABLE" : 16,
+		"NK_WINDOW_NO_SCROLLBAR" : 32
+	},
+	"libs" : [
+		"Nuklear.so",
+		"Nuklear.dll"
+	],
+	"funcs" : {
+		"nk_rawfb_init2" : "void^,void^,void^,int,int",
+		"nk_rawfb_render2" : "void,void^",
+
+		"nk_begin" : "int,void^,char^,nk_rect,int",
+		"nk_end" : "void,void^"
+	}
+}

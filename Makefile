@@ -29,6 +29,9 @@ SLibs := -C0 "Libs/$$" -C0 "StandardLib/$$"
 $(Result): Objs/engi.ll
 	$(CmpLL)
 
+Nuklear.so: $(wildcard ./Nuklear/*)
+	gcc -shared -fPIC -fpermissive ./Nuklear/nuklear.cpp -o Nuklear.so
+
 Objs/engi.ll: 
 	$(Compiler) -g $(Prefix) Source/main.cp $(SLibs) -C1 "Source/$$" --vk vk.xml -o Objs/engi.ll
 	
