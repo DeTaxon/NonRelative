@@ -24,30 +24,34 @@ main := !(int argc, char^^ argv) -> int
 {
 	gRepo.AddZipRoot("Dlls.zip")
 
-	libNuklearInit()
+	//libNuklearInit()
 
-	w := 200
-	h := 200
-	imageData := new u8[w*h*4]
-	fontData := new u8[512*512]
-	fbContx := nk_rawfb_init2(imageData,fontData,w,h)
+	//w := 600
+	//h := 600
+	//imageData := new u8[w*h*4]
+	//fontData := new u8[512*512]
+	//fbContx := nk_rawfb_init2(imageData,fontData,w,h)
 
-	rekt := nk_rect(0,0,w,h)
-	if nk_begin(fbContx,"Test",rekt,NK_WINDOW_BORDER)
-	{
-		nk_layout_row_dynamic(fbContx,35,4)
-		nk_button_label(fbContx,"wow")
-		nk_end(fbContx)
-	}
+	//rekt := nk_rect(0,0,w,h)
+	//if nk_begin(fbContx,"Test",rekt,NK_WINDOW_BORDER or_b NK_WINDOW_NO_SCROLLBAR)
+	//{
+	//	nk_layout_row_dynamic(fbContx,35,1)
+	//	for 6
+	//		nk_button_label(fbContx,"wow")
+	//	nk_end(fbContx)
+	//}
 
-	nk_rawfb_render2(fbContx)
+	//nk_rawfb_render2(fbContx)
 
-	imgFile := TFile("tst.ppm","wb")
-	defer imgFile.Close()
-	imgFile << "P6\n" << w << " " << h << "\n255\n"
-	imgFile.Write(imageData->{void^},w*h*4)	
+	//imgFile := TFile("tst.ppm","wb")
+	//defer imgFile.Close()
+	//imgFile << "P6\n" << w << " " << h << "\n255\n"
+	//for ix : w for iy : w
+	//{
+	//	imgFile.Write(imageData[(ix*h + iy)*4]&->{void^},3)	
+	//}
 
-	return 0
+	//return 0
 
 	if ToolMain(argc,argv)
 		return 0

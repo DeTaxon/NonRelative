@@ -871,7 +871,7 @@ nk_rawfb_init(void *fb, void *tex_mem, const unsigned int w, const unsigned int 
     nk_font_atlas_end(&rawfb->atlas, nk_handle_ptr(NULL), NULL);
     if (rawfb->atlas.default_font)
         nk_style_set_font(&rawfb->ctx, &rawfb->atlas.default_font->handle);
-    nk_style_load_all_cursors(&rawfb->ctx, rawfb->atlas.cursors);
+    //nk_style_load_all_cursors(&rawfb->ctx, rawfb->atlas.cursors);
     nk_rawfb_scissor(rawfb, 0, 0, rawfb->fb.w, rawfb->fb.h);
     return rawfb;
 }
