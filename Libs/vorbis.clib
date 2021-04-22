@@ -1,0 +1,12 @@
+{
+	"initname" : "libVorbisInit",
+	"libs" : [
+		"lib_ogg_vorbis.so",
+		"lib_ogg_vorbis.dll"
+	],
+	"funcs" : {
+		"ov_open_callbacks" : "int,void^,void^,void^,int,void^",
+		"ov_read" : "c_long,void^,char^,int,int,int,int,int^",
+		"ov_info" : "void^,void^,int"
+	}
+}

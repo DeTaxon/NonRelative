@@ -22,6 +22,9 @@ resizeState := false
 preQuit := false
 main := !(int argc, char^^ argv) -> int
 {
+	tst := gRepo.GetFile("Example.ogg")
+	VorbisLoadFromMem(tst.Map(),tst.Size())
+	return 0
 	gRepo.AddZipRoot("Dlls.zip")
 
 	//libNuklearInit()
