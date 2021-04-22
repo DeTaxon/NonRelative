@@ -1,11 +1,18 @@
 {
 	"initname" : "libVorbisInit",
 	"libs" : [
-		"lib_ogg_vorbis.so",
-		"lib_ogg_vorbis.dll"
+		"vorbisdbg.so",
 	],
+	"structs" : {
+		"ov_callbacks" : {
+			"read_func" : "void^",
+			"seek_func" : "void^",
+			"close_func" : "void^",
+			"tell_func" : "void^"
+		}
+	},
 	"funcs" : {
-		"ov_open_callbacks" : "int,void^,void^,void^,int,void^",
+		"ov_open_callbacks" : "int,void^,void^,void^,int,ov_callbacks",
 		"ov_read" : "c_long,void^,char^,int,int,int,int,int^",
 		"ov_info" : "void^,void^,int"
 	}
