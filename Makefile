@@ -33,7 +33,7 @@ Nuklear.so: $(wildcard ./Nuklear/*)
 	gcc -shared -fPIC -fpermissive ./Nuklear/nuklear.cpp -o Nuklear.so
 
 Objs/engi.ll: 
-	$(Compiler) -g $(Prefix) Source/main.cp $(SLibs) -C1 "Source/$$" --vk vk.xml -o Objs/engi.ll
+	$(Compiler) -g $(Prefix) Source/main.hv $(SLibs) -C1 "Source/$$" --vk vk.xml -o Objs/engi.ll
 	
 clean: 
 	rm -f out.ll WinObj.o a.exe a.out engig
