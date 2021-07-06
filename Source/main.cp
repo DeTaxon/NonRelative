@@ -22,9 +22,9 @@ resizeState := false
 preQuit := false
 main := !(int argc, char^^ argv) -> int
 {
-	tst := gRepo.GetFile("Example.ogg")
-	VorbisLoadFromMem(tst.Map(),tst.Size())
-	return 0
+	//tst := gRepo.GetFile("Example.ogg")
+	//VorbisLoadFromMem(tst.Map(),tst.Size())
+	//return 0
 	gRepo.AddZipRoot("Dlls.zip")
 
 	//libNuklearInit()
@@ -59,7 +59,7 @@ main := !(int argc, char^^ argv) -> int
 	if ToolMain(argc,argv)
 		return 0
 	
-	ExpectWorkers(1)
+	TExpectWorkers(1)
 	vPreInit()
 	
 	//DevILInit()
@@ -120,7 +120,7 @@ main := !(int argc, char^^ argv) -> int
 	ScriptRun(mainScriptObject,mainSBox&)
 
 
-	SpawnTask(() ==> {
+	TSpawnTask(() ==> {
 		prevTime := glfwGetTime()
 		while true
 		{
@@ -136,7 +136,7 @@ main := !(int argc, char^^ argv) -> int
 		}
 	})
 
-	SpawnTask( () ==> []{
+	TSpawnTask( () ==> []{
 		
 		prevTime := glfwGetTime()
 		

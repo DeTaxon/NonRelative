@@ -1,7 +1,17 @@
+AlignUp := !(int value, int align) -> int
+{
+	assert(align != 0)
+	extra := value mod align
+	if extra != 0
+		value += align - extra
+	return value
+}
+
 vMemObj := class
 {
 	memObj := VkDeviceMemory
 	objSize := int
+	gpuSize := int
 	gpuSide := bool
 
 	CreateObject := !(int size,int memType, bool^ gpuSideI) -> bool
@@ -36,8 +46,10 @@ vMemObj := class
 		if gpuSideI != null
 			gpuSideI^ = gpuSide
 
+		gpuSize = AlignUp(size,0x40) //TODO unconst
+		gpuSize = max(gpuSize,0x500000)
 		allc1 := new VkMemoryAllocateInfo() ; $temp
-		allc1.allocationSize =  size
+		allc1.allocationSize =  gpuSize
 		allc1.memoryTypeIndex = memId
 
 		vkFuncs.vkAllocateMemory(vkLogCard,allc1,null,memObj&)
@@ -51,7 +63,7 @@ vMemObj := class
 	Map := !() -> void^
 	{
 		memToRet := void^
-		vkFuncs.vkMapMemory(vkLogCard,memObj,0,objSize,0,memToRet&)
+		vkFuncs.vkMapMemory(vkLogCard,memObj,0,gpuSize,0,memToRet&)
 		return memToRet
 		
 	}
