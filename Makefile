@@ -32,6 +32,9 @@ $(Result): Objs/engi.ll
 Nuklear.so: $(wildcard ./Nuklear/*)
 	gcc -shared -fPIC -fpermissive ./Nuklear/nuklear.cpp -o Nuklear.so
 
+JIT: $(wildcard Source/*.hv)
+	$(Compiler) $(SLibs) Source/main.hv -C1 "Source/$$" --jit
+
 Objs/engi.ll: 
 	$(Compiler) -g $(Prefix) Source/main.hv $(SLibs) -C1 "Source/$$" --vk vk.xml -o Objs/engi.ll
 	

@@ -1,7 +1,7 @@
 itMap <- GetMap("FirstMap")
 
 //fc <- itMap.SpawnProp("DatFace")
-box <- itMap.SpawnProp("HiResBox")
-box.SetPos(3,1,2)
+//box <- itMap.SpawnProp("HiResBox")
+//box.SetPos(3,1,2)
 //yodl <- Audio("Maps/Flat/yodl.wav")
 //yodl.PlayGlobal()

@@ -48,6 +48,8 @@ vMemObj := class
 
 		gpuSize = AlignUp(size,0x40) //TODO unconst
 		gpuSize = max(gpuSize,0x500000)
+		gpuSize = size
+
 		allc1 := new VkMemoryAllocateInfo() ; $temp
 		allc1.allocationSize =  gpuSize
 		allc1.memoryTypeIndex = memId
