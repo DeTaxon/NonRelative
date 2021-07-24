@@ -3,8 +3,6 @@ vkEnumerateInstanceExtensionProperties := PFN_vkEnumerateInstanceExtensionProper
 vkEnumerateInstanceLayerProperties := PFN_vkEnumerateInstanceLayerProperties
 vkCreateInstance := PFN_vkCreateInstance
 
-vkDllHandle := void^
-
 vkFuncs := VkFuncsHolder
 vkInstance := void^
 vkDebugObj := VkDebugReportCallbackEXT
@@ -50,19 +48,10 @@ InitVulkan := !() -> bool
 {
 	vkGpuMemId = -1
 	vkCpuMemId = -1
-	vkDllHandle = OpenLib("libvulkan.so")
+	vkDllHandle := Library("libvulkan.so","libvulkan.so.1","libvulkan.so*","vulkan-1.dll")
 
-	if vkDllHandle == null
-	{
-		vkDllHandle = OpenLib("vulkan-1.dll")
-		if vkDllHandle == null
-		{
-			printf("fail at loading dll\n")
-			return false
-		}
-	}
 
-	vkLoadAddr = LoadFuncLib(vkDllHandle,"vkGetInstanceProcAddr")
+	vkLoadAddr = vkDllHandle.Get("vkGetInstanceProcAddr")
 
 	if vkLoadAddr == null{
 		printf("cant get function ProcAddr\n")
@@ -449,5 +438,4 @@ DestroyVulkan := !() -> void
 {
 	//if vkInstance != null
 	//	vkDestroyInstance(vkInstance)
-	CloseLib(vkDllHandle)
 }

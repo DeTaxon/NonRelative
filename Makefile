@@ -24,7 +24,7 @@ endif
 
 WinCompiler := x86_64-w64-mingw32-gcc 
 
-SLibs := -C0 "Libs/$$" -C0 "StandardLib/$$"
+SLibs := -C0 "Libs/$$" -C0 "StandardHVLibrary/$$"
 
 $(Result): Objs/engi.ll
 	$(CmpLL)

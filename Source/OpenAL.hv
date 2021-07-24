@@ -19,7 +19,7 @@ AL_FORMAT_MONO16 := 0x1101
 
 OpenALInit := !() -> void
 {
-	openAL.Open("libopenal.so","libopenal-1.dll","soft_oal.dll")
+	openAL.Open("libopenal.so*","libopenal-1.dll","soft_oal.dll")
 
 	alcOpenDevice = openAL.Get("alcOpenDevice")
 	alcCreateContext = openAL.Get("alcCreateContext")

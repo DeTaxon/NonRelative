@@ -102,9 +102,7 @@ vObject := class
 	}
 	vPreInit := !() -> void
 	{
-		gRepo.Init("./")
 		gRepo.AddZipRoot("./Dlls.zip")
-		LibDB.SetRepo(gRepo&)
 		pLoadCommonSettings()
 	}
 	vInit := !() -> void
