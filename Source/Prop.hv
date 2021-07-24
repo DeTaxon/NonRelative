@@ -1,4 +1,4 @@
-vProp := class extend ScriptBox //TODO:  
+vProp := class extend vObject
 {	
 	modelPos := centf
 	calculatedPos := centf

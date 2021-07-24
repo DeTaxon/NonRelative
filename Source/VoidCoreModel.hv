@@ -113,18 +113,6 @@ vGenModel := !(char^ modelName,InfoNode^ itObj,vRepoFile^ itFile) -> vModel^
 				itMd.ReqTexture = vGenTexture(it,itFile)
 				assert(itMd.ReqTexture != null)
 			}
-		case "script"
-			if it.IsValue()
-			{
-				itMd.scriptFile = itFile.GetFile(it.ValueStr)
-				if itMd.scriptFile != null
-				{
-					//if gHotload gFsModelsScript[itMd.scriptFile] = itMd&
-					itMd.scriptUnit = ScriptCompile(itMd.scriptFile)
-				}
-			}else{
-				assert(false)
-			}
 	}
 	itMd.ReqShader = reqShader
 

@@ -48,12 +48,6 @@ vGetMap := !(char^ mapName) -> vMap^
 
 	for itPreList : cc.SubList
 	{
-		if itPreList.Name == "script"
-		{
-			scFile := asF.GetFile(itPreList.ValueStr)
-			scObj := ScriptCompile(scFile)
-			ScriptRun(scObj,newMap&)
-		}
 		if itPreList.Name == "prop"
 		{
 			for md : itPreList.SubList

@@ -45,9 +45,5 @@ vAddProp := !(vModel^ itModel,vMap^ mapObj) -> vProp^
 	vkFuncs.vkAllocateDescriptorSets(vkLogCard,newSetCR,newProp.modelTextureSet&)
 	vSetTexture(newProp.modelTextureSet,newProp.modelPtr.ReqTexture,gSamplerNearest)
 
-	if itModel.scriptUnit != null
-	{
-		ScriptRun(itModel.scriptUnit,newProp)
-	}
 	return newProp
 }

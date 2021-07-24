@@ -7,7 +7,7 @@ vMapLink := class
 	linkTo := vMap^
 }
 
-vMap := class extend ScriptBox
+vMap := class extend vObject
 {
 	mapName := char^
 	mapProps := List.{vProp^}

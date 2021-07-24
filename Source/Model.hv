@@ -9,9 +9,6 @@ vModel := class
 	physType := char^
 	physExtraData := void^
 
-	scriptFile := vRepoFile^
-	scriptUnit := ScriptUnit^
-
 	vertexInfo := vShaderVertexOptions
 
 	indexType := VKType

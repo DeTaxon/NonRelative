@@ -84,12 +84,6 @@ main := !(int argc, char^^ argv) -> int
 	//printf("cur image %i\n",ilGetInteger(IL_CUR_IMAGE))
 	//return 0
 
-	mainScript := gRepo.GetFile("main.sq")
-	if mainScript == null
-	{
-		printf("main script not found\n")
-		return 0
-	}
 	//uvInit()
 
 	CreateWindow(gWinStartW,gWinStartH)
@@ -99,7 +93,6 @@ main := !(int argc, char^^ argv) -> int
 	defer DestroyVulkan()
 
 	vInit()
-	ScriptInit()
 	
 	gCam.camPos = vec4f(0.0f,0.0f,0.0f,1.0f)
 	gCam.upDownAng = 0.0f
@@ -108,17 +101,7 @@ main := !(int argc, char^^ argv) -> int
 	//gHotloadInit()
 	VoidAudioInit()
 
-
-	mainScriptObject := ScriptCompile(mainScript)
-	if mainScriptObject == null
-	{
-		printf("script not compiled\n")
-		return 0
-	}
-	mainSBox := ScriptBox
-	memset(mainSBox&,0,ScriptBox->TypeSize)
-	ScriptRun(mainScriptObject,mainSBox&)
-
+	gPlayerMap = vGetMap("FirstMap")
 
 	TSpawnTask(() ==> {
 		prevTime := glfwGetTime()
