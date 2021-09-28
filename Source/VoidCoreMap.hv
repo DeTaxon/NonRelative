@@ -28,14 +28,21 @@ vGetMap := !(char^ mapName) -> vMap^
 	flName := char^
 	stB := "Maps/"sbt << mapName << ".inf"
 
-	asF := gRepo.GetFile(stB)
-
-	if asF == null 
+	asF := vRepoFile^
+	try
 	{
-		asF = gRepo.GetFile("Maps/"sbt + mapName + "/" + mapName + ".inf")
-		if asF == null
+		asF = gRepo.GetFile(stB)
+	}catch(IException^ e)
+	{
+		try
+		{
+			asF = gRepo.GetFile("Maps/"sbt + mapName + "/" + mapName + ".inf")
+		}catch(IException^ e)
+		{
 			return null
+		}
 	}
+
 
 	mapFile := asF.Map()
 	defer asF.Unmap()

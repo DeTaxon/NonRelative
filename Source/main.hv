@@ -58,7 +58,7 @@ main := !(int argc, char^^ argv) -> int
 
 	if ToolMain(argc,argv)
 		return 0
-	
+
 	TExpectWorkers(1)
 	vPreInit()
 	

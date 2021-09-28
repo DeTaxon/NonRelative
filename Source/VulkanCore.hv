@@ -50,7 +50,6 @@ InitVulkan := !() -> bool
 	vkCpuMemId = -1
 	vkDllHandle := Library("libvulkan.so","libvulkan.so.1","libvulkan.so*","vulkan-1.dll")
 
-
 	vkLoadAddr = vkDllHandle.Get("vkGetInstanceProcAddr")
 
 	if vkLoadAddr == null{
