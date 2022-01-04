@@ -17,7 +17,7 @@ vAddProp := !(vModel^ itModel,vMap^ mapObj) -> vProp^
 		newProp = new vProp
 		mapObj.mapProps.Push(newProp)
 	}else{
-		itProps.Emplace()
+		itProps.Create()
 		newProp = itProps.Back()&
 	}
 	newProp.modelPos.ang = quantfAt(-1.0f,1.0f,0.0f,0.0f)

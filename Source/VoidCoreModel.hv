@@ -101,7 +101,7 @@ vGenModel := !(char^ modelName,InfoNode^ itObj,vRepoFile^ itFile) -> vModel^
 		case "shader"
 			if it.IsValue()
 			{
-				reqShader = vGetShader(it.ValueStr, x ==> x^ = itMd.vertexInfo)
+				reqShader = vGetShader(it.ValueStr, x ==> {x^ = itMd.vertexInfo})
 			}else{
 				//TODO
 			}

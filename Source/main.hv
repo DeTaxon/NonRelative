@@ -119,7 +119,7 @@ main := !(int argc, char^^ argv) -> int
 		}
 	})
 
-	TSpawnTask( () ==> []{
+	TSpawnTask( () ==> {
 		
 		prevTime := glfwGetTime()
 		
