@@ -68,11 +68,11 @@ vCamera := class
 		camFar = far
 		camPOV = pov
 
-		allc1 := new VkMemoryAllocateInfo() ; $temp
+		allc1 := @temp new VkMemoryAllocateInfo()
 		allc1.allocationSize =  4*4
 		//allc1.memoryTypeIndex = 1
 
-		bufC := new VkBufferCreateInfo() ; $temp
+		bufC := @temp new VkBufferCreateInfo()
 		bufC.size = allc1.allocationSize
 		bufC.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT or_b VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT or_b VK_BUFFER_USAGE_TRANSFER_DST_BIT
 
@@ -83,11 +83,11 @@ vCamera := class
 		vkPerspMem.CreateObject(memInfo.size,memInfo.memoryTypeBits,memOnGpu&)
 		vkFuncs.vkBindBufferMemory(vkLogCard,vkPerspBuffer,vkPerspMem.Get(),0)
 
-		bufInfo := new VkDescriptorBufferInfo ; $temp
+		bufInfo := @temp new VkDescriptorBufferInfo
 		bufInfo.buffer = vkPerspBuffer 
 		bufInfo.offset = 0
 		bufInfo.range = 4*4
-		someWrite := new VkWriteDescriptorSet() ; $temp
+		someWrite := @temp new VkWriteDescriptorSet()
 		someWrite.dstSet = vkPerspSet
 		someWrite.dstBinding = 0
 		someWrite.dstArrayElement = 0

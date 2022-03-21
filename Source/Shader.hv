@@ -108,7 +108,7 @@ vShaderModule := class
 
 	LoadShaderModule := !(void^ modPoint,int modSize,char^ typ) -> void
 	{
-		vSC := new VkShaderModuleCreateInfo() ; $temp
+		vSC := @temp new VkShaderModuleCreateInfo()
 		vSC.codeSize = modSize
 		vSC.pCode = modPoint
 		vkFuncs.vkCreateShaderModule(vkLogCard,vSC,null,itModule&)
@@ -150,7 +150,7 @@ vShader := class
 		vert := vertModule.Get()
 		frag := fragModule.Get()
 
-		sStg := new VkPipelineShaderStageCreateInfo[2] ; $temp
+		sStg := @temp new VkPipelineShaderStageCreateInfo[2]
 		sStg[^]."this"()
 
 		sStg[0].stage = VK_SHADER_STAGE_VERTEX_BIT
@@ -161,14 +161,14 @@ vShader := class
 		sStg[1].pName = "main"->{void^}
 
 
-		inputsBind := new VkVertexInputBindingDescription ; $temp
+		inputsBind := @temp new VkVertexInputBindingDescription
 
 		inputsBind.binding = 0
 		inputsBind.inputRate = VK_VERTEX_INPUT_RATE_VERTEX
 
 
 		offset := 0
-		inputsStuf := new VkVertexInputAttributeDescription[3] ; $temp
+		inputsStuf := @temp new VkVertexInputAttributeDescription[3]
 		//vertex
 		inputsStuf[0].location = 0
 		inputsStuf[0].binding = inputsBind.binding
@@ -190,7 +190,7 @@ vShader := class
 	
 		inputsBind.stride = offset
 
-		plC := new VkPipelineVertexInputStateCreateInfo() ; $temp
+		plC := @temp new VkPipelineVertexInputStateCreateInfo()
 
 		plC.vertexBindingDescriptionCount = 1
 		plC.pVertexBindingDescriptions = inputsBind
@@ -198,18 +198,18 @@ vShader := class
 		plC.pVertexAttributeDescriptions = inputsStuf
 
 
-		paC1 := new VkPipelineInputAssemblyStateCreateInfo() ; $temp
+		paC1 := @temp new VkPipelineInputAssemblyStateCreateInfo()
 		paC1.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST
 
 		stts := VkDynamicState[2]
 		stts[0] = VK_DYNAMIC_STATE_VIEWPORT
 		stts[1] = VK_DYNAMIC_STATE_SCISSOR
 
-		dins := new VkPipelineDynamicStateCreateInfo() ; $temp
+		dins := @temp new VkPipelineDynamicStateCreateInfo()
 		dins.dynamicStateCount = 2
 		dins.pDynamicStates = stts[0]&
 
-		pVSC := new VkPipelineViewportStateCreateInfo() ; $temp
+		pVSC := @temp new VkPipelineViewportStateCreateInfo()
 		pVSC.viewportCount = 1
 		pVSC.pViewports = null //vp&
 		pVSC.scissorCount = 1
@@ -236,7 +236,7 @@ vShader := class
 		//  VK_FALSE,   VkBool32              alphaToCoverageEnable
 		//  VK_FALSE    VkBool32              alphaToOneEnable
 
-		blndPre := new VkPipelineColorBlendAttachmentState[2] ; $temp
+		blndPre := @temp new VkPipelineColorBlendAttachmentState[2]
 		blndPre[0].srcColorBlendFactor = VK_BLEND_FACTOR_ONE
 		blndPre[0].dstColorBlendFactor = VK_BLEND_FACTOR_ZERO
 		blndPre[0].colorBlendOp = VK_BLEND_OP_ADD
@@ -254,7 +254,7 @@ vShader := class
 		blndPre[1].colorWriteMask = VK_COLOR_COMPONENT_R_BIT or_b VK_COLOR_COMPONENT_G_BIT or_b VK_COLOR_COMPONENT_B_BIT or_b VK_COLOR_COMPONENT_A_BIT
 		//  VK_FALSE,  VkBool32   blendEnable
 
-		blndC := new VkPipelineColorBlendStateCreateInfo() ; $temp
+		blndC := @temp new VkPipelineColorBlendStateCreateInfo()
 		blndC.logicOp = VK_LOGIC_OP_COPY
 		blndC.attachmentCount = 2
 		blndC.pAttachments = blndPre
@@ -268,7 +268,7 @@ vShader := class
 		//  0,        uint32_t                       pushConstantRangeCount
 		//  nullptr   const VkPushConstantRange     *pPushConstantRanges
 
-		dsC := new VkPipelineDepthStencilStateCreateInfo() ; $temp
+		dsC := @temp new VkPipelineDepthStencilStateCreateInfo()
 		dsC.depthTestEnable = VK_TRUE
 		dsC.depthWriteEnable = VK_TRUE
 		dsC.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL
@@ -292,7 +292,7 @@ vShader := class
 		dsC.front.writeMask = 0
 
 
-		gpC := new VkGraphicsPipelineCreateInfo() ; $temp
+		gpC := @temp new VkGraphicsPipelineCreateInfo()
 		gpC.stageCount = 2
 		gpC.pStages = sStg->{void^}
 		gpC.pVertexInputState = plC
@@ -317,7 +317,7 @@ vShader := class
 		vert := vertModule.Get()
 		frag := fragModule.Get()
 
-		sStg := new VkPipelineShaderStageCreateInfo[2] ; $temp
+		sStg := @temp new VkPipelineShaderStageCreateInfo[2]
 		sStg[^]."this"()
 
 		sStg[0].stage = VK_SHADER_STAGE_VERTEX_BIT
@@ -327,7 +327,7 @@ vShader := class
 		sStg[1].module = frag
 		sStg[1].pName = "main"->{void^}
 
-		plC := new VkPipelineVertexInputStateCreateInfo() ; $temp
+		plC := @temp new VkPipelineVertexInputStateCreateInfo()
 
 		plC.vertexBindingDescriptionCount = 0
 		plC.pVertexBindingDescriptions = null
@@ -335,24 +335,24 @@ vShader := class
 		plC.pVertexAttributeDescriptions = null
 
 
-		paC1 := new VkPipelineInputAssemblyStateCreateInfo() ; $temp
+		paC1 := @temp new VkPipelineInputAssemblyStateCreateInfo()
 		paC1.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST
 
 		stts := VkDynamicState[2]
 		stts[0] = VK_DYNAMIC_STATE_VIEWPORT
 		stts[1] = VK_DYNAMIC_STATE_SCISSOR
 
-		dins := new VkPipelineDynamicStateCreateInfo() ; $temp
+		dins := @temp new VkPipelineDynamicStateCreateInfo()
 		dins.dynamicStateCount = 2
 		dins.pDynamicStates = stts[0]&
 
-		pVSC := new VkPipelineViewportStateCreateInfo() ; $temp
+		pVSC := @temp new VkPipelineViewportStateCreateInfo()
 		pVSC.viewportCount = 1
 		pVSC.pViewports = null //vp&
 		pVSC.scissorCount = 1
 		pVSC.pScissors = null //sc&
 
-		rasterC := new VkPipelineRasterizationStateCreateInfo() ; $temp
+		rasterC := @temp new VkPipelineRasterizationStateCreateInfo()
 		rasterC.polygonMode = VK_POLYGON_MODE_FILL
 		rasterC.cullMode = VK_CULL_MODE_BACK_BIT
 		rasterC.cullMode = VK_CULL_MODE_NONE
@@ -365,7 +365,7 @@ vShader := class
 		//  0.0f,     float      depthBiasClamp
 		//  0.0f,     float      depthBiasSlopeFactor
 
-		sampleC := new VkPipelineMultisampleStateCreateInfo() ; $temp
+		sampleC := @temp new VkPipelineMultisampleStateCreateInfo()
 		sampleC.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT
 		sampleC.minSampleShading = 1.0f
 		//  VK_FALSE,   VkBool32              sampleShadingEnable
@@ -373,7 +373,7 @@ vShader := class
 		//  VK_FALSE,   VkBool32              alphaToCoverageEnable
 		//  VK_FALSE    VkBool32              alphaToOneEnable
 
-		blndPre := new VkPipelineColorBlendAttachmentState ; $temp
+		blndPre := @temp new VkPipelineColorBlendAttachmentState
 		blndPre.srcColorBlendFactor = VK_BLEND_FACTOR_ONE
 		blndPre.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO
 		blndPre.colorBlendOp = VK_BLEND_OP_ADD
@@ -383,7 +383,7 @@ vShader := class
 		blndPre.colorWriteMask = VK_COLOR_COMPONENT_R_BIT or_b VK_COLOR_COMPONENT_G_BIT or_b VK_COLOR_COMPONENT_B_BIT or_b VK_COLOR_COMPONENT_A_BIT
 		//  VK_FALSE,  VkBool32   blendEnable
 
-		blndC := new VkPipelineColorBlendStateCreateInfo() ; $temp
+		blndC := @temp new VkPipelineColorBlendStateCreateInfo()
 		blndC.logicOp = VK_LOGIC_OP_COPY
 		blndC.attachmentCount = 1
 		blndC.pAttachments = blndPre
@@ -397,7 +397,7 @@ vShader := class
 		//  0,        uint32_t                       pushConstantRangeCount
 		//  nullptr   const VkPushConstantRange     *pPushConstantRanges
 
-		dsC := new VkPipelineDepthStencilStateCreateInfo() ; $temp
+		dsC := @temp new VkPipelineDepthStencilStateCreateInfo()
 		//dsC.depthTestEnable = VK_TRUE
 		dsC.depthTestEnable = VK_FALSE
 		dsC.depthWriteEnable = VK_FALSE
@@ -422,7 +422,7 @@ vShader := class
 		dsC.front.writeMask = 0
 
 
-		gpC := new VkGraphicsPipelineCreateInfo() ; $temp
+		gpC := @temp new VkGraphicsPipelineCreateInfo()
 		gpC.stageCount = 2
 		gpC.pStages = sStg->{void^}
 		gpC.pVertexInputState = plC

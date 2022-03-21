@@ -71,7 +71,7 @@ PhysHeightMap := class
 	CreateDots := !(RawModel^ mdlValue) -> int
 	{
 		floats := mdlValue.GetVertAsFloat()
-		nDots := new vec4f[mdlValue.VertexCount + 1] ; $temp
+		nDots := @temp new vec4f[mdlValue.VertexCount + 1]
 		
 		for i,j : nDots
 		{
@@ -90,12 +90,12 @@ PhysHeightMap := class
 			Triangles2[i][2] = inds32[i*3 + 2] + 1
 		}
 		
-		SpheresStart := new List.{PhysHightSphere^} ; $temp
+		SpheresStart := @temp new List.{PhysHightSphere^}
 		
-		phase := new List.{Tuple.{PhysHightSphere^,bool}} ; $temp
+		phase := @temp new List.{Tuple.{PhysHightSphere^,bool}}
 		for tri,i : Triangles2
 		{
-			ns := new PhysHightSphere ; $temp
+			ns := @temp new PhysHightSphere
 			a := nDots[tri[0]]
 			b := nDots[tri[1]]
 			c := nDots[tri[2]]
@@ -114,7 +114,7 @@ PhysHeightMap := class
 		fakeNodes := 0
 		while phase.Size() != 1
 		{
-			newPhase := new List.{Tuple.{PhysHightSphere^,bool}} ; $temp
+			newPhase := @temp new List.{Tuple.{PhysHightSphere^,bool}}
 			
 			for it,i : phase^
 			{
@@ -146,7 +146,7 @@ PhysHeightMap := class
 					newPhase.Emplace(it.0,false)
 					fakeNodes += 1
 				}else{
-					ns := new PhysHightSphere ; $temp
+					ns := @temp new PhysHightSphere
 					cent := (it.0.PosAndSize + candPos) / 2
 					cent.w = Distance(candPos.xyz,it.0.PosAndSize.xyz) + max(it.0.PosAndSize.w,candPos.w,it.0.PosAndSize.w)
 					candBool^ = true
@@ -168,7 +168,7 @@ PhysHeightMap := class
 		SpheresStart.Push(phase^[0].0)
 		
 		allctdNodes := 0
-		resSpheres := new PhysHightSphere[SpheresStart.Size() - fakeNodes] ; $temp
+		resSpheres := @temp new PhysHightSphere[SpheresStart.Size() - fakeNodes]
 	
 		addSphere := (int ind,u16^ resInt) ==> {
 			resInt^ = allctdNodes

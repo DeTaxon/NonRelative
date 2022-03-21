@@ -50,7 +50,7 @@ vMemObj := class
 		gpuSize = max(gpuSize,0x500000)
 		gpuSize = size
 
-		allc1 := new VkMemoryAllocateInfo() ; $temp
+		allc1 := @temp new VkMemoryAllocateInfo()
 		allc1.allocationSize =  gpuSize
 		allc1.memoryTypeIndex = memId
 
@@ -71,7 +71,7 @@ vMemObj := class
 	}
 	Unmap := !() -> void
 	{
-		flushRange := new VkMappedMemoryRange() ; $temp
+		flushRange := @temp new VkMappedMemoryRange()
 		flushRange.memory = memObj
 		flushRange.offset = 0
 		flushRange.size = objSize

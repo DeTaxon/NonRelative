@@ -18,7 +18,7 @@ vGetModel := !(char^ sName) -> vModel^
 		asF = gRepo.GetFile("Models/"sbt + sName + "/" + sName + ".inf")
 		if asF == null
 		{
-			printf("failed to load %s\n",stB.Str()) ; $temp
+			printf("failed to load %s\n",@temp stB.Str())
 			return null
 		}
 	}
@@ -26,7 +26,7 @@ vGetModel := !(char^ sName) -> vModel^
 	heh := asF.Map()
 	defer asF.Unmap()
 
-	cc := ParseInfoFile(heh,asF.Size()) ; $temp
+	cc := @temp ParseInfoFile(heh,asF.Size())
 	
 	return vGenModel(sName,cc,asF)
 }
@@ -75,7 +75,7 @@ vGenModel := !(char^ modelName,InfoNode^ itObj,vRepoFile^ itFile) -> vModel^
 								fileName := char^()
 								for opt : it.SubList
 								{
-									if opt.Name == "file" fileName = opt.ValueStr.Str() ; $temp
+									if opt.Name == "file" fileName = @temp opt.ValueStr.Str()
 								}
 								if fileName == null  throw new Exception("Incorrect phys data")
 								hFile := itFile.GetFile(fileName) 
@@ -85,7 +85,7 @@ vGenModel := !(char^ modelName,InfoNode^ itObj,vRepoFile^ itFile) -> vModel^
 								{
 									hMap.LoadFromHMap1(hFile)
 								}else{
-									mdl := new RawModel ; $temp
+									mdl := @temp new RawModel
 									mdl.MapFromPLY(hFile.Map(),hFile.Size())
 									hMap.CreateDots(mdl)
 								}

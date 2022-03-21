@@ -70,7 +70,7 @@ VorbisLoadFromMem := !(void^ data,int size) -> void
     callbacks.tell_func = v_tellOgg
 
     dat := v_DataOgg(data,size)
-    ov := new char[4024] ; $temp
+    ov := @temp new char[4024]
     ov_open_callbacks(dat&,ov->{void^},null,-1,callbacks)
     inf := ov_info(ov->{void^},-1)
     printf("tst %p\n",inf)

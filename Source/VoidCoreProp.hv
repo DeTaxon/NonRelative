@@ -37,7 +37,7 @@ vAddProp := !(vModel^ itModel,vMap^ mapObj) -> vProp^
 		}
 	}
 
-	newSetCR := new VkDescriptorSetAllocateInfo() ; $temp
+	newSetCR := @temp new VkDescriptorSetAllocateInfo()
 	newSetCR.descriptorPool = gObjectLayoutSets
 	newSetCR.descriptorSetCount = 1
 	newSetCR.pSetLayouts = vkPerObjectLayout&

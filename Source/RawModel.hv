@@ -25,10 +25,10 @@ RawModel := class
 		floatCount := PositionType.TypeCount + NormalType.TypeCount + UVType.TypeCount
 
 		preRetI := 0
-		preRet := new float[floatCount*VertexCount] ; $temp
+		preRet := @temp new float[floatCount*VertexCount]
 
 		from := verts->{u8^}
-		moves := new int[floatCount->{int}] ; $temp
+		moves := @temp new int[floatCount->{int}]
 		for j : VertexCount
 		{
 			for typ : ![PositionType&,NormalType&,UVType&]
@@ -216,7 +216,7 @@ RawModel := class
 		if vertItems != 7 return false //TODO: normalless support
 
 		totalVerts := vertsCount*vertSize
-		thisVerts := new float[totalVerts] ; $temp
+		thisVerts := @temp new float[totalVerts]
 		verts = thisVerts
 		VertexCount = vertsCount
 
@@ -341,14 +341,14 @@ RawModel := class
 		case VType_UInt16
 			{
 				asU16 := inds->{u16[]}
-				preRet := new u32[asU16->len] ; $temp
+				preRet := @temp new u32[asU16->len]
 				preRet[^i] = asU16[i]
 				return preRet
 			}
 		case VType_UInt8
 			{
 				asU8 := inds->{u8[]}
-				preRet := new u32[asU8->len] ; $temp
+				preRet := @temp new u32[asU8->len]
 				preRet[^i] = asU8[i]
 				return preRet
 			}
@@ -367,7 +367,7 @@ RawModel := class
 			return void
 
 		//Transforming to U16
-		itU16 := new u16[asU32->len] ; $temp
+		itU16 := @temp new u16[asU32->len]
 		itU16[^i] = asU32[i]
 		inds = itU16
 		IndexType = VKType(VType_UInt16,1)
@@ -384,7 +384,7 @@ RawModel := class
 	}
 	ReVert := !( !(VKType[])&->void conf ) -> void
 	{
-		preSet := new VKType[3] ; $temp
+		preSet := @temp new VKType[3]
 		preSet[0] = PositionType
 		preSet[1] = NormalType
 		preSet[2] = UVType
@@ -410,7 +410,7 @@ RawModel := class
 		sumSize := 0
 		sumSize += preSet[^].GetSize()
 
-		preRet := new u8[sumSize*VertexCount] ; $temp
+		preRet := @temp new u8[sumSize*VertexCount]
 		resIter := preRet[0]&
 
 		vInd := 0

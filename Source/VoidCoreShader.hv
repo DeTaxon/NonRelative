@@ -7,7 +7,7 @@ vGetShader := !(char^ sName) -> vShader^
 }
 vGetShader := !(char^ sName,!(vShaderVertexOptions^)& -> void vertSet ) -> vShader^
 {
-	opts := new vShaderVertexOptions ; $temp
+	opts := @temp new vShaderVertexOptions
 	vertSet(opts)
 
 	thisOpt := ref itShaders[opts^]
@@ -22,7 +22,7 @@ vGetShader := !(char^ sName,!(vShaderVertexOptions^)& -> void vertSet ) -> vShad
 	stB := "Shaders/"sbt
 	stB << sName
 	stB << ".inf"
-	flName = stB.Str() ; $temp
+	flName = @temp stB.Str()
 
 	fl := gRepo.GetFile(flName)
 
@@ -35,7 +35,7 @@ vGetShader := !(char^ sName,!(vShaderVertexOptions^)& -> void vertSet ) -> vShad
 		return null
 	defer fl.Unmap()
 
-	cc := ParseInfoFile(fl.Map(),fl.Size()) ; $temp
+	cc := @temp ParseInfoFile(fl.Map(),fl.Size())
 
 	isLight := false
 	fndSh := false
@@ -118,7 +118,7 @@ slCompileShaderFile := !(vRepoFile^ itF,char^ typ) -> vShaderModule^
 	resFileName := ""sbt + slInputFile + "." + typ <-
 	outFileName := ""sbt + slOutputFile + "." + typ <-
 
-	keyw := new char^[2] ; $temp
+	keyw := @temp new char^[2]
 	keyw[0] = "#VERT_INPUT_DATA_VARS"
 	keyw[1] = "#VERT_INPUT_DATA_INIT"
 	replacedSt := ReplaceKeywords(StringSpan(ptrToF->{char^},itF.Size()),keyw,keyw->len, (a1,a2) ==>{
@@ -148,7 +148,7 @@ slCompileShaderFile := !(vRepoFile^ itF,char^ typ) -> vShaderModule^
 	fRd := TFile(outFileName,"r")
 	defer fRd.Close()
 
-	preRes := new u8[resSize->{int}] ; $temp
+	preRes := @temp new u8[resSize->{int}]
 	fRd.Read(preRes->{void^},resSize->{int})
 
 	itMod := ref slModules[itF]

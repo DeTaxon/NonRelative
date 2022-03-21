@@ -16,7 +16,7 @@ vModel := class
 
 	LoadFile := !(vRepoFile^ itFl) -> bool
 	{
-		rFile := new RawModel ; $temp
+		rFile := @temp new RawModel
 		if not rFile.LoadFromFile(itFl)
 			return false
 
@@ -31,7 +31,7 @@ vModel := class
 		
 		vertSize :=  rFile.VertexCount*rFile.GetVertSize()
 
-		bufC := new VkBufferCreateInfo() ; $temp
+		bufC := @temp new VkBufferCreateInfo()
 		bufC.size = vertSize
 		bufC.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT or_b VK_BUFFER_USAGE_TRANSFER_DST_BIT
 		bufC.sharingMode = VK_SHARING_MODE_EXCLUSIVE
@@ -119,7 +119,7 @@ vModel := class
 	//}
 	AddToCmdBuffer := !(VkCommandBuffer cmdB) -> void
 	{
-		offsets := new VkDeviceSize() ; $temp
+		offsets := @temp new VkDeviceSize()
 		vkFuncs.vkCmdBindVertexBuffers(cmdB,0,1,hndls[0]&,offsets)
 		vkFuncs.vkCmdBindIndexBuffer(cmdB,hndls[1],0,indexType.GetBaseIndexType())
 		vkFuncs.vkCmdDrawIndexed(cmdB,indexCount,1,0,0,0)

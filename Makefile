@@ -33,7 +33,7 @@ Nuklear.so: $(wildcard ./Nuklear/*)
 	gcc -shared -fPIC -fpermissive ./Nuklear/nuklear.cpp -o Nuklear.so
 
 JIT: $(wildcard Source/*.hv)
-	$(Compiler) $(SLibs) Source/main.hv -C1 "Source/" --jit
+	$(Compiler) $(SLibs) --vk vk.xml  Source/main.hv -C1 "Source/" --jit
 
 Objs/engi.ll: 
 	$(Compiler) -g $(Prefix) Source/main.hv $(SLibs) -C1 "Source/" --vk vk.xml -o Objs/engi.ll
@@ -42,5 +42,7 @@ clean:
 	rm -f out.ll WinObj.o a.exe a.out engig
 grind:
 	valgrind --log-file=grind.txt --leak-check=full --leak-resolution=med ./engi
+soft:
+	LIBGL_ALWAYS_SOFTWARE=1 __GLX_VENDOR_LIBRARY_NAME=mesa VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/lvp_icd.i686.json:/usr/share/vulkan/icd.d/lvp_icd.x86_64.json ./engi
 
 .PHONY: clean engi Objs/engi.ll

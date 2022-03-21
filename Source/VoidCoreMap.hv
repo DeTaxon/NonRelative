@@ -21,7 +21,6 @@ vGetMap := !(char^ mapName) -> vMap^
 {
 	if itMaps.Contain(mapName)
 		return itMaps[mapName]&
-
 	//pVoidMP.Push()
 	//defer pVoidMP.Pop()
 
@@ -38,7 +37,7 @@ vGetMap := !(char^ mapName) -> vMap^
 		{
 			asF = gRepo.GetFile("Maps/"sbt + mapName + "/" + mapName + ".inf")
 		}catch(IException^ e)
-		{
+		{	
 			return null
 		}
 	}
@@ -47,7 +46,7 @@ vGetMap := !(char^ mapName) -> vMap^
 	mapFile := asF.Map()
 	defer asF.Unmap()
 
-	cc := ParseInfoFile(mapFile,asF.Size()) ; $temp
+	cc := @temp ParseInfoFile(mapFile,asF.Size())
 
 	itCpyName := StrCopy(mapName)
 	newMap := ref itMaps[itCpyName]

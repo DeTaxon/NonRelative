@@ -1,8 +1,8 @@
 
-gMetMapPhys := List.{Tuple.{vMap^,centf}}^ ; $temp
+gMetMapPhys := List.{Tuple.{vMap^,centf}}^
 vPhysStage := !(double deltaTime) -> void
 {
-	gMetMapPhys = new List.{Tuple.{vMap^,centf}} ; $temp
+	gMetMapPhys = @temp new List.{Tuple.{vMap^,centf}}
 	oldPlayerImpz := gPlayer.ImpulseV.z
 	forw := 0.0f
 	lft := 0.0f

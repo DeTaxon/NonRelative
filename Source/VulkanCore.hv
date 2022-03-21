@@ -73,47 +73,47 @@ InitVulkan := !() -> bool
 	count := s32
 
 	vkEnumerateInstanceLayerProperties(count&,null)
-	lays := new VkLayerProperties[count] ; $temp
+	lays := @temp new VkLayerProperties[count]
 	vkEnumerateInstanceLayerProperties(count&,lays)
 
 	printf("%i : %s\n",i,lays[^i].layerName)
 
 	vkEnumerateInstanceExtensionProperties(null,count&,null)
-	exts := new VkExtensionProperties[count] ; $temp
+	exts := @temp new VkExtensionProperties[count]
 	vkEnumerateInstanceExtensionProperties(null,count&,exts)
 
 	printf("%i : %s\n",i,exts[^i].extensionName)
 
-	wantedLayers := AVLSet.{string}() ; $temp
-	wantedLayers << "VK_LAYER_LUNARG_standard_validation"
+	wantedLayers := @temp new AVLSet.{string}()
+	wantedLayers^ << "VK_LAYER_LUNARG_standard_validation"
 	//wantedLayers << "VK_LAYER_MESA_overlay"
-	wantedLayers << "VK_LAYER_KHRONOS_validation"
-	wantedLayers << "VK_LAYER_LUNARG_vktrace"
+	wantedLayers^ << "VK_LAYER_KHRONOS_validation"
+	wantedLayers^ << "VK_LAYER_LUNARG_vktrace"
 
-	wantedExtensions := AVLSet.{string}() ; $temp
-	wantedExtensions << "VK_EXT_debug_report"
-	wantedExtensions << "VK_KHR_wayland_surface"
-	wantedExtensions << "VK_KHR_xcb_surface"
-	wantedExtensions << "VK_KHR_xlib_surface"
-	wantedExtensions << "VK_KHR_win32_surface"
-	wantedExtensions << "VK_KHR_surface"
-	wantedExtensions << "VK_KHR_get_physical_device_properties2" 
-	wantedExtensions << "VK_KHR_storage_buffer_storage_class"
+	wantedExtensions := @temp new AVLSet.{string}()
+	wantedExtensions^ << "VK_EXT_debug_report"
+	wantedExtensions^ << "VK_KHR_wayland_surface"
+	wantedExtensions^ << "VK_KHR_xcb_surface"
+	wantedExtensions^ << "VK_KHR_xlib_surface"
+	wantedExtensions^ << "VK_KHR_win32_surface"
+	wantedExtensions^ << "VK_KHR_surface"
+	wantedExtensions^ << "VK_KHR_get_physical_device_properties2" 
+	wantedExtensions^ << "VK_KHR_storage_buffer_storage_class"
 
 	//wantedExtensions << "VK_KHR_get_physical_device_properties2"
 	
-	toUseLayers := List.{string}() ; $temp $uniq 
+	toUseLayers := @temp new List.{string}()
 	if wantedLayers.Contain(lays[^].layerName)
-		toUseLayers.Push(it.layerName)
+		toUseLayers.PushUniq(it.layerName)
 
-	toUseExts := List.{string}() ; $temp $uniq
+	toUseExts := @temp new List.{string}()
 	if wantedExtensions.Contain(exts[^].extensionName)
-		toUseExts << it.extensionName
+		toUseExts.PushUniq(it.extensionName)
 
-	printf("using %i %s\n",i,toUseLayers[^i])
-	printf("using %i %s\n",i,toUseExts[^i])
+	printf("using %i %s\n",i,toUseLayers^[^i])
+	printf("using %i %s\n",i,toUseExts^[^i])
 
-	appInfo := new VkApplicationInfo() ; $temp
+	appInfo := @temp new VkApplicationInfo()
 	appInfo.pApplicationName = "no one care"
 	appInfo.applicationVersion = 1
 	appInfo.pEngineName = "void engine"
@@ -121,13 +121,13 @@ InitVulkan := !() -> bool
 	appInfo.apiVersion = (1 << 22) + (0 << 11) + 21
 
 
-	instCr := new VkInstanceCreateInfo() ; $temp
+	instCr := @temp new VkInstanceCreateInfo()
 	instCr.pApplicationInfo = appInfo
 
 	instCr.enabledLayerCount = toUseLayers.Size()
-	instCr.ppEnabledLayerNames = toUseLayers.ToArray() ; $temp
+	instCr.ppEnabledLayerNames = @temp toUseLayers.ToArray()
 	instCr.enabledExtensionCount = toUseExts.Size()
-	instCr.ppEnabledExtensionNames = toUseExts.ToArray() ; $temp
+	instCr.ppEnabledExtensionNames = @temp toUseExts.ToArray()
 	instRes := vkCreateInstance(instCr,null,vkInstance&)
 
 	if instRes != 0
@@ -147,7 +147,7 @@ InitVulkan := !() -> bool
 
 	if vkFuncs.vkCreateDebugReportCallbackEXT != null
 	{
-		debPrint := new VkDebugReportCallbackCreateInfoEXT() ; $temp
+		debPrint := @temp new VkDebugReportCallbackCreateInfoEXT()
 		//debPrint.sType = 1000011000
 		debPrint.pfnCallback = VkDebugCallback->{void^}
 		debPrint.flags = 2 or_b 4 or_b 8
@@ -161,14 +161,14 @@ InitVulkan := !() -> bool
 		printf("no physical devices\n")
 		return 0
 	}
-	devs := new VkPhysicalDevice[devCount->{s64}->{s32}] ; $temp
+	devs := @temp new VkPhysicalDevice[devCount->{s64}->{s32}]
 	vkFuncs.vkEnumeratePhysicalDevices(vkInstance,devCount&,devs)
 
 	for it, i : devs
 	{
 		printf("device id %i\n",i)
 
-		devProp := new VkPhysicalDeviceProperties ; $temp
+		devProp := @temp new VkPhysicalDeviceProperties
 		vkFuncs.vkGetPhysicalDeviceProperties(it,devProp)
 			
 		printf("-name %s\n",devProp.deviceName)
@@ -176,7 +176,7 @@ InitVulkan := !() -> bool
 
 		propsCount := u32
 		vkFuncs.vkGetPhysicalDeviceQueueFamilyProperties(it,propsCount&,null)
-		prps := new VkQueueFamilyProperties[propsCount->{s64}->{s32}] ; $temp
+		prps := @temp new VkQueueFamilyProperties[propsCount->{s64}->{s32}]
 		vkFuncs.vkGetPhysicalDeviceQueueFamilyProperties(it,propsCount&,prps)
 
 		for it,i : prps
@@ -187,13 +187,13 @@ InitVulkan := !() -> bool
 		}
 	}
 	vkPhysCard = devs[0]
-	devSupports := AVLSet.{char^}() ; $temp
+	devSupports := @temp new AVLSet.{char^}()
 
 	devExtsCount := 0
 	vkFuncs.vkEnumerateDeviceExtensionProperties(vkPhysCard,null,devExtsCount&,null)
 	if devExtsCount != 0
 	{
-		devExts := new VkExtensionProperties[devExtsCount] ; $temp
+		devExts := @temp new VkExtensionProperties[devExtsCount]
 		vkFuncs.vkEnumerateDeviceExtensionProperties(vkPhysCard,null,devExtsCount&,devExts)
 
 		printf("dev extensions\n")
@@ -207,36 +207,35 @@ InitVulkan := !() -> bool
 	}
 
 	
-	physExts := List.{string}() ; $temp
-	physExts << "VK_KHR_swapchain"
+	physExts := @temp new List.{string}()
+	physExts^ << "VK_KHR_swapchain"
 
 	halfFloatExt := "VK_KHR_16bit_storage"
 	if devSupports.Contain(halfFloatExt)
 	{
-		physExts << halfFloatExt 
+		physExts^ << halfFloatExt 
 		//physExts << "VK_KHR_get_physical_device_properties2" 
-		physExts << "VK_KHR_storage_buffer_storage_class"
+		physExts^ << "VK_KHR_storage_buffer_storage_class"
 		vkHalfFloatSupport = true
 	}
 
-	queueCreateInf := new VkDeviceQueueCreateInfo() ; $temp
+	queueCreateInf := @temp new VkDeviceQueueCreateInfo()
 	queueCreateInf.queueFamilyIndex = 0
 	zeroPrior := float
 	zeroPrior = 0.0
 	queueCreateInf.queueCount = 1
 	queueCreateInf.pQueuePriorities = zeroPrior&
 	
-	zeroFeature := new VkPhysicalDeviceFeatures ; $temp
+	zeroFeature := @temp new VkPhysicalDeviceFeatures
 
-	logDevice := new VkDeviceCreateInfo() ; $temp
+	logDevice := @temp new VkDeviceCreateInfo()
 
 	logDevice.queueCreateInfoCount = 1
 	logDevice.pQueueCreateInfos = queueCreateInf
 	logDevice.enabledLayerCount = toUseLayers.Size()
-	logDevice.ppEnabledLayerNames = toUseLayers.ToArray() ; $temp
+	logDevice.ppEnabledLayerNames = @temp toUseLayers.ToArray()
 	logDevice.enabledExtensionCount = physExts.Size() //toUseExts.Size()
-	logDevice.ppEnabledExtensionNames = physExts.ToArray()->{void^} ; $temp
-		//toUseExts.ToArray()->{void^} ; $temp
+	logDevice.ppEnabledExtensionNames = physExts.ToArray()->{void^} //TODO temp
 	logDevice.pEnabledFeatures = zeroFeature
 
 	
@@ -249,7 +248,7 @@ InitVulkan := !() -> bool
 	vkFuncs.vkGetPhysicalDeviceSurfaceSupportKHR(vkPhysCard,0,vkSurface,isPres&)
 
 
-	surfAb := new VkSurfaceCapabilitiesKHR ; $temp
+	surfAb := @temp new VkSurfaceCapabilitiesKHR
 	vkFuncs.vkGetPhysicalDeviceSurfaceCapabilitiesKHR(vkPhysCard,vkSurface,surfAb)
 
 	printf("surface settings\n")
@@ -257,7 +256,7 @@ InitVulkan := !() -> bool
 
 	formsCount := 0
 	vkFuncs.vkGetPhysicalDeviceSurfaceFormatsKHR(vkPhysCard,vkSurface,formsCount&,null)
-	formts := new VkSurfaceFormatKHR[formsCount] ; $temp
+	formts := @temp new VkSurfaceFormatKHR[formsCount]
 	vkFuncs.vkGetPhysicalDeviceSurfaceFormatsKHR(vkPhysCard,vkSurface,formsCount&,formts)
 
 	printf("formats\n")
@@ -268,7 +267,7 @@ InitVulkan := !() -> bool
 
 	presMods := 0
 	vkFuncs.vkGetPhysicalDeviceSurfacePresentModesKHR(vkPhysCard,vkSurface,presMods&,null)
-	pMods := new VkPresentModeKHR[presMods] ; $temp
+	pMods := @temp new VkPresentModeKHR[presMods]
 	vkFuncs.vkGetPhysicalDeviceSurfacePresentModesKHR(vkPhysCard,vkSurface,presMods&,pMods)
 
 	printf("supported mods\n")
@@ -295,7 +294,7 @@ InitVulkan := !() -> bool
 		if it in pMods
 			reqMod = it
 	}
-	memReq := new VkPhysicalDeviceMemoryProperties ; $temp
+	memReq := @temp new VkPhysicalDeviceMemoryProperties
 	vkFuncs.vkGetPhysicalDeviceMemoryProperties(vkPhysCard,memReq)
 
 	for i : (memReq.memoryTypeCount)&->{int^}^
@@ -331,54 +330,54 @@ InitVulkan := !() -> bool
 
 	vkFuncs.vkGetDeviceQueue(vkLogCard,0,0,vkQueue&)
 
-	cmdPoolC := new VkCommandPoolCreateInfo() ; $temp
+	cmdPoolC := @temp new VkCommandPoolCreateInfo()
 	cmdPoolC.queueFamilyIndex = 0
 	cmdPoolC.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT
 	vkFuncs.vkCreateCommandPool(vkLogCard,cmdPoolC,null,vkCmdPool&)
 
 	vkFuncs.vkResetCommandPool(vkLogCard,vkCmdPool,VK_COMMAND_POOL_RESET_RELEASE_RESOURCES_BIT)
 
-	cmdBufC := new VkCommandBufferAllocateInfo() ; $temp
+	cmdBufC := @temp new VkCommandBufferAllocateInfo()
 
-	crtFence := new VkFenceCreateInfo() ; $temp
+	crtFence := @temp new VkFenceCreateInfo()
 	vkFuncs.vkCreateFence(vkLogCard,crtFence,null,vkFence&)
 
 	
 
-	oneDesc := new VkDescriptorSetLayoutBinding ; $temp
+	oneDesc := @temp new VkDescriptorSetLayoutBinding
 	oneDesc.binding = 0
 	oneDesc.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
 	oneDesc.descriptorCount = 1
 	oneDesc.stageFlags = VK_SHADER_STAGE_VERTEX_BIT
 	oneDesc.pImmutableSamplers = null
 
-	setDesc := new VkDescriptorSetLayoutCreateInfo() ; $temp
+	setDesc := @temp new VkDescriptorSetLayoutCreateInfo()
 	setDesc.bindingCount = 1
 	setDesc.pBindings = oneDesc->{void^}
 
-	twoDesc := new VkDescriptorSetLayoutBinding ; $temp
+	twoDesc := @temp new VkDescriptorSetLayoutBinding
 	twoDesc.binding = 0
 	twoDesc.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
 	twoDesc.descriptorCount = 1
 	twoDesc.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT
 	twoDesc.pImmutableSamplers = null
 
-	set2Desc := new VkDescriptorSetLayoutCreateInfo() ; $temp
+	set2Desc := @temp new VkDescriptorSetLayoutCreateInfo()
 	set2Desc.bindingCount = 1
 	set2Desc.pBindings = twoDesc->{void^}
 
 	vkFuncs.vkCreateDescriptorSetLayout(vkLogCard,setDesc,null,vkPerspLayout&)
 	vkFuncs.vkCreateDescriptorSetLayout(vkLogCard,set2Desc,null,vkPerObjectLayout&)
 
-	layouts := new void^[2] ; $temp
+	layouts := @temp new void^[2]
 	layouts[0] = vkPerspLayout
 	layouts[1] = vkPerObjectLayout
 
-	pcrC := new VkPushConstantRange ; $temp
+	pcrC := @temp new VkPushConstantRange
 	pcrC.stageFlags = VK_SHADER_STAGE_VERTEX_BIT
 	pcrC.offset = 0
 	pcrC.size = 2*4*4
-	ppC := new VkPipelineLayoutCreateInfo() ; $temp
+	ppC := @temp new VkPipelineLayoutCreateInfo()
 	ppC.pushConstantRangeCount = 1
 	ppC.pPushConstantRanges = pcrC->{void^}
 	ppC.setLayoutCount = 2
@@ -387,7 +386,7 @@ InitVulkan := !() -> bool
 	vkFuncs.vkCreatePipelineLayout(vkLogCard,ppC,null,vkLayout&)
 	mainCmd.CreateBuffer()
 	
-	descPoolSize := new VkDescriptorPoolSize ; $temp
+	descPoolSize := @temp new VkDescriptorPoolSize
 	descPoolSize.descriptorCount = 10
 	descPoolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
 
@@ -396,14 +395,14 @@ InitVulkan := !() -> bool
 	test[1] = 1 //count
 
 
-	descPoolC := new VkDescriptorPoolCreateInfo() ; $temp
+	descPoolC := @temp new VkDescriptorPoolCreateInfo()
 	descPoolC.maxSets = 1
 	descPoolC.poolSizeCount = 1
 	descPoolC.pPoolSizes = test[0]&->{void^}//descPoolSize
 
 	vkFuncs.vkCreateDescriptorPool(vkLogCard,descPoolC,null,vkDescPool&)
 
-	allDesc := new VkDescriptorSetAllocateInfo() ; $temp
+	allDesc := @temp new VkDescriptorSetAllocateInfo()
 	allDesc.descriptorPool = vkDescPool
 	allDesc.descriptorSetCount = 1
 	allDesc.pSetLayouts = vkPerspLayout&
