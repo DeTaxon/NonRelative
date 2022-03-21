@@ -9,7 +9,7 @@ gHotloadInit := !() -> void
 {
 	if not gHotload return void
 
-	//htl := new List.{vRepoFolder^} ; $temp
+	//htl := @temp new List.{vRepoFolder^}
 
 
 	//htl.Push(gRepo.rootFolder)

@@ -215,7 +215,7 @@ vShader := class
 		pVSC.scissorCount = 1
 		pVSC.pScissors = null //sc&
 
-		rasterC := new VkPipelineRasterizationStateCreateInfo() ; $temp
+		rasterC := @temp new VkPipelineRasterizationStateCreateInfo()
 		rasterC.polygonMode = VK_POLYGON_MODE_FILL
 		rasterC.cullMode = VK_CULL_MODE_BACK_BIT
 		rasterC.cullMode = VK_CULL_MODE_NONE
@@ -228,7 +228,7 @@ vShader := class
 		//  0.0f,     float      depthBiasClamp
 		//  0.0f,     float      depthBiasSlopeFactor
 
-		sampleC := new VkPipelineMultisampleStateCreateInfo() ; $temp
+		sampleC := @temp new VkPipelineMultisampleStateCreateInfo()
 		sampleC.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT
 		sampleC.minSampleShading = 1.0f
 		//  VK_FALSE,   VkBool32              sampleShadingEnable
@@ -261,7 +261,7 @@ vShader := class
 		//  VK_FALSE,                     VkBool32   logicOpEnable
 		//  { 0.0f, 0.0f, 0.0f, 0.0f }    float      blendConstants[4]
 
-		pLC := new VkPipelineLayoutCreateInfo() ; $temp
+		pLC := @temp new VkPipelineLayoutCreateInfo()
 		//  0,        VkPipelineLayoutCreateFlags    flags
 		//  0,        uint32_t                       setLayoutCount
 		//  nullptr,  const VkDescriptorSetLayout   *pSetLayouts
@@ -390,7 +390,7 @@ vShader := class
 		//  VK_FALSE,                     VkBool32   logicOpEnable
 		//  { 0.0f, 0.0f, 0.0f, 0.0f }    float      blendConstants[4]
 
-		pLC := new VkPipelineLayoutCreateInfo() ; $temp
+		pLC := @temp new VkPipelineLayoutCreateInfo()
 		//  0,        VkPipelineLayoutCreateFlags    flags
 		//  0,        uint32_t                       setLayoutCount
 		//  nullptr,  const VkDescriptorSetLayout   *pSetLayouts

@@ -92,8 +92,8 @@ vModel := class
 	//	scr := ScriptCompile(itFl)
 	//	if scr != null
 	//	{
-	//		cpy := new List.{ScriptThread^} ; $temp
-	//		prp := new AVLSet.{vProp^} ; $temp
+	//		cpy := @temp new List.{ScriptThread^}
+	//		prp := @temp new AVLSet.{vProp^}
 
 	//		for it : hlRunThreads
 	//		{

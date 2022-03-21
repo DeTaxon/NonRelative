@@ -289,7 +289,7 @@ CreateFB := !() -> void
 	imgI[1].imageView = fbTextures[1].View()
 	imgI[1].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
 
-	wrT := new VkWriteDescriptorSet() ; $temp
+	wrT := @temp new VkWriteDescriptorSet()
 	wrT.descriptorCount = 2
 	wrT.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
 	wrT.pImageInfo = imgI->{void^}

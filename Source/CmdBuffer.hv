@@ -12,7 +12,7 @@ CmdBuffer := class
 	CreateBuffer := !(bool isSecond) -> void
 	{
 		itUseInSecond = isSecond
-		cmdBufC := new VkCommandBufferAllocateInfo() ; $temp
+		cmdBufC := @temp new VkCommandBufferAllocateInfo()
 
 		cmdBufC.commandPool = vkCmdPool
 		cmdBufC.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY 
@@ -22,7 +22,7 @@ CmdBuffer := class
 		
 		vkFuncs.vkAllocateCommandBuffers(vkLogCard,cmdBufC,itCmdBuf&)
 
-		semInf := new VkSemaphoreCreateInfo() ; $temp
+		semInf := @temp new VkSemaphoreCreateInfo()
 		vkFuncs.vkCreateSemaphore(vkLogCard,semInf,null,itPauseItm&)
 	}
 
@@ -37,7 +37,7 @@ CmdBuffer := class
 	}
 	Start := !() -> void
 	{
-		inhC := new VkCommandBufferInheritanceInfo() ; $temp
+		inhC := @temp new VkCommandBufferInheritanceInfo()
 
 		inhC.renderPass = gRenderPassModel
 		inhC.subpass = 0
@@ -48,7 +48,7 @@ CmdBuffer := class
 		inhC.queryFlags = 0
 		inhC.pipelineStatistics = 0
 
-		biC := new VkCommandBufferBeginInfo() ; $temp
+		biC := @temp new VkCommandBufferBeginInfo()
 		biC.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT
 		if itUseInSecond biC.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT
 		biC.pInheritanceInfo = inhC->{void^}
@@ -66,7 +66,7 @@ CmdBuffer := class
 	Submit := !() -> void
 	{
 		waitMsk := VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT
-		submInf := new VkSubmitInfo() ; $temp
+		submInf := @temp new VkSubmitInfo()
 		submInf.waitSemaphoreCount = 0
 		submInf.pWaitSemaphores = null
 		submInf.pWaitDstStageMask = waitMsk&->{void^}

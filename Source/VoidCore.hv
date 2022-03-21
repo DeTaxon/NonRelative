@@ -269,7 +269,7 @@ vObject := class
 		vkFuncs.vkUpdateDescriptorSets(vkLogCard,1,wrT,0,null)
 	}
 
-	iDrawedMaps :=  AVLMap.{vMap^,List.{centf}}^ ; $temp
+	iDrawedMaps :=  AVLMap.{vMap^,List.{centf}}^
 	vDraw := !() -> void
 	{
 		//for itProps
@@ -278,7 +278,7 @@ vObject := class
 		//	it.AddToCmdBuffer(mainCmd.Get())
 		//}
 
-		iDrawedMaps = new AVLMap.{vMap^,List.{centf}} ; $temp
+		iDrawedMaps = @temp new AVLMap.{vMap^,List.{centf}}
 
 		initPos := centf()
 		vDrawMap(gPlayerMap,10,initPos) //TODO: number to config
@@ -297,7 +297,7 @@ vObject := class
 		//		return void
 		//}
 	
-		for it : iDrawedMaps^[someMap] ; $temp
+		for it : iDrawedMaps^[someMap]
 		{
 			if it.NearDistance(relPos) < 1 //TODO: unconst
 				return void

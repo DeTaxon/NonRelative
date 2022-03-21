@@ -106,11 +106,11 @@ RawModel := class
 		NormalType.FromU32(itData[3])
 		UVType.FromU32(itData[4])
 		vertSize := GetVertSize()*VertexCount
-		verts = new u8[vertSize] ; $temp
+		verts = @temp new u8[vertSize]
 		memcpy(verts,flP + 8*4,vertSize)
 		IndexType.FromU32(itData[7])
 		indSize := IndexType.GetSize()*IndexCount
-		inds = new u8[indSize] ; $temp
+		inds = @temp new u8[indSize]
 		memcpy(inds,flP + (8*4 + vertSize),indSize)
 
 		vertItems = MODEL_POSITION + MODEL_NORMAL + MODEL_UV
@@ -268,7 +268,7 @@ RawModel := class
 			pos += 1
 		}
 
-		preInd := List.{u32}() ; $temp
+		preInd := @temp new List.{u32}()
 		miniBox := int[16]
 		miniPos := 0
 		nowValue := 0
@@ -325,7 +325,7 @@ RawModel := class
 			}
 			pos += 1
 		}
-		inds = preInd.ToArray()
+		inds = @temp preInd.ToArray()
 		IndexType = VKType(VType_UInt32,1)
 		IndexCount = preInd.Size()
 
