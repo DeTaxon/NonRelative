@@ -52,7 +52,7 @@ vObject := class
 		if ptrToFl == null
 			return void
 		defer itSet.Unmap()
-		itInf := ParseInfoFile(ptrToFl,itSet.Size()) ; $temp
+		itInf := @temp ParseInfoFile(ptrToFl,itSet.Size())
 
 		for sets : itInf.SubList
 		{
@@ -116,7 +116,7 @@ vObject := class
 		gStageMem = new vMemObj
 
 		stSize := 0x4c4c00
-		bufC := new VkBufferCreateInfo() ; $temp
+		bufC := @temp new VkBufferCreateInfo()
 		bufC.size = stSize
 		bufC.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT
 		bufC.sharingMode = VK_SHARING_MODE_EXCLUSIVE
@@ -133,14 +133,14 @@ vObject := class
 		poolSize[0] = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
 		poolSize[1] = 100 //TODO: size, add dynamicly
 
-		nPool := new VkDescriptorPoolCreateInfo() ; $temp
+		nPool := @temp new VkDescriptorPoolCreateInfo()
 		nPool.maxSets = 100
 		nPool.poolSizeCount = 1
 		nPool.pPoolSizes = poolSize&->{void^}
 
 		vkFuncs.vkCreateDescriptorPool(vkLogCard,nPool,null,gObjectLayoutSets&)
 
-		imV := new VkSamplerCreateInfo() ; $temp
+		imV := @temp new VkSamplerCreateInfo()
 		imV.magFilter = VK_FILTER_NEAREST
 		imV.minFilter = VK_FILTER_NEAREST
 		imV.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST
@@ -177,14 +177,14 @@ vObject := class
 	}
 	vStageCpyToBuffer := !(VkBuffer tCpy,int nSize) -> void
 	{
-		cpyCmd := new VkBufferCopy ; $temp
+		cpyCmd := @temp new VkBufferCopy
 		cpyCmd.size = nSize
 		
 		//vkFuncs.vkBeginCommandBuffer(mainCmd.Get(),strtCmd)
 		mainCmd.Reset()
 		mainCmd.Start()
 		vkFuncs.vkCmdCopyBuffer(mainCmd.Get(),gStageMemBuffer,tCpy,1,cpyCmd)
-		memBar := new VkBufferMemoryBarrier() ; $temp
+		memBar := @temp new VkBufferMemoryBarrier()
 		memBar.srcAccessMask = VK_ACCESS_MEMORY_WRITE_BIT
 		memBar.dstAccessMask = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT
 		memBar.srcQueueFamilyIndex = 0
@@ -203,12 +203,12 @@ vObject := class
 		mainCmd.Reset()
 		mainCmd.Start()
 
-		//isr := new VkImageSubresourceRange ; $temp
+		//isr := @temp new VkImageSubresourceRange
 		//isr.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT
 		//isr.levelCount = 1
 		//isr.layerCount = 1
 
-		stg1 := new VkImageMemoryBarrier() ; $temp
+		stg1 := @temp new VkImageMemoryBarrier()
 
 		stg1.srcAccessMask = 0
 		stg1.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT
@@ -226,7 +226,7 @@ vObject := class
 		vkFuncs.vkCmdPipelineBarrier(mainCmd.Get(),VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
 			VK_PIPELINE_STAGE_TRANSFER_BIT,0,0,null,0,null,1,stg1)
 
-		cpyCmd := new VkBufferImageCopy ; $temp
+		cpyCmd := @temp new VkBufferImageCopy
 		cpyCmd.imageSubresource.layerCount = 1
 		cpyCmd.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT
 		cpyCmd.imageExtent.width = w
@@ -235,7 +235,7 @@ vObject := class
 
 		vkFuncs.vkCmdCopyBufferToImage(mainCmd.Get(),gStageMemBuffer,tCpy,VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,1,cpyCmd)
 
-		stg2 := new VkImageMemoryBarrier() ; $temp
+		stg2 := @temp new VkImageMemoryBarrier()
 		stg2.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT
 		stg2.dstAccessMask = VK_ACCESS_SHADER_READ_BIT
 		stg2.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
@@ -255,12 +255,12 @@ vObject := class
 	}
 	vSetTexture := !(VkDescriptorSet toSet,vTexture^ donor,VkSampler smSampler) -> void
 	{
-		imgI := new VkDescriptorImageInfo ; $temp
+		imgI := @temp new VkDescriptorImageInfo
 		imgI.sampler = smSampler
 		imgI.imageView = donor.itImgView
 		imgI.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
 
-		wrT := new VkWriteDescriptorSet() ; $temp
+		wrT := @temp new VkWriteDescriptorSet()
 		wrT.descriptorCount = 1
 		wrT.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
 		wrT.pImageInfo = imgI->{void^}
