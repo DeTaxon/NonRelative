@@ -157,7 +157,7 @@ ParseInfoFile := !(void^ dat,int siz) .{} ->  InfoNode^
 	if lines.Size() == 0
 		return null
 
-	tabsCnt := new int[lines.Size()] ; $temp
+	tabsCnt := @temp new int[lines.Size()]
 
 	for it : lines, tb : tabsCnt
 	{
@@ -172,7 +172,7 @@ ParseInfoFile := !(void^ dat,int siz) .{} ->  InfoNode^
 	expectedTab := 0
 	resVal := new InfoNode
 	resIter := resVal
-	resB := List.{InfoNode^}() ; $temp $keep
+	resB := @temp new List.{InfoNode^}()
 	for it,i : lines, tb : tabsCnt
 	{	
 		nameStart := -1

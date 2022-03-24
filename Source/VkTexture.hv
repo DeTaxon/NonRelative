@@ -38,7 +38,7 @@ vTexture := class
 	{
 		itW = w
 		itH = h
-		newImg := new VkImageCreateInfo() ; $temp
+		newImg := @temp new VkImageCreateInfo()
 		newImg.extent.width = w
 		newImg.extent.height = h
 		newImg.extent.depth = 1
@@ -53,7 +53,7 @@ vTexture := class
 		//newImg.queueFamilyIndexCount = 0
 		newImg.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED
 
-		vi := new VkImageViewCreateInfo() ; $temp
+		vi := @temp new VkImageViewCreateInfo()
 		vi.image = itImg
 		vi.viewType = VK_IMAGE_VIEW_TYPE_2D
 		vi.format = VK_FORMAT_R8G8B8A8_UNORM
