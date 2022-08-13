@@ -22,6 +22,10 @@ ifeq ($(cross),win32)
 	CmpLL := clang++ $(Triplet) -mf16c -c -g Objs/engi.ll -o ./Objs/engi.o; x86_64-w64-mingw32-g++ ./Objs/engi.o -o $(Result)
 endif
 
+en:
+	./ver3 -g -C0 libs2 Source2/main.hv --vk ./vk.xml -o out.ll
+	clang -g out.ll -o en
+
 WinCompiler := x86_64-w64-mingw32-gcc 
 
 SLibs := -C0 "Libs/" -C0 "StandardHVLibrary/"
