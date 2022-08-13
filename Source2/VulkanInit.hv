@@ -1,0 +1,424 @@
+
+
+vkDebugObj := VkDebugReportCallbackEXT
+
+vkPhysCard := VkPhysicalDevice
+vkLogCard := VkDevice
+
+vkSurface := VkSurfaceKHR
+vkQueue := VkQueue
+vkSwapchain := VkSwapchainKHR
+vkCmdPool := VkCommandPool
+vkFence := VkFence
+vkLayout := VkPipelineLayout
+vkGraphPipe := VkPipeline
+
+vkPerspLayout := VkDescriptorSetLayout
+vkPerObjectLayout := VkDescriptorSetLayout
+vkDescPool := VkDescriptorPool
+
+mainCmd := CmdBuffer
+
+vkPerspSet := VkDescriptorSet
+
+vkRGB8Support := bool
+vkHalfFloatSupport := bool
+
+
+SwapImageFormat := int
+SwapImageColorSpace := int
+SwapImageMode := int
+
+vkCpuMemId := int
+vkGpuMemId := int
+
+gUserModes := List.{int}
+
+gDeviceMem := List.{int}
+gHostMem := List.{int}
+
+
+gVulkanWindowW := int
+gVulkanWindowH := int
+
+VulkanInit := !() -> void
+{
+    vk := GetLibrary("libvulkan.so")
+
+	vkGetInstanceProcAddr = vk.Get("vkGetInstanceProcAddr")->{PFN_vkGetInstanceProcAddr}
+	vkEnumerateInstanceExtensionProperties = vkGetInstanceProcAddr(null,"vkEnumerateInstanceExtensionProperties")->{PFN_vkEnumerateInstanceExtensionProperties}
+	vkEnumerateInstanceLayerProperties = vkGetInstanceProcAddr(null,"vkEnumerateInstanceLayerProperties")->{PFN_vkEnumerateInstanceLayerProperties}
+	vkCreateInstance = vkGetInstanceProcAddr(null,"vkCreateInstance")->{PFN_vkCreateInstance}
+
+	count := u32
+
+	vkEnumerateInstanceLayerProperties(count&,null)
+	lays := TVector.{VkLayerProperties}(count->{int})
+	vkEnumerateInstanceLayerProperties(count&,lays)
+
+	vkEnumerateInstanceExtensionProperties(null,count&,null)
+	exts := TVector.{VkExtensionProperties}(count->{int})
+	vkEnumerateInstanceExtensionProperties(null,count&,exts)
+
+	for i : lays.Size()
+	{
+		printf("%i : %s\n",i,lays[i].layerName&)
+	}
+	for i : exts.Size()
+	{
+		printf("%i : %s\n",i,exts[i].extensionName&)
+	}
+
+
+	itLayers := AVLSet.{char^}
+	itExts := AVLSet.{char^}
+
+	addLayer := (char^ nm) ==> 
+	{
+		for i : lays.Size()
+		{
+			if lays[i].layerName[0]& == nm
+			{
+				itLayers.Insert(nm)
+			}
+		}
+	}
+	addLayer("VK_LAYER_LUNARG_standard_validation")
+	addLayer("VK_LAYER_LUNARG_standard_validation")
+	addLayer("VK_LAYER_KHRONOS_validation")
+	addLayer("VK_LAYER_LUNARG_vktrace")
+
+	addExt := (char^ nm) ==>
+	{
+		for i : exts.Size()
+		{
+			if exts[i].extensionName[0]& == nm
+			{
+				itExts.Insert(nm)
+			}
+		}
+	}
+
+	addExt("VK_EXT_debug_report")
+	addExt("VK_KHR_wayland_surface")
+	addExt("VK_KHR_xcb_surface")
+	addExt("VK_KHR_xlib_surface")
+	addExt("VK_KHR_win32_surface")
+	addExt("VK_KHR_surface")
+	addExt("VK_KHR_get_physical_device_properties2" )
+	addExt("VK_KHR_storage_buffer_storage_class")
+
+	printf("----------------------------------------------\n")
+	printf("USING\n")
+	for it : itLayers
+	{
+		printf("layer %s\n",it)
+	}
+	for it : itExts
+	{
+		printf("extension %s\n",it)
+	}
+
+	usingLayers := itLayers.ToArray()
+	exts := itExts.ToArray()
+
+	appInfo := VkApplicationInfo()
+	appInfo.pApplicationName = "no one care"
+	appInfo.applicationVersion = 1
+	appInfo.pEngineName = "void engine"
+	appInfo.engineVersion = 1
+	appInfo.apiVersion = 4194325//(1 << 22) + (0 << 11) + 21
+
+	instCr := VkInstanceCreateInfo()
+	instCr.pApplicationInfo = appInfo&
+
+	instCr.enabledLayerCount = usingLayers.Size()
+	instCr.ppEnabledLayerNames = usingLayers.Get()
+	instCr.enabledExtensionCount = exts.Size()
+	instCr.ppEnabledExtensionNames = exts.Get()
+	instRes := vkCreateInstance(instCr&,null,vkInstance&)
+
+	vkHVInit()
+
+    printf("HEY %p\n",vkCreateDebugReportCallbackEXT)
+    vkCreateDebugReportCallbackEXT&->{void^^}^ = vkGetInstanceProcAddr(vkInstance,"vkCreateDebugReportCallbackEXT")
+    printf("HEY %p\n",vkCreateDebugReportCallbackEXT)
+
+    if vkCreateDebugReportCallbackEXT != null
+	{
+		debPrint := VkDebugReportCallbackCreateInfoEXT
+		debPrint.sType = 1000011000
+		debPrint.pfnCallback&->{void^^}^ = VkDebugCallback->{void^}
+		debPrint.flags = 2 + 4 + 8 + 16
+		vkCreateDebugReportCallbackEXT(vkInstance,debPrint&,null,vkDebugObj&)
+	}
+
+    devCount := u32
+	vkEnumeratePhysicalDevices(vkInstance,devCount&,null)
+	devs := TVector.{VkPhysicalDevice}(devCount)
+	vkEnumeratePhysicalDevices(vkInstance,devCount&,devs.Get())
+
+	for it,i : devs
+	{
+		printf("device id %i\n",i)
+
+		devProp := VkPhysicalDeviceProperties
+		vkGetPhysicalDeviceProperties(it,devProp&)
+			
+		printf("-name %s\n",devProp.deviceName&)
+		printf("-type %i\n",devProp.deviceType)
+
+		propsCount := u32
+		vkGetPhysicalDeviceQueueFamilyProperties(it,propsCount&,null)
+		prps := TVector.{VkQueueFamilyProperties}(propsCount)
+		vkGetPhysicalDeviceQueueFamilyProperties(it,propsCount&,prps)
+
+		for it,j : prps
+		{
+			printf("-quque family %i\n",j)
+			printf("-- queueCount %i\n",it.queueCount)
+			printf("-- queueFlags %X\n",it.queueFlags)
+		}
+	}
+
+	vkPhysCard = devs[0] //TODO select device
+
+    devExts := TVector.{VkExtensionProperties}
+    devSupports := AVLSet.{char^}
+
+    devExtsCount := u32
+	vkEnumerateDeviceExtensionProperties(vkPhysCard,null,devExtsCount&,null)
+	if devExtsCount != 0
+	{
+		devExts.Resize(devExtsCount)
+		vkEnumerateDeviceExtensionProperties(vkPhysCard,null,devExtsCount&,devExts)
+
+		printf("dev extensions\n")
+		for it,i : devExts
+		{
+			devSupports.Insert(it.extensionName[0]&)
+			printf("- %s\n",it.extensionName&)
+		}
+	}else{
+		printf("no device extensions found\n")
+	}
+
+    physExts := AVLSet.{char^}
+
+    physExts.Insert("VK_KHR_swapchain") //TODO check for swapchains
+
+    halfFloatExt := "VK_KHR_16bit_storage"
+	if devSupports.Contain(halfFloatExt)
+	{
+		physExts.Insert(halfFloatExt)
+		//physExts << "VK_KHR_get_physical_device_properties2" 
+		physExts.Insert("VK_KHR_storage_buffer_storage_class")
+		vkHalfFloatSupport = true
+	}
+
+    usingPhysExts := physExts.ToArray()
+
+    queueCreateInf := VkDeviceQueueCreateInfo()
+	queueCreateInf.queueFamilyIndex = 0
+	zeroPrior := float
+	zeroPrior = 0.0
+	queueCreateInf.queueCount = 1
+	queueCreateInf.pQueuePriorities = zeroPrior&
+	
+	zeroFeature := VkPhysicalDeviceFeatures
+
+	logDevice := VkDeviceCreateInfo()
+
+	logDevice.queueCreateInfoCount = 1
+	logDevice.pQueueCreateInfos = queueCreateInf&
+	logDevice.enabledLayerCount = usingLayers.Size()
+	logDevice.ppEnabledLayerNames = usingLayers.Get()
+	logDevice.enabledExtensionCount = usingPhysExts.Size()
+	logDevice.ppEnabledExtensionNames = usingPhysExts.Get()->{char^}
+	logDevice.pEnabledFeatures = zeroFeature&
+
+    res1 := vkCreateDevice(vkPhysCard,logDevice&,null,vkLogCard&)
+    assert(res1 == 0)
+
+    glfwCreateWindowSurface(vkInstance,glfwWindow,null,vkSurface&)
+
+    isPres := u32
+	vkGetPhysicalDeviceSurfaceSupportKHR(vkPhysCard,0,vkSurface,isPres&)
+
+
+	surfAb := VkSurfaceCapabilitiesKHR
+	vkGetPhysicalDeviceSurfaceCapabilitiesKHR(vkPhysCard,vkSurface,surfAb&)
+
+	printf("surface settings\n")
+	printf("img count min = %i , max = %i\n",surfAb.minImageCount,surfAb.maxImageCount)
+
+	formsCount := u32
+	vkGetPhysicalDeviceSurfaceFormatsKHR(vkPhysCard,vkSurface,formsCount&,null)
+	formts := TVector.{VkSurfaceFormatKHR}(formsCount)
+	vkGetPhysicalDeviceSurfaceFormatsKHR(vkPhysCard,vkSurface,formsCount&,formts)
+
+	printf("formats\n")
+	for it : formts
+	{
+		printf("-format %i\n",it&->{int^}^)
+	}
+
+	presMods := u32
+	vkGetPhysicalDeviceSurfacePresentModesKHR(vkPhysCard,vkSurface,presMods&,null)
+	pMods := TVector.{VkPresentModeKHR}(presMods)
+	vkGetPhysicalDeviceSurfacePresentModesKHR(vkPhysCard,vkSurface,presMods&,pMods)
+
+	printf("supported mods\n")
+
+	for it : pMods
+	{
+		switch it
+		{
+			case VK_PRESENT_MODE_IMMEDIATE_KHR
+				printf("- IMMEDIATE\n")
+			case VK_PRESENT_MODE_MAILBOX_KHR
+				printf("- MAILBOX\n")
+			case VK_PRESENT_MODE_FIFO_KHR
+				printf("- FIFO\n")
+			case VK_PRESENT_MODE_FIFO_RELAXED_KHR
+				printf("- FIFO_RELAXED\n")
+			case void
+				printf("- unknown %i\n",it)
+		}
+	}
+	reqMod := VK_PRESENT_MODE_MAILBOX_KHR
+	//for gUserModes //TODO
+	//{
+	//	if it in pMods
+	//		reqMod = it
+	//}
+	memReq := VkPhysicalDeviceMemoryProperties
+	vkGetPhysicalDeviceMemoryProperties(vkPhysCard,memReq&)
+
+	for i : memReq.memoryTypeCount&->{int^}^
+	{
+		printf("mem info %i %X\n",i,memReq.memoryTypes[i]&->{int^}^)
+		if (memReq.memoryTypes[i]&->{int^}^ 
+			and_b VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) != 0
+			{
+				printf("VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT\n")
+				if vkCpuMemId == -1
+					vkCpuMemId = i
+				gHostMem.Push(i)
+			}
+		if (memReq.memoryTypes[i]&->{int^}^ 
+			and_b VK_MEMORY_PROPERTY_HOST_COHERENT_BIT) != 0 
+				printf("VK_MEMORY_PROPERTY_HOST_COHERENT_BIT\n")
+		if (memReq.memoryTypes[i]&->{int^}^ 
+			and_b VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT) != 0 
+			{	
+				if vkGpuMemId == -1
+					vkGpuMemId = i
+				//if (memReq.memoryTypes[i]&->{int^}^ and_b VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) != 0
+					gDeviceMem.Push(i)
+				printf("VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT\n")
+			}
+	}
+
+	//TODO: format priority
+	SwapImageFormat = formts[1].format
+	SwapImageColorSpace = formts[1].colorSpace
+	SwapImageMode = reqMod
+	//CreateSwapchain(gWindowW,gWindowH)
+
+	vkGetDeviceQueue(vkLogCard,0,0,vkQueue&)
+
+	cmdPoolC := VkCommandPoolCreateInfo()
+	cmdPoolC.queueFamilyIndex = 0
+	cmdPoolC.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT
+	vkCreateCommandPool(vkLogCard,cmdPoolC&,null,vkCmdPool&)
+
+	vkResetCommandPool(vkLogCard,vkCmdPool,VK_COMMAND_POOL_RESET_RELEASE_RESOURCES_BIT)
+
+	crtFence := VkFenceCreateInfo()
+	vkCreateFence(vkLogCard,crtFence&,null,vkFence&)
+
+	
+
+	oneDesc := VkDescriptorSetLayoutBinding
+	oneDesc.binding = 0
+	oneDesc.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
+	oneDesc.descriptorCount = 1
+	oneDesc.stageFlags = VK_SHADER_STAGE_VERTEX_BIT
+	oneDesc.pImmutableSamplers = null
+
+	setDesc := VkDescriptorSetLayoutCreateInfo()
+	setDesc.bindingCount = 1
+	setDesc.pBindings&->{void^^}^ = oneDesc&->{void^}
+
+	twoDesc := VkDescriptorSetLayoutBinding
+	twoDesc.binding = 0
+	twoDesc.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
+	twoDesc.descriptorCount = 1
+	twoDesc.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT
+	twoDesc.pImmutableSamplers = null
+
+	set2Desc := VkDescriptorSetLayoutCreateInfo()
+	set2Desc.bindingCount = 1
+	set2Desc.pBindings&->{void^^}^ = twoDesc&->{void^}
+
+	vkCreateDescriptorSetLayout(vkLogCard,setDesc&,null,vkPerspLayout&)
+	vkCreateDescriptorSetLayout(vkLogCard,set2Desc&,null,vkPerObjectLayout&)
+
+	layouts := void^[2]
+	layouts[0] = vkPerspLayout
+	layouts[1] = vkPerObjectLayout
+
+	pcrC := VkPushConstantRange
+	pcrC.stageFlags = VK_SHADER_STAGE_VERTEX_BIT
+	pcrC.offset = 0
+	pcrC.size = 2*4*4
+	ppC := VkPipelineLayoutCreateInfo()
+	ppC.pushConstantRangeCount = 1
+	ppC.pPushConstantRanges&->{void^^}^ = pcrC&->{void^}
+	ppC.setLayoutCount = 2
+	ppC.pSetLayouts&->{void^^}^ = layouts&->{void^}
+
+	vkCreatePipelineLayout(vkLogCard,ppC&,null,vkLayout&)
+	mainCmd.CreateBuffer()
+	
+	descPoolSize := VkDescriptorPoolSize
+	descPoolSize.descriptorCount = 10
+	//descPoolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER //TODO
+	descPoolSize.0 = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
+
+	test := u32[2]
+	test[0] = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
+	test[1] = 1 //count
+
+	descPoolC := VkDescriptorPoolCreateInfo()
+	descPoolC.maxSets = 1
+	descPoolC.poolSizeCount = 1
+	descPoolC.pPoolSizes&->{void^^}^ = test[0]&->{void^}//descPoolSize
+
+	vkCreateDescriptorPool(vkLogCard,descPoolC&,null,vkDescPool&)
+
+	allDesc := VkDescriptorSetAllocateInfo()
+	allDesc.descriptorPool = vkDescPool
+	allDesc.descriptorSetCount = 1
+	allDesc.pSetLayouts&->{void^^}^ = vkPerspLayout&
+
+	vkAllocateDescriptorSets(vkLogCard,allDesc&,vkPerspSet&)
+
+	testTextureFormat := VkFormatProperties
+	vkGetPhysicalDeviceFormatProperties(vkPhysCard,VK_FORMAT_R8G8B8_UNORM,testTextureFormat&)
+	//vkRGB8Support = (testTextureFormat.linearTilingFeatures and_b VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT) != 0
+	//printf("with alpha %x %x %x\n",tst.linearTilingFeatures,tst.optimalTilingFeatures,tst.bufferFeatures)
+
+	// printf("RGB8SUpport %s\n",vkRGB8Support ?: "yes" : "no")
+	//printf("HalfFloat support %s\n",vkHalfFloatSupport ?: "yes" : "no") //TODO
+    printf("HalfFloat support %i\n",vkHalfFloatSupport)
+
+	printf("finished\n")
+}
+
+VkDebugCallback := !(int flags,int bojType,u64 object,u64 location,int msgCode,char^ prefix,char^ msg,void^ usrData) -> int
+{
+	printf("VkError <%s>\n",msg)
+	return 0
+}

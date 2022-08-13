@@ -23,7 +23,7 @@ ifeq ($(cross),win32)
 endif
 
 en:
-	./ver3 -g -C0 libs2 Source2/main.hv --vk ./vk.xml -o out.ll
+	./ver3 -g -C0 libs2 -C1 Source2 --vk ./vk.xml -o out.ll
 	clang -g out.ll -o en
 
 WinCompiler := x86_64-w64-mingw32-gcc 
@@ -49,4 +49,4 @@ grind:
 soft:
 	LIBGL_ALWAYS_SOFTWARE=1 __GLX_VENDOR_LIBRARY_NAME=mesa VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/lvp_icd.i686.json:/usr/share/vulkan/icd.d/lvp_icd.x86_64.json ./engi
 
-.PHONY: clean engi Objs/engi.ll
+.PHONY: clean engi Objs/engi.ll en

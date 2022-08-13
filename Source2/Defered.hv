@@ -1,0 +1,431 @@
+
+gRenderPassModel := VkRenderPass
+gRenderPassLight := VkRenderPass
+
+vkImages := TVector.{VkImage}^
+vkImageViews := TVector.{VkImageView}^
+vkFramebuffers := TVector.{VkFramebuffer}^
+
+gModelFramebuffer := VkFramebuffer
+
+// depthTexture := vTexture^
+// fbTextures := vTexture^[2]
+
+// gLightShader := vShader^
+
+gLightLayout := VkPipelineLayout
+gLightObjectLayout := VkDescriptorSetLayout
+gGBufferLayoutSets := VkDescriptorPool
+gGBufferTextureSet := VkDescriptorSet
+
+CreateSwapchain := !(int inW,int inH) -> void
+{
+	oldSwapchain := vkSwapchain
+
+	gVulkanWindowW = inW
+	gVulkanWindowH = inH
+
+	//surfAb := VkSurfaceCapabilitiesKHR
+	//vkGetPhysicalDeviceSurfaceCapabilitiesKHR(vkPhysCard,vkSurface,surfAb&)
+
+	crtSwap := VkSwapchainCreateInfoKHR()
+	crtSwap.surface = vkSurface
+	crtSwap.minImageCount = 3
+	crtSwap.imageFormat = SwapImageFormat
+	crtSwap.imageColorSpace = SwapImageColorSpace
+	crtSwap.imageExtent.width = inW
+	crtSwap.imageExtent.height = inH
+	crtSwap.imageArrayLayers = 1
+	crtSwap.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT
+	crtSwap.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE
+	crtSwap.queueFamilyIndexCount = 0
+	crtSwap.pQueueFamilyIndices = null
+	crtSwap.preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR
+	crtSwap.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR
+	crtSwap.presentMode = SwapImageMode
+	crtSwap.clipped = 0
+	crtSwap.oldSwapchain = null
+	
+	vkCreateSwapchainKHR(vkLogCard,crtSwap&,null,vkSwapchain&)
+
+	if oldSwapchain != null
+	{
+		vkDestroySwapchainKHR(vkLogCard,oldSwapchain,null)
+	}
+
+	imgCount := u32
+	vkGetSwapchainImagesKHR(vkLogCard,vkSwapchain,imgCount&,null)
+	vkImages = new TVector.{VkImage}(imgCount)
+	vkGetSwapchainImagesKHR(vkLogCard,vkSwapchain,imgCount&,vkImages.Get())
+
+	attmDesc := VkAttachmentDescription[1]
+	attmDesc[0].format = SwapImageFormat
+	attmDesc[0].samples = VK_SAMPLE_COUNT_1_BIT
+	attmDesc[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR
+	attmDesc[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE
+	attmDesc[0].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE
+	attmDesc[0].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE
+	attmDesc[0].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED
+	attmDesc[0].finalLayout  = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
+
+	attmRef := VkAttachmentReference
+	attmRef.attachment = 0
+	attmRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+
+	subpass := VkSubpassDescription
+	subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS
+	subpass.inputAttachmentCount = 0
+	subpass.pInputAttachments = null
+	subpass.colorAttachmentCount = 1
+	subpass.pColorAttachments&->{void^^}^ = attmRef&
+	subpass.pResolveAttachments = null
+	subpass.pDepthStencilAttachment = null
+	subpass.preserveAttachmentCount = 0
+	subpass.pPreserveAttachments = null
+
+	rpC := VkRenderPassCreateInfo()
+	rpC.attachmentCount = 1
+	rpC.pAttachments&->{void^^}^ = attmDesc[0]&
+	rpC.subpassCount = 1
+	rpC.pSubpasses&->{void^^}^ = subpass&
+	rpC.dependencyCount = 0
+	rpC.pDependencies = null
+
+	vkCreateRenderPass(vkLogCard,rpC&,null,gRenderPassLight&)
+
+	vkImageViews = new TVector.{VkImageView}(vkImages.Size())
+	vkFramebuffers = new TVector.{VkFramebuffer}(vkImages.Size())
+	for it,i : vkImages^
+	{
+		imgViewC := VkImageViewCreateInfo()
+		imgViewC.image = it
+		imgViewC.viewType = VK_IMAGE_VIEW_TYPE_2D
+		imgViewC.format = SwapImageFormat
+		imgViewC.components.r = VK_COMPONENT_SWIZZLE_R
+		imgViewC.components.g = VK_COMPONENT_SWIZZLE_G
+		imgViewC.components.b = VK_COMPONENT_SWIZZLE_B
+		imgViewC.components.a = VK_COMPONENT_SWIZZLE_A
+
+		imgViewC.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT
+		imgViewC.subresourceRange.baseMipLevel = 0
+		imgViewC.subresourceRange.levelCount = 1
+		imgViewC.subresourceRange.baseArrayLayer = 0
+		imgViewC.subresourceRange.layerCount = 1
+
+		vkCreateImageView(vkLogCard,imgViewC&,null,vkImageViews^[i]&)
+
+		fbC := VkFramebufferCreateInfo()
+		fbC.renderPass = gRenderPassLight
+		fbC.attachmentCount = 1
+		fbC.pAttachments&->{void^^}^ = vkImageViews^[i]&
+		fbC.width = inW
+		fbC.height = inH
+		fbC.layers = 1
+
+		vkCreateFramebuffer(vkLogCard,fbC&,null,vkFramebuffers^[i]&)
+	}
+}
+
+
+gFBW := int
+gFBH := int
+// gFBW := 2048
+// gFBH := 1024
+CreateFB := !() -> void
+{
+
+	gFBW = 2048
+	gFBH = 1024
+
+	// if depthTexture != null
+	// {
+	// 	depthTexture.Destroy()
+	// 	delete depthTexture
+	// 	depthTexture = null
+	// }
+
+	// fbTextures[0] = new vTexture
+	// fbTextures[0].CreateObject(gFBW,gFBH, (img,viw) ==> {
+	// 	img.usage = VK_IMAGE_USAGE_SAMPLED_BIT or_b VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT or_b VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT
+	// })
+	// fbTextures[1] = new vTexture
+	// fbTextures[1].CreateObject(gFBW,gFBH, (img,viw) ==> {
+	// 	img.usage = VK_IMAGE_USAGE_SAMPLED_BIT or_b VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT or_b VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT
+	// 	img.format = VK_FORMAT_R32G32B32A32_SFLOAT
+	// })
+
+	// //create deth
+	// depthTexture = new vTexture
+	// depthTexture.CreateObject(gFBW,gFBH,(img,viv)==> {
+	// 	img.format = VK_FORMAT_D16_UNORM
+	// 	img.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT
+	// 	viv.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT
+	// })
+
+
+	// attmDesc := @temp new VkAttachmentDescription[3]
+	// attmDesc[1].format = VK_FORMAT_R8G8B8A8_UNORM
+	// attmDesc[1].samples = VK_SAMPLE_COUNT_1_BIT
+	// attmDesc[1].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR
+	// attmDesc[1].storeOp = VK_ATTACHMENT_STORE_OP_STORE
+	// attmDesc[1].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE
+	// attmDesc[1].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE
+	// attmDesc[1].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED
+	// attmDesc[1].finalLayout  = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+
+	// attmDesc[2].format = VK_FORMAT_R32G32B32A32_SFLOAT
+	// attmDesc[2].samples = VK_SAMPLE_COUNT_1_BIT
+	// attmDesc[2].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR
+	// attmDesc[2].storeOp = VK_ATTACHMENT_STORE_OP_STORE
+	// attmDesc[2].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE
+	// attmDesc[2].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE
+	// attmDesc[2].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED
+	// attmDesc[2].finalLayout  = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+
+	// attmDesc[0].format = VK_FORMAT_D16_UNORM
+	// attmDesc[0].samples = VK_SAMPLE_COUNT_1_BIT
+	// attmDesc[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR
+	// attmDesc[0].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE
+	// attmDesc[0].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE
+	// attmDesc[0].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE
+	// attmDesc[0].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED
+	// attmDesc[0].finalLayout  =VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
+
+	// attmRef := @temp new VkAttachmentReference[2]
+	// attmRef[0].attachment = 1
+	// attmRef[0].layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+	// attmRef[1].attachment = 2
+	// attmRef[1].layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+	// attmRef2 := @temp new VkAttachmentReference
+	// attmRef2.attachment = 0
+	// attmRef2.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
+
+	// subpass := @temp new VkSubpassDescription
+	// subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS
+	// subpass.inputAttachmentCount = 0
+	// subpass.pInputAttachments = null
+	// subpass.colorAttachmentCount = 2
+	// subpass.pColorAttachments = attmRef
+	// subpass.pResolveAttachments = null
+	// subpass.pDepthStencilAttachment = attmRef2
+	// subpass.preserveAttachmentCount = 0
+	// subpass.pPreserveAttachments = null
+
+	// rpC := @temp new VkRenderPassCreateInfo()
+	// rpC.attachmentCount = 3
+	// rpC.pAttachments = attmDesc
+	// rpC.subpassCount = 1
+	// rpC.pSubpasses = subpass
+	// rpC.dependencyCount = 0
+	// rpC.pDependencies = null
+
+	// vkFuncs.vkCreateRenderPass(vkLogCard,rpC,null,gRenderPassModel&)
+
+	// extrV := VkImageView[3]
+	// extrV[1] = fbTextures[0].View()
+	// extrV[2] = fbTextures[1].View()
+	// extrV[0] = depthTexture.View()
+	// fbC := @temp new VkFramebufferCreateInfo()
+	// fbC.renderPass = gRenderPassModel
+	// fbC.attachmentCount = 3
+	// fbC.pAttachments = extrV[0]&
+	// fbC.width = gFBW
+	// fbC.height = gFBH
+	// fbC.layers = 1
+
+	// vkFuncs.vkCreateFramebuffer(vkLogCard,fbC,null,gModelFramebuffer&)
+
+	// twoDesc := @temp new VkDescriptorSetLayoutBinding[2]
+	// twoDesc[0].binding = 0
+	// twoDesc[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
+	// twoDesc[0].descriptorCount = 1
+	// twoDesc[0].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT
+	// twoDesc[0].pImmutableSamplers = null
+	// twoDesc[1].binding = 1
+	// twoDesc[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
+	// twoDesc[1].descriptorCount = 1
+	// twoDesc[1].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT
+	// twoDesc[1].pImmutableSamplers = null
+
+	// set2Desc := @temp new VkDescriptorSetLayoutCreateInfo()
+	// set2Desc.bindingCount = 2
+	// set2Desc.pBindings = twoDesc->{void^}
+
+	// vkFuncs.vkCreateDescriptorSetLayout(vkLogCard,set2Desc,null,gLightObjectLayout&)
+
+	// layouts := @temp new void^[2]
+	// layouts[0] = gLightObjectLayout
+
+	// pcrC := @temp new VkPushConstantRange
+	// pcrC.stageFlags = VK_SHADER_STAGE_VERTEX_BIT
+	// pcrC.offset = 0
+	// pcrC.size = 2*4
+
+	// ppC := @temp new VkPipelineLayoutCreateInfo()
+	// ppC.pushConstantRangeCount = 1
+	// ppC.pPushConstantRanges = pcrC->{void^}
+	// ppC.setLayoutCount = 1
+	// ppC.pSetLayouts = layouts->{void^}
+
+	// vkFuncs.vkCreatePipelineLayout(vkLogCard,ppC,null,gLightLayout&)
+
+	// gLightShader = vGetShader("Defer") 
+
+	// poolSize := u32[2] 
+	// poolSize[0] = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
+	// poolSize[1] = 2
+
+	// nPool := @temp new VkDescriptorPoolCreateInfo()
+	// nPool.maxSets = 1
+	// nPool.poolSizeCount = 1
+	// nPool.pPoolSizes = poolSize&->{void^}
+
+	// vkFuncs.vkCreateDescriptorPool(vkLogCard,nPool,null,gGBufferLayoutSets&)
+
+	// newSetCR := @temp new VkDescriptorSetAllocateInfo()
+	// newSetCR.descriptorPool = gGBufferLayoutSets
+	// newSetCR.descriptorSetCount = 1
+	// newSetCR.pSetLayouts = gLightObjectLayout&
+
+	// vkFuncs.vkAllocateDescriptorSets(vkLogCard,newSetCR,gGBufferTextureSet&)
+
+	// imgI := @temp new VkDescriptorImageInfo[2]
+	// imgI[0].sampler = gSamplerNearest
+	// imgI[0].imageView = fbTextures[0].View()
+	// imgI[0].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+	// imgI[1].sampler = gSamplerNearest
+	// imgI[1].imageView = fbTextures[1].View()
+	// imgI[1].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+
+	// wrT := @temp new VkWriteDescriptorSet()
+	// wrT.descriptorCount = 2
+	// wrT.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
+	// wrT.pImageInfo = imgI->{void^}
+	// wrT.dstSet = gGBufferTextureSet
+
+	// vkFuncs.vkUpdateDescriptorSets(vkLogCard,1,wrT,0,null)
+}
+nowImg := u32
+
+DrawGetImage := !() -> bool
+{
+	vkResetFences(vkLogCard,1,vkFence&)
+	hm := u64
+	hm = hm - 1
+	resAq := vkAcquireNextImageKHR(vkLogCard,vkSwapchain,hm,null,vkFence,nowImg&)
+	// resAq := vkAcquireNextImageKHR(vkLogCard,vkSwapchain,not_b 0U,null,vkFence,nowImg&) //TODO
+
+	if resAq ==  VK_ERROR_OUT_OF_DATE_KHR 
+	{
+		return false
+	}
+	return true
+}
+
+StartDraw := !() -> bool
+{
+	rpC := VkRenderPassBeginInfo
+
+	vkWaitForFences(vkLogCard,1,vkFence&,1,10000000)
+
+	mainCmd.Reset()
+	mainCmd.Start()
+
+	clrValues := float[13]
+
+	// clrValues[0] = 1.0f
+	// clrValues[1] = 1.0f
+	// clrValues[2] = 1.0f
+	// clrValues[3] = 1.0f
+
+	// clrValues[4] = 1.0f
+	// clrValues[5] = 0.0f
+	// clrValues[6] = 0.0f
+	// clrValues[7] = 1.0f
+
+	// clrValues[8] = 0.0f
+	// clrValues[9] = 1.0f
+	// clrValues[10] = 0.0f
+	// clrValues[11] = 0.0f
+
+	// rpC.renderPass = gRenderPassModel
+	// rpC.framebuffer = gModelFramebuffer
+	// rpC.renderArea.extent.width = gVulkanWindowW //surfAb.currentExtent.width
+	// rpC.renderArea.extent.height = gVulkanWindowH //surfAb.currentExtent.height
+	// rpC.clearValueCount = 3
+	// rpC.pClearValues = clrValues->{void^}
+	
+	// vkFuncs.vkCmdBeginRenderPass(mainCmd.Get(),rpC&,VK_SUBPASS_CONTENTS_INLINE)
+	// return true
+}
+StopDraw := !() -> void
+{
+
+	// vkFuncs.vkCmdEndRenderPass(mainCmd.Get())
+		
+	// imgBarCPre := @temp new VkImageMemoryBarrier[2]
+
+	rpC := VkRenderPassBeginInfo()
+
+	clrValues := float[13]
+
+	clrValues[0] = 0.0
+	clrValues[1] = 0.5
+	clrValues[2] = 1.0
+
+	rpC.renderPass = gRenderPassLight
+	rpC.framebuffer = vkFramebuffers^[nowImg]
+	rpC.renderArea.extent.width = gVulkanWindowW //surfAb.currentExtent.width
+	rpC.renderArea.extent.height = gVulkanWindowH //surfAb.currentExtent.height
+	rpC.clearValueCount = 1
+	rpC.pClearValues&->{void^^}^ = clrValues[0]&->{void^}
+	
+	vkCmdBeginRenderPass(mainCmd.Get(),rpC&,VK_SUBPASS_CONTENTS_INLINE)
+
+
+	// gLightShader.ApplyShaderToQueue(mainCmd.Get())
+	// sts := VkDescriptorSet[2]
+	// sts[0] = gGBufferTextureSet
+	// vkFuncs.vkCmdBindDescriptorSets(mainCmd.Get(),VK_PIPELINE_BIND_POINT_GRAPHICS,gLightLayout,0,1,sts[0]&,0,null)
+
+	// scales := float[2]
+	// scales[0] = gVulkanWindowW / gFBW
+	// scales[1] = gVulkanWindowH / gFBH
+	// vkFuncs.vkCmdPushConstants(mainCmd.Get(),gLightLayout,VK_SHADER_STAGE_VERTEX_BIT,0,4*2,scales&)
+
+	// vkFuncs.vkCmdDraw(mainCmd.Get(),3,1,0,0)
+
+	// //imgBarC := @temp new VkImageMemoryBarrier()
+	// //imgBarC.srcAccessMask = VK_ACCESS_MEMORY_READ_BIT
+	// //imgBarC.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT//VK_ACCESS_COLOR_ATTACHMENT_READ_BIT or_b VK_ACCESS_MEMORY_READ_BIT
+	// //imgBarC.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED
+	// //imgBarC.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
+	// //imgBarC.srcQueueFamilyIndex = 0
+	// //imgBarC.dstQueueFamilyIndex = 0
+	// //imgBarC.image = vkImages[nowImg]
+	// //imgBarC.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT
+	// //imgBarC.subresourceRange.baseMipLevel = 0
+	// //imgBarC.subresourceRange.levelCount = 1
+	// //imgBarC.subresourceRange.baseArrayLayer = 0
+	// //imgBarC.subresourceRange.layerCount = 1
+
+	vkCmdEndRenderPass(mainCmd.Get())
+	// //vkFuncs.vkCmdPipelineBarrier(mainCmd.Get(),VK_PIPELINE_STAGE_TRANSFER_BIT,VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,0,0,null,0,null,1,imgBarC)
+	mainCmd.Stop()
+
+	mainCmd.Submit()
+	vkQueueWaitIdle(vkQueue)
+
+	res := VkResult
+	pI := VkPresentInfoKHR()
+	pI.pNext = null
+	pI.waitSemaphoreCount = 0
+	pI.pWaitSemaphores = null
+	pI.swapchainCount = 1
+	pI.pSwapchains&->{void^^}^ = vkSwapchain&->{void^}
+	pI.pImageIndices&->{void^^}^ = nowImg&->{void^}
+	pI.pResults&->{void^^}^ = res&
+
+	vkQueuePresentKHR(vkQueue,pI&)
+	vkQueueWaitIdle(vkQueue)
+}
