@@ -305,10 +305,7 @@ nowImg := u32
 DrawGetImage := !() -> bool
 {
 	vkResetFences(vkLogCard,1,vkFence&)
-	hm := u64
-	hm = hm - 1
-	resAq := vkAcquireNextImageKHR(vkLogCard,vkSwapchain,hm,null,vkFence,nowImg&)
-	// resAq := vkAcquireNextImageKHR(vkLogCard,vkSwapchain,not_b 0U,null,vkFence,nowImg&) //TODO
+	resAq := vkAcquireNextImageKHR(vkLogCard,vkSwapchain,not_b 0U,null,vkFence,nowImg&)
 
 	if resAq ==  VK_ERROR_OUT_OF_DATE_KHR 
 	{
@@ -319,7 +316,6 @@ DrawGetImage := !() -> bool
 
 StartDraw := !() -> bool
 {
-	rpC := VkRenderPassBeginInfo()
 	
 	vkWaitForFences(vkLogCard,1,vkFence&,1,10000000)
 
@@ -328,37 +324,38 @@ StartDraw := !() -> bool
 
 	clrValues := float[13]
 
-	// clrValues[0] = 1.0f
-	// clrValues[1] = 1.0f
-	// clrValues[2] = 1.0f
-	// clrValues[3] = 1.0f
+	clrValues[0] = 1.0f
+	clrValues[1] = 1.0f
+	clrValues[2] = 1.0f
+	clrValues[3] = 1.0f
 
-	// clrValues[4] = 1.0f
-	// clrValues[5] = 0.0f
-	// clrValues[6] = 0.0f
-	// clrValues[7] = 1.0f
+	clrValues[4] = 1.0f
+	clrValues[5] = 0.0f
+	clrValues[6] = 0.0f
+	clrValues[7] = 1.0f
 
-	// clrValues[8] = 0.0f
-	// clrValues[9] = 1.0f
-	// clrValues[10] = 0.0f
-	// clrValues[11] = 0.0f
+	clrValues[8] = 0.0f
+	clrValues[9] = 1.0f
+	clrValues[10] = 0.0f
+	clrValues[11] = 0.0f
 
-	// rpC.renderPass = gRenderPassModel
-	// rpC.framebuffer = gModelFramebuffer
-	// rpC.renderArea.extent.width = gVulkanWindowW //surfAb.currentExtent.width
-	// rpC.renderArea.extent.height = gVulkanWindowH //surfAb.currentExtent.height
-	// rpC.clearValueCount = 3
-	// rpC.pClearValues = clrValues->{void^}
+	rpC := VkRenderPassBeginInfo()
+	rpC.renderPass = gRenderPassModel
+	rpC.framebuffer = gModelFramebuffer
+	rpC.renderArea.extent.width = gVulkanWindowW //surfAb.currentExtent.width
+	rpC.renderArea.extent.height = gVulkanWindowH //surfAb.currentExtent.height
+	rpC.clearValueCount = 3
+	rpC.pClearValues&->{void^^}^ = clrValues[0]&
 	
-	// vkFuncs.vkCmdBeginRenderPass(mainCmd.Get(),rpC&,VK_SUBPASS_CONTENTS_INLINE)
-	// return true
+	vkCmdBeginRenderPass(mainCmd.Get(),rpC&,VK_SUBPASS_CONTENTS_INLINE)
+	return true
 }
 StopDraw := !() -> void
 {
 
-	// vkFuncs.vkCmdEndRenderPass(mainCmd.Get())
+	vkCmdEndRenderPass(mainCmd.Get())
 		
-	// imgBarCPre := @temp new VkImageMemoryBarrier[2]
+	imgBarCPre := VkImageMemoryBarrier[2]
 
 	beginInfo := VkRenderPassBeginInfo()
 
@@ -367,6 +364,15 @@ StopDraw := !() -> void
 	clrValues[0] = 0.0
 	clrValues[1] = 0.5
 	clrValues[2] = 1.0
+	clrValues[4] = 1.0f
+	clrValues[5] = 0.0f
+	clrValues[6] = 0.0f
+	clrValues[7] = 1.0f
+
+	clrValues[8] = 0.0f
+	clrValues[9] = 1.0f
+	clrValues[10] = 0.0f
+	clrValues[11] = 0.0f
 
 	beginInfo.renderPass = gRenderPassLight
 	beginInfo.framebuffer = vkFramebuffers^[nowImg]
@@ -378,34 +384,34 @@ StopDraw := !() -> void
 	vkCmdBeginRenderPass(mainCmd.Get(),beginInfo&,VK_SUBPASS_CONTENTS_INLINE)
 
 
-	// gLightShader.ApplyShaderToQueue(mainCmd.Get())
-	// sts := VkDescriptorSet[2]
-	// sts[0] = gGBufferTextureSet
-	// vkFuncs.vkCmdBindDescriptorSets(mainCmd.Get(),VK_PIPELINE_BIND_POINT_GRAPHICS,gLightLayout,0,1,sts[0]&,0,null)
+	gLightShader.ApplyShaderToQueue(mainCmd.Get())
+	sts := VkDescriptorSet[2]
+	sts[0] = gGBufferTextureSet
+	vkCmdBindDescriptorSets(mainCmd.Get(),VK_PIPELINE_BIND_POINT_GRAPHICS,gLightLayout,0,1,sts[0]&,0,null)
 
-	// scales := float[2]
-	// scales[0] = gVulkanWindowW / gFBW
-	// scales[1] = gVulkanWindowH / gFBH
-	// vkFuncs.vkCmdPushConstants(mainCmd.Get(),gLightLayout,VK_SHADER_STAGE_VERTEX_BIT,0,4*2,scales&)
+	scales := float[2]
+	scales[0] = gVulkanWindowW / gFBW
+	scales[1] = gVulkanWindowH / gFBH
+	vkCmdPushConstants(mainCmd.Get(),gLightLayout,VK_SHADER_STAGE_VERTEX_BIT,0,4*2,scales&)
 
-	// vkFuncs.vkCmdDraw(mainCmd.Get(),3,1,0,0)
+	vkCmdDraw(mainCmd.Get(),3,1,0,0)
 
-	// //imgBarC := @temp new VkImageMemoryBarrier()
-	// //imgBarC.srcAccessMask = VK_ACCESS_MEMORY_READ_BIT
-	// //imgBarC.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT//VK_ACCESS_COLOR_ATTACHMENT_READ_BIT or_b VK_ACCESS_MEMORY_READ_BIT
-	// //imgBarC.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED
-	// //imgBarC.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
-	// //imgBarC.srcQueueFamilyIndex = 0
-	// //imgBarC.dstQueueFamilyIndex = 0
-	// //imgBarC.image = vkImages[nowImg]
-	// //imgBarC.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT
-	// //imgBarC.subresourceRange.baseMipLevel = 0
-	// //imgBarC.subresourceRange.levelCount = 1
-	// //imgBarC.subresourceRange.baseArrayLayer = 0
-	// //imgBarC.subresourceRange.layerCount = 1
+	//imgBarC := @temp new VkImageMemoryBarrier()
+	//imgBarC.srcAccessMask = VK_ACCESS_MEMORY_READ_BIT
+	//imgBarC.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT//VK_ACCESS_COLOR_ATTACHMENT_READ_BIT or_b VK_ACCESS_MEMORY_READ_BIT
+	//imgBarC.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED
+	//imgBarC.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
+	//imgBarC.srcQueueFamilyIndex = 0
+	//imgBarC.dstQueueFamilyIndex = 0
+	//imgBarC.image = vkImages[nowImg]
+	//imgBarC.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT
+	//imgBarC.subresourceRange.baseMipLevel = 0
+	//imgBarC.subresourceRange.levelCount = 1
+	//imgBarC.subresourceRange.baseArrayLayer = 0
+	//imgBarC.subresourceRange.layerCount = 1
 
 	vkCmdEndRenderPass(mainCmd.Get())
-	// //vkFuncs.vkCmdPipelineBarrier(mainCmd.Get(),VK_PIPELINE_STAGE_TRANSFER_BIT,VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,0,0,null,0,null,1,imgBarC)
+	//vkFuncs.vkCmdPipelineBarrier(mainCmd.Get(),VK_PIPELINE_STAGE_TRANSFER_BIT,VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,0,0,null,0,null,1,imgBarC)
 	mainCmd.Stop()
 
 	mainCmd.Submit()

@@ -1,22 +1,21 @@
-// webpLib := Library^
 
-// webpGetFeatures := !(void^,u64,void^,int)^ -> int
-// webpGetDataRGB := !(void^,u64,void^,u64,int)^ -> void^
-// webpGetDataRGBA := !(void^,u64,void^,u64,int)^ -> void^
+webpGetFeatures := !(void^,u64,void^,int)^ -> int
+webpGetDataRGB := !(void^,u64,void^,u64,int)^ -> void^
+webpGetDataRGBA := !(void^,u64,void^,u64,int)^ -> void^
 
-// InitWebP := !() -> bool
-// {
-// 	if webpLib != null return true
-
-// 	itLib := new Library("libwebp.so","libwebp.so.6","libwebp-7.dll")
+InitWebP := !() -> bool
+{
+	if webpGetFeatures != null
+		return true
+	//itLib := GetLibrary("libwebp.so","libwebp.so.6","libwebp-7.dll")
+	itLib := GetLibrary("libwebp.so")
 	
-// 	webpGetFeatures = itLib.Get("WebPGetFeaturesInternal")
-// 	webpGetDataRGB = itLib.Get("WebPDecodeRGBInto")
-// 	webpGetDataRGBA = itLib.Get("WebPDecodeRGBAInto")
+	webpGetFeatures&->{void^^}^ = itLib.Get("WebPGetFeaturesInternal")
+	webpGetDataRGB&->{void^^}^ = itLib.Get("WebPDecodeRGBInto")
+	webpGetDataRGBA&->{void^^}^ = itLib.Get("WebPDecodeRGBAInto")
 	
-// 	webpLib = itLib
-// 	return true
-// }
+	return true
+}
 
 
 vTexture := class
@@ -91,131 +90,129 @@ vTexture := class
 			i *= 2
 		return i
 	}
-	// CreateTexture := !(vRepoFile^ itFile) -> void
-	// {	
+	CreateTexture := !(vRepoFile^ itFile) -> void
+	{	
+		// end := StringEnd(itFile.objName)
 
-	// 	end := StringEnd(itFile.objName)
+		// if end in !["tga","jpg","png"]
+		// {
+		// 	imgType := IL_TGA
+		// 	switch end
+		// 	{
+		// 		case "jpg" imgType = IL_JPG
+		// 		case "png" imgType = IL_PNG
+		// 	}
 
-	// 	if end in !["tga","jpg","png"]
-	// 	{
-	// 		imgType := IL_TGA
-	// 		switch end
-	// 		{
-	// 			case "jpg" imgType = IL_JPG
-	// 			case "png" imgType = IL_PNG
-	// 		}
-
-	// 		ptr := itFile.Map()
-	// 		defer itFile.Unmap()
+		// 	ptr := itFile.Map()
+		// 	defer itFile.Unmap()
 		
-	// 		ilImg := int
-	// 		ilGenImages(1,ilImg&)
-	// 		ilBindImage(ilImg)
-	// 		ilLoadL(imgType,ptr,itFile.Size())
-	// 		w := ilGetInteger(IL_IMAGE_WIDTH)
-	// 		h := ilGetInteger(IL_IMAGE_HEIGHT)
-	// 		frmt := ilGetInteger(IL_IMAGE_FORMAT)
+		// 	ilImg := int
+		// 	ilGenImages(1,ilImg&)
+		// 	ilBindImage(ilImg)
+		// 	ilLoadL(imgType,ptr,itFile.Size())
+		// 	w := ilGetInteger(IL_IMAGE_WIDTH)
+		// 	h := ilGetInteger(IL_IMAGE_HEIGHT)
+		// 	frmt := ilGetInteger(IL_IMAGE_FORMAT)
 
-	// 		containAlpha := frmt in ![IL_RGBA,IL_BGRA]
-	// 		if not vkRGB8Support
-	// 			containAlpha = true
+		// 	containAlpha := frmt in ![IL_RGBA,IL_BGRA]
+		// 	if not vkRGB8Support
+		// 		containAlpha = true
 
-	// 		itW = toPwr2(w)
-	// 		itH = toPwr2(h)
+		// 	itW = toPwr2(w)
+		// 	itH = toPwr2(h)
 
-	// 		memTyp := CreateObject(itW,itH)
-	// 		ptrToSet := gStageMem.Map()->{u8^}
-	// 		//ilCopyPixels := !(int xOff,int yOff,int zOff,int w, int h, int d,int format,int fType,void^ destin)^ -> void
-	// 		//ilConvertImage(IL_RGBA,IL_UNSIGNED_BYTE)
-	// 		//dat := ilGetData()
-	// 		//memcpy(ptrToSet,dat,1024*1024*4)
-	// 		ilCopyPixels(0,0,0,itW,itH,1,containAlpha ?: IL_RGBA : IL_RGB, IL_UNSIGNED_BYTE,ptrToSet)
+		// 	memTyp := CreateObject(itW,itH)
+		// 	ptrToSet := gStageMem.Map()->{u8^}
+		// 	//ilCopyPixels := !(int xOff,int yOff,int zOff,int w, int h, int d,int format,int fType,void^ destin)^ -> void
+		// 	//ilConvertImage(IL_RGBA,IL_UNSIGNED_BYTE)
+		// 	//dat := ilGetData()
+		// 	//memcpy(ptrToSet,dat,1024*1024*4)
+		// 	ilCopyPixels(0,0,0,itW,itH,1,containAlpha ?: IL_RGBA : IL_RGB, IL_UNSIGNED_BYTE,ptrToSet)
 
-	// 		gStageMem.Unmap()
-	// 		vStageCpyToImage(itImg,itW,itH)
+		// 	gStageMem.Unmap()
+		// 	vStageCpyToImage(itImg,itW,itH)
 
-	// 	}else if end == "bmp"
-	// 	{
-	// 		mp := itFile.Map()->{u8^}
-	// 		defer itFile.Unmap()
+		// }else if end == "bmp"
+		// {
+		// 	mp := itFile.Map()->{u8^}
+		// 	defer itFile.Unmap()
 
-	// 		bmpH := mp->{BMPMainHeader^}
-	// 		imgH := mp[BMPMainHeader->TypeSize]&->{BMPImgHeaderOld^}
+		// 	bmpH := mp->{BMPMainHeader^}
+		// 	imgH := mp[BMPMainHeader->TypeSize]&->{BMPImgHeaderOld^}
 
-	// 		//printf("bmp size %i\n",bmpH.fileSize)
-	// 		//printf("header size %i , w %i , h %i, bpx %i\n",imgH.itSize,imgH.itW,imgH.itH,imgH.bitsPerPixel)
-	// 		offToData := mp[BMPMainHeader->TypeSize + 40]&
-	// 		itW = imgH.itW&->{int^}^
-	// 		itH = imgH.itH&->{int^}^
+		// 	//printf("bmp size %i\n",bmpH.fileSize)
+		// 	//printf("header size %i , w %i , h %i, bpx %i\n",imgH.itSize,imgH.itW,imgH.itH,imgH.bitsPerPixel)
+		// 	offToData := mp[BMPMainHeader->TypeSize + 40]&
+		// 	itW = imgH.itW&->{int^}^
+		// 	itH = imgH.itH&->{int^}^
 
-	// 		memTyp := CreateObject(itW,itH)
-	// 		ptrToSet := gStageMem.Map()->{u8^}
-	// 		if imgH.bitsPerPixel == 24
-	// 		{
-	// 			for i : itW*itH
-	// 			{
-	// 				c := i*4
-	// 				ptrToSet[c] = offToData[2]
-	// 				ptrToSet[c + 1] = offToData[1]
-	// 				ptrToSet[c + 2] = offToData[0]
-	// 				ptrToSet[c + 3] = 255
-	// 				offToData = offToData[3]&
-	// 			}
-	// 		}else{
-	// 			for i : itW*itH
-	// 			{
-	// 				c := i*4
-	// 				ptrToSet[c] = offToData[2]
-	// 				ptrToSet[c + 1] = offToData[1]
-	// 				ptrToSet[c + 2] = offToData[0]
-	// 				ptrToSet[c + 3] = offToData[3]
-	// 				offToData = offToData[4]&
-	// 			}
-	// 		}
-	// 		Recolor(ptrToSet,itW*itH,4)
-	// 		gStageMem.Unmap()
-	// 		vStageCpyToImage(itImg,itW,itH)
-	// 	}else 
-	// 	if end == ".webp"
-	// 	{
-	// 		InitWebP()
+		// 	memTyp := CreateObject(itW,itH)
+		// 	ptrToSet := gStageMem.Map()->{u8^}
+		// 	if imgH.bitsPerPixel == 24
+		// 	{
+		// 		for i : itW*itH
+		// 		{
+		// 			c := i*4
+		// 			ptrToSet[c] = offToData[2]
+		// 			ptrToSet[c + 1] = offToData[1]
+		// 			ptrToSet[c + 2] = offToData[0]
+		// 			ptrToSet[c + 3] = 255
+		// 			offToData = offToData[3]&
+		// 		}
+		// 	}else{
+		// 		for i : itW*itH
+		// 		{
+		// 			c := i*4
+		// 			ptrToSet[c] = offToData[2]
+		// 			ptrToSet[c + 1] = offToData[1]
+		// 			ptrToSet[c + 2] = offToData[0]
+		// 			ptrToSet[c + 3] = offToData[3]
+		// 			offToData = offToData[4]&
+		// 		}
+		// 	}
+		// 	Recolor(ptrToSet,itW*itH,4)
+		// 	gStageMem.Unmap()
+		// 	vStageCpyToImage(itImg,itW,itH)
+		// }else 
+		// if end == ".webp"
+		// {
+			InitWebP()
 
-	// 		mp := itFile.Map()->{u8^}
-	// 		defer itFile.Unmap()
+			mp := itFile.GetMap()
 
-	// 		webpInf := int[10] // width,height,has_alpha, has_animation,type, 5 x for feature
+			webpInf := int[10] // width,height,has_alpha, has_animation,type, 5 x for feature
 
-	// 		webpGetFeatures(mp,itFile.Size(),webpInf&,0x0208)
+			webpGetFeatures(mp.Get()->{void^},mp.Size()->{u64},webpInf[0]&->{void^},0x0208)
 
-	// 		has_alpha := webpInf[2] != 0
-	// 		has_animation := webpInf[3] != 0
-	// 		if not vkRGB8Support
-	// 			has_alpha = true
+			has_alpha := webpInf[2] != 0
+			has_animation := webpInf[3] != 0
+			if not vkRGB8Support
+				has_alpha = true
 
-	// 		if has_animation
-	// 		{
-	// 			//FEATURE:
-	// 		}else{
-	// 			memTyp := CreateObject(webpInf[0],webpInf[1],(x,y) ==> {
-	// 				x.format = VK_FORMAT_R8G8B8_UNORM
-	// 				if has_alpha x.format = VK_FORMAT_R8G8B8A8_UNORM
-	// 			})
-	// 			ptrToSet := gStageMem.Map()->{u8^}
+			if has_animation
+			{
+				//FEATURE:
+			}else{
+				memTyp := CreateObject(webpInf[0],webpInf[1],(x,y) ==> {
+					x.format = VK_FORMAT_R8G8B8_UNORM
+					if has_alpha x.format = VK_FORMAT_R8G8B8A8_UNORM
+				})
+				ptrToSet := gStageMem.Map()->{u8^}
 
-	// 			if has_alpha
-	// 			{
-	// 				webpGetDataRGBA(mp,itFile.Size(),ptrToSet,itW*itH*4,itW*4)
-	// 				Recolor(ptrToSet,itW*itH,4)
-	// 			}else{
-	// 				webpGetDataRGB(mp,itFile.Size(),ptrToSet,itW*itH*3,itW*3)
-	// 				Recolor(ptrToSet,itW*itH,3)
-	// 			}
-	// 			gStageMem.Unmap()
-	// 			vStageCpyToImage(itImg,itW,itH)
-	// 		}
-	// 	}
+				if has_alpha
+				{
+					webpGetDataRGBA(mp.Get(),mp.Size(),ptrToSet,itW*itH*4,itW*4)
+					//Recolor(ptrToSet,itW*itH,4)
+				}else{
+					webpGetDataRGB(mp.Get(),mp.Size(),ptrToSet,itW*itH*3,itW*3)
+					//Recolor(ptrToSet,itW*itH,3)
+				}
+				gStageMem.Unmap()
+				vStageCpyToImage(itImg,itW,itH)
+			}
+		//}
 
-	// }
+	}
 	// Reload := !(vRepoFile^ itFile) -> void
 	// {
 	// 	Destroy()

@@ -417,6 +417,7 @@ VulkanInit := !() -> void
 
 VkDebugCallback := !(int flags,int bojType,u64 object,u64 location,int msgCode,char^ prefix,char^ msg,void^ usrData) -> int
 {
+	//assert(false)
 	printf("VkError <%s>\n",msg)
 	return 0
 }

@@ -11,13 +11,16 @@ LoadShaderModule := !(char^ name) -> vShaderModule^
 
 main := !(char^[] args) -> int
 {
+	x := 900
+	y := 900
+
 	gRepo = new vRepo
 	gRepo.Init(".")
 	
-	CreateWindow(512,512)
+	CreateWindow(x,y)
 	VulkanInit()
 	VoidCoreInit()
-	CreateSwapchain(512,512)
+	CreateSwapchain(x,y)
 	CreateFB()
 
 	deferVert := LoadShaderModule("Shaders/ShaderCache/Defer.vert")
@@ -34,10 +37,52 @@ main := !(char^[] args) -> int
 	opts.textureType = VKType(VType_Float,2)
 	learnShader.LoadShader(learnVert,learnFrag,opts&)
 
+	mdl := new vModel
+	fldFile := gRepo.GetFile("Maps/FirstMap2/FirstMap.ply")
+	mdl.LoadFile(fldFile)
+
+	txt := new vTexture
+	txt.CreateTexture(gRepo.GetFile("Maps/FirstMap2/wut.webp"))
+
+	cam := new vCamera()
+	cam.SetPerspective(x,y,0.001,10,3.14*0.4)
+
+	newSetCR := VkDescriptorSetAllocateInfo()
+	newSetCR.descriptorPool = gObjectLayoutSets
+	newSetCR.descriptorSetCount = 1
+	newSetCR.pSetLayouts = vkPerObjectLayout&
+	modelTextureSet := VkDescriptorSet
+
+	vkAllocateDescriptorSets(vkLogCard,newSetCR&,modelTextureSet&)
+	vSetTexture(modelTextureSet,txt,gSamplerNearest)
+
+	x := float
 	while true
 	{
+		x += 0.01f
+		//cam.InputCheck(0.1f)
 		DrawGetImage()
 		StartDraw()
+
+		learnShader.ApplyShaderToQueue(mainCmd.Get())
+		cam.BindDescriptor(mainCmd.Get())
+
+		//globalPos := relativePos<*>modelPos
+		//gCam.ApplyCamera(globalPos,calculatedPos)
+		calculatedPos[1] = sinf(x)//0.0f
+		calculatedPos[3] = cosf(x)//1.0f
+		calculatedPos[7] = 1.0f
+		calculatedPos[6] = 0.0f//1.7f
+		sts := VkDescriptorSet[2]
+		sts[0] = vkPerspSet
+		sts[1] = modelTextureSet
+		vkCmdBindDescriptorSets(mainCmd.Get(),VK_PIPELINE_BIND_POINT_GRAPHICS,vkLayout,0,2,sts[0]&,0,null)
+		vkCmdPushConstants(mainCmd.Get(),vkLayout,VK_SHADER_STAGE_VERTEX_BIT,0,4*8,calculatedPos[0]&) //4*8 = centf->TypeSize
+
+		mdl.AddToCmdBuffer(mainCmd.Get())
+
+
+		//mdl.
 		StopDraw()
 	}
 
@@ -53,3 +98,4 @@ main := !(char^[] args) -> int
 	//return 0
 }
 
+calculatedPos := float[8]

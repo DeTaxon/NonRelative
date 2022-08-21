@@ -16,7 +16,7 @@ vModel := class
 
 	LoadFile := !(vRepoFile^ itFl) -> bool
 	{
-		rFile := @temp new RawModel
+		rFile := @temp znew RawModel
 		if not rFile.LoadFromFile(itFl)
 			return false
 
