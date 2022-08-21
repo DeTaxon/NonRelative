@@ -287,6 +287,7 @@ VulkanInit := !() -> void
 		}
 	}
 	reqMod := pMods[0]
+	reqMod = VK_PRESENT_MODE_FIFO_KHR
 	//for gUserModes //TODO
 	//{
 	//	if it in pMods

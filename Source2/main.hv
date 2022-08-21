@@ -28,7 +28,8 @@ main := !(char^[] args) -> int
 	gLightShader = new vShader
 	gLightShader.LoadShaderLight(deferVert,deferFrag)
 
-	learnVert := LoadShaderModule("Shaders/ShaderCache/LearnVert.vert")
+	// learnVert := LoadShaderModule("Shaders/ShaderCache/LearnVert.vert")
+	learnVert := LoadShaderModule("Vert2.vert")
 	learnFrag := LoadShaderModule("Shaders/ShaderCache/LearnFrag.frag")
 	learnShader := new vShader
 	opts := vShaderVertexOptions
@@ -45,7 +46,7 @@ main := !(char^[] args) -> int
 	txt.CreateTexture(gRepo.GetFile("Maps/FirstMap2/wut.webp"))
 
 	cam := new vCamera()
-	cam.SetPerspective(x,y,0.001,10,3.14*0.4)
+	cam.SetPerspective(x,y,0.001,100,80deg)
 
 	newSetCR := VkDescriptorSetAllocateInfo()
 	newSetCR.descriptorPool = gObjectLayoutSets
@@ -56,34 +57,47 @@ main := !(char^[] args) -> int
 	vkAllocateDescriptorSets(vkLogCard,newSetCR&,modelTextureSet&)
 	vSetTexture(modelTextureSet,txt,gSamplerNearest)
 
-	x := float
 	while true
 	{
-		x += 0.01f
-		//cam.InputCheck(0.1f)
+		cam.InputCheck(0.1f)
 		DrawGetImage()
 		StartDraw()
 
 		learnShader.ApplyShaderToQueue(mainCmd.Get())
 		cam.BindDescriptor(mainCmd.Get())
 
-		//globalPos := relativePos<*>modelPos
-		//gCam.ApplyCamera(globalPos,calculatedPos)
-		calculatedPos[1] = sinf(x)//0.0f
-		calculatedPos[3] = cosf(x)//1.0f
-		calculatedPos[7] = 1.0f
-		calculatedPos[6] = 0.0f//1.7f
+		if buttons['y']
+		{
+			cam.camPos.x = 0
+			cam.camPos.y = 0
+			cam.camPos.z = 2
+			cam.upDownAng = 0.0f
+			cam.leftRightAng = 0.0f
+		}
+
+		globalPos := centf()
+		calculatedPos := centf()
+		cam.ApplyCamera(globalPos,calculatedPos)
+
+		//printf("ANG %f %f %f %f\nPOS %f %f %f %f\n"
+		//	,calculatedPos.ang.x,calculatedPos.ang.y,calculatedPos.ang.z,calculatedPos.ang.w
+		//	,calculatedPos.pos.x,calculatedPos.pos.y,calculatedPos.pos.z,calculatedPos.pos.w
+		//	)
+
 		sts := VkDescriptorSet[2]
 		sts[0] = vkPerspSet
 		sts[1] = modelTextureSet
 		vkCmdBindDescriptorSets(mainCmd.Get(),VK_PIPELINE_BIND_POINT_GRAPHICS,vkLayout,0,2,sts[0]&,0,null)
-		vkCmdPushConstants(mainCmd.Get(),vkLayout,VK_SHADER_STAGE_VERTEX_BIT,0,4*8,calculatedPos[0]&) //4*8 = centf->TypeSize
+		vkCmdPushConstants(mainCmd.Get(),vkLayout,VK_SHADER_STAGE_VERTEX_BIT,0,4*8,calculatedPos&) //4*8 = centf->TypeSize
 
 		mdl.AddToCmdBuffer(mainCmd.Get())
 
 
 		//mdl.
 		StopDraw()
+		
+		glfwSwapBuffers(glfwWindow)
+		glfwPollEvents()
 	}
 
 
@@ -98,4 +112,3 @@ main := !(char^[] args) -> int
 	//return 0
 }
 
-calculatedPos := float[8]
