@@ -1,0 +1,28 @@
+
+gSamplerNearest := VkSampler
+gSamplerLinear := VkSampler
+
+VoidCoreInit := !() -> void
+{
+    imV := VkSamplerCreateInfo()
+    imV.magFilter = VK_FILTER_NEAREST
+    imV.minFilter = VK_FILTER_NEAREST
+    imV.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST
+    imV.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE
+    imV.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE
+    imV.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE
+    //imV.mpLodBias = 0.0f
+    //imV.anisotropyEnable = VK_FALSE
+    imV.maxAnisotropy = 1.0
+    imV.compareEnable = VK_FALSE
+    imV.compareOp = VK_COMPARE_OP_ALWAYS
+    imV.minLod = 0.0
+    imV.maxLod = 0.0
+    imV.borderColor = VK_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK
+    //imV.unnormalizedCoordinates = VK_FALSE
+
+    vkCreateSampler(vkLogCard,imV&,null,gSamplerNearest&)
+    imV.magFilter = VK_FILTER_LINEAR
+    imV.minFilter = VK_FILTER_LINEAR
+    vkCreateSampler(vkLogCard,imV&,null,gSamplerLinear&)
+}

@@ -146,10 +146,10 @@ VulkanInit := !() -> void
 
     if vkCreateDebugReportCallbackEXT != null
 	{
-		debPrint := VkDebugReportCallbackCreateInfoEXT
+		debPrint := VkDebugReportCallbackCreateInfoEXT()
 		debPrint.sType = 1000011000
 		debPrint.pfnCallback&->{void^^}^ = VkDebugCallback->{void^}
-		debPrint.flags = 2 + 4 + 8 + 16
+		debPrint.flags = 2 + 4 + 8// + 16
 		vkCreateDebugReportCallbackEXT(vkInstance,debPrint&,null,vkDebugObj&)
 	}
 
@@ -181,7 +181,7 @@ VulkanInit := !() -> void
 		}
 	}
 
-	vkPhysCard = devs[0] //TODO select device
+	vkPhysCard = devs[2] //TODO select device
 
     devExts := TVector.{VkExtensionProperties}
     devSupports := AVLSet.{char^}
@@ -286,7 +286,7 @@ VulkanInit := !() -> void
 				printf("- unknown %i\n",it)
 		}
 	}
-	reqMod := VK_PRESENT_MODE_MAILBOX_KHR
+	reqMod := pMods[0]
 	//for gUserModes //TODO
 	//{
 	//	if it in pMods
@@ -324,7 +324,6 @@ VulkanInit := !() -> void
 	SwapImageFormat = formts[1].format
 	SwapImageColorSpace = formts[1].colorSpace
 	SwapImageMode = reqMod
-	//CreateSwapchain(gWindowW,gWindowH)
 
 	vkGetDeviceQueue(vkLogCard,0,0,vkQueue&)
 
@@ -407,12 +406,11 @@ VulkanInit := !() -> void
 
 	testTextureFormat := VkFormatProperties
 	vkGetPhysicalDeviceFormatProperties(vkPhysCard,VK_FORMAT_R8G8B8_UNORM,testTextureFormat&)
-	//vkRGB8Support = (testTextureFormat.linearTilingFeatures and_b VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT) != 0
+	vkRGB8Support = (testTextureFormat.linearTilingFeatures and_b VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT) != 0
 	//printf("with alpha %x %x %x\n",tst.linearTilingFeatures,tst.optimalTilingFeatures,tst.bufferFeatures)
 
-	// printf("RGB8SUpport %s\n",vkRGB8Support ?: "yes" : "no")
-	//printf("HalfFloat support %s\n",vkHalfFloatSupport ?: "yes" : "no") //TODO
-    printf("HalfFloat support %i\n",vkHalfFloatSupport)
+	printf("RGB8SUpport %s\n",vkRGB8Support ?: "yes" : "no")
+	printf("HalfFloat support %s\n",vkHalfFloatSupport ?: "yes" : "no")
 
 	printf("finished\n")
 }

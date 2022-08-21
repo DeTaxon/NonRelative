@@ -1,15 +1,38 @@
 
+gRepo := vRepo^
+LoadShaderModule := !(char^ name) -> vShaderModule^
+{
+	fil := gRepo.GetFile(name)
+	filMap := fil.GetMap()
+
+	result = new vShaderModule
+	result.LoadShaderModule(filMap.Get(),filMap.Size())
+}
 
 main := !(char^[] args) -> int
 {
+	gRepo = new vRepo
+	gRepo.Init(".")
 	
 	CreateWindow(512,512)
 	VulkanInit()
+	VoidCoreInit()
 	CreateSwapchain(512,512)
 	CreateFB()
-	//glfwMakeContextCurrent(win)
 
-	//vkCreateDebugReportCallbackEXT = vkLoadAddr(vkInstance,"vkCreateDebugReportCallbackEXT")->{PFN_vkCreateDebugReportCallbackEXT}
+	deferVert := LoadShaderModule("Shaders/ShaderCache/Defer.vert")
+	deferFrag := LoadShaderModule("Shaders/ShaderCache/Defer.frag")
+	gLightShader = new vShader
+	gLightShader.LoadShaderLight(deferVert,deferFrag)
+
+	learnVert := LoadShaderModule("Shaders/ShaderCache/LearnVert.vert")
+	learnFrag := LoadShaderModule("Shaders/ShaderCache/LearnFrag.frag")
+	learnShader := new vShader
+	opts := vShaderVertexOptions
+	opts.positionType = VKType(VType_Float,3)
+	opts.normalType = VKType(VType_Float,3)
+	opts.textureType = VKType(VType_Float,2)
+	learnShader.LoadShader(learnVert,learnFrag,opts&)
 
 	while true
 	{
