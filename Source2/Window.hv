@@ -9,6 +9,8 @@ buttons := bool[256]
 mouseX := double
 mouseY := double
 
+nuklearContext := void^
+
 glfwKeyPressRes := !(void^ win,int key, int scancode,int action) -> void
 {
 	asCh := 0

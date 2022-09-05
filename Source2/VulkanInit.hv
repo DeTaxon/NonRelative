@@ -10,16 +10,15 @@ vkQueue := VkQueue
 vkSwapchain := VkSwapchainKHR
 vkCmdPool := VkCommandPool
 vkFence := VkFence
-vkLayout := VkPipelineLayout
 vkGraphPipe := VkPipeline
 
-vkPerspLayout := VkDescriptorSetLayout
-vkPerObjectLayout := VkDescriptorSetLayout
-vkDescPool := VkDescriptorPool
+vkDescPool := TDescriptorPool^
 
 mainCmd := CmdBuffer
 
 vkPerspSet := VkDescriptorSet
+
+gModelLayout := TShaderInput
 
 vkRGB8Support := bool
 vkHalfFloatSupport := bool
@@ -181,7 +180,7 @@ VulkanInit := !() -> void
 		}
 	}
 
-	vkPhysCard = devs[2] //TODO select device
+	vkPhysCard = devs[1] //TODO select device
 
     devExts := TVector.{VkExtensionProperties}
     devSupports := AVLSet.{char^}
@@ -339,71 +338,19 @@ VulkanInit := !() -> void
 	vkCreateFence(vkLogCard,crtFence&,null,vkFence&)
 
 	
+	// gModelLayout.StartInit()
+	// gModelLayout.EndInit()
+	gModelLayout.CreateInput(![
+		new TUniformSet(),
+		new TImageSet()
+	],![
+		new TVertexPushConstant(2*4*4)
+	])
 
-	oneDesc := VkDescriptorSetLayoutBinding
-	oneDesc.binding = 0
-	oneDesc.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
-	oneDesc.descriptorCount = 1
-	oneDesc.stageFlags = VK_SHADER_STAGE_VERTEX_BIT
-	oneDesc.pImmutableSamplers = null
-
-	setDesc := VkDescriptorSetLayoutCreateInfo()
-	setDesc.bindingCount = 1
-	setDesc.pBindings&->{void^^}^ = oneDesc&->{void^}
-
-	twoDesc := VkDescriptorSetLayoutBinding
-	twoDesc.binding = 0
-	twoDesc.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
-	twoDesc.descriptorCount = 1
-	twoDesc.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT
-	twoDesc.pImmutableSamplers = null
-
-	set2Desc := VkDescriptorSetLayoutCreateInfo()
-	set2Desc.bindingCount = 1
-	set2Desc.pBindings&->{void^^}^ = twoDesc&->{void^}
-
-	vkCreateDescriptorSetLayout(vkLogCard,setDesc&,null,vkPerspLayout&)
-	vkCreateDescriptorSetLayout(vkLogCard,set2Desc&,null,vkPerObjectLayout&)
-
-	layouts := void^[2]
-	layouts[0] = vkPerspLayout
-	layouts[1] = vkPerObjectLayout
-
-	pcrC := VkPushConstantRange
-	pcrC.stageFlags = VK_SHADER_STAGE_VERTEX_BIT
-	pcrC.offset = 0
-	pcrC.size = 2*4*4
-	ppC := VkPipelineLayoutCreateInfo()
-	ppC.pushConstantRangeCount = 1
-	ppC.pPushConstantRanges&->{void^^}^ = pcrC&->{void^}
-	ppC.setLayoutCount = 2
-	ppC.pSetLayouts&->{void^^}^ = layouts&->{void^}
-
-	vkCreatePipelineLayout(vkLogCard,ppC&,null,vkLayout&)
 	mainCmd.CreateBuffer()
-	
-	descPoolSize := VkDescriptorPoolSize
-	descPoolSize.descriptorCount = 10
-	//descPoolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER //TODO
-	descPoolSize.0 = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
 
-	test := u32[2]
-	test[0] = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
-	test[1] = 1 //count
-
-	descPoolC := VkDescriptorPoolCreateInfo()
-	descPoolC.maxSets = 1
-	descPoolC.poolSizeCount = 1
-	descPoolC.pPoolSizes&->{void^^}^ = test[0]&->{void^}//descPoolSize
-
-	vkCreateDescriptorPool(vkLogCard,descPoolC&,null,vkDescPool&)
-
-	allDesc := VkDescriptorSetAllocateInfo()
-	allDesc.descriptorPool = vkDescPool
-	allDesc.descriptorSetCount = 1
-	allDesc.pSetLayouts&->{void^^}^ = vkPerspLayout&
-
-	vkAllocateDescriptorSets(vkLogCard,allDesc&,vkPerspSet&)
+	vkDescPool = gModelLayout.CreateDescriptorPool(1) //only need one for perspective data
+	vkPerspSet = vkDescPool.CreateDescriptor()
 
 	testTextureFormat := VkFormatProperties
 	vkGetPhysicalDeviceFormatProperties(vkPhysCard,VK_FORMAT_R8G8B8_UNORM,testTextureFormat&)

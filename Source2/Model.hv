@@ -127,4 +127,5 @@ vModel := class
 		vkCmdBindIndexBuffer(cmdB,hndls[1],0,indexType.GetBaseIndexType())
 		vkCmdDrawIndexed(cmdB,indexCount,1,0,0,0)
 	}
+	
 }

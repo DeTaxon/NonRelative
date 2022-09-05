@@ -45,6 +45,9 @@ main := !(char^[] args) -> int
 	txt := new vTexture
 	txt.CreateTexture(gRepo.GetFile("Maps/FirstMap2/wut.webp"))
 
+	planeModel := vModel
+	planeModel.LoadFile(gRepo.GetFile("Models/Plane.zip/Plane.ply"))
+
 	cam := new vCamera()
 	cam.SetPerspective(x,y,0.001,100,80deg)
 
@@ -79,16 +82,11 @@ main := !(char^[] args) -> int
 		calculatedPos := centf()
 		cam.ApplyCamera(globalPos,calculatedPos)
 
-		//printf("ANG %f %f %f %f\nPOS %f %f %f %f\n"
-		//	,calculatedPos.ang.x,calculatedPos.ang.y,calculatedPos.ang.z,calculatedPos.ang.w
-		//	,calculatedPos.pos.x,calculatedPos.pos.y,calculatedPos.pos.z,calculatedPos.pos.w
-		//	)
-
 		sts := VkDescriptorSet[2]
 		sts[0] = vkPerspSet
 		sts[1] = modelTextureSet
-		vkCmdBindDescriptorSets(mainCmd.Get(),VK_PIPELINE_BIND_POINT_GRAPHICS,vkLayout,0,2,sts[0]&,0,null)
-		vkCmdPushConstants(mainCmd.Get(),vkLayout,VK_SHADER_STAGE_VERTEX_BIT,0,4*8,calculatedPos&) //4*8 = centf->TypeSize
+		vkCmdBindDescriptorSets(mainCmd.Get(),VK_PIPELINE_BIND_POINT_GRAPHICS,gModelLayout.Get(),0,2,sts[0]&,0,null)
+		vkCmdPushConstants(mainCmd.Get(),gModelLayout.Get(),VK_SHADER_STAGE_VERTEX_BIT,0,4*8,calculatedPos&) //4*8 = centf->TypeSize
 
 		mdl.AddToCmdBuffer(mainCmd.Get())
 
