@@ -52,12 +52,12 @@ VulkanInit := !() -> void
 	count := u32
 
 	vkEnumerateInstanceLayerProperties(count&,null)
-	lays := TVector.{VkLayerProperties}(count->{int})
-	vkEnumerateInstanceLayerProperties(count&,lays)
+	lays := Vector.{VkLayerProperties}(count->{int})
+	vkEnumerateInstanceLayerProperties(count&,lays.Get())
 
 	vkEnumerateInstanceExtensionProperties(null,count&,null)
-	exts := TVector.{VkExtensionProperties}(count->{int})
-	vkEnumerateInstanceExtensionProperties(null,count&,exts)
+	exts := Vector.{VkExtensionProperties}(count->{int})
+	vkEnumerateInstanceExtensionProperties(null,count&,exts.Get())
 
 	for i : lays.Size()
 	{
@@ -118,8 +118,8 @@ VulkanInit := !() -> void
 		printf("extension %s\n",it)
 	}
 
-	usingLayers := itLayers.ToArray()
-	exts := itExts.ToArray()
+	usingLayers := itLayers.ToVector()
+	exts := itExts.ToVector()
 
 	appInfo := VkApplicationInfo()
 	appInfo.pApplicationName = "no one care"
@@ -139,10 +139,6 @@ VulkanInit := !() -> void
 
 	vkHVInit()
 
-    printf("HEY %p\n",vkCreateDebugReportCallbackEXT)
-    vkCreateDebugReportCallbackEXT&->{void^^}^ = vkGetInstanceProcAddr(vkInstance,"vkCreateDebugReportCallbackEXT")
-    printf("HEY %p\n",vkCreateDebugReportCallbackEXT)
-
     if vkCreateDebugReportCallbackEXT != null
 	{
 		debPrint := VkDebugReportCallbackCreateInfoEXT()
@@ -154,7 +150,7 @@ VulkanInit := !() -> void
 
     devCount := u32
 	vkEnumeratePhysicalDevices(vkInstance,devCount&,null)
-	devs := TVector.{VkPhysicalDevice}(devCount)
+	devs := Vector.{VkPhysicalDevice}(devCount)
 	vkEnumeratePhysicalDevices(vkInstance,devCount&,devs.Get())
 
 	for it,i : devs
@@ -169,8 +165,8 @@ VulkanInit := !() -> void
 
 		propsCount := u32
 		vkGetPhysicalDeviceQueueFamilyProperties(it,propsCount&,null)
-		prps := TVector.{VkQueueFamilyProperties}(propsCount)
-		vkGetPhysicalDeviceQueueFamilyProperties(it,propsCount&,prps)
+		prps := Vector.{VkQueueFamilyProperties}(propsCount)
+		vkGetPhysicalDeviceQueueFamilyProperties(it,propsCount&,prps.Get())
 
 		for it,j : prps
 		{
@@ -182,7 +178,7 @@ VulkanInit := !() -> void
 
 	vkPhysCard = devs[1] //TODO select device
 
-    devExts := TVector.{VkExtensionProperties}
+    devExts := Vector.{VkExtensionProperties}
     devSupports := AVLSet.{char^}
 
     devExtsCount := u32
@@ -190,7 +186,7 @@ VulkanInit := !() -> void
 	if devExtsCount != 0
 	{
 		devExts.Resize(devExtsCount)
-		vkEnumerateDeviceExtensionProperties(vkPhysCard,null,devExtsCount&,devExts)
+		vkEnumerateDeviceExtensionProperties(vkPhysCard,null,devExtsCount&,devExts.Get())
 
 		printf("dev extensions\n")
 		for it,i : devExts
@@ -215,7 +211,7 @@ VulkanInit := !() -> void
 		vkHalfFloatSupport = true
 	}
 
-    usingPhysExts := physExts.ToArray()
+    usingPhysExts := physExts.ToVector()
 
     queueCreateInf := VkDeviceQueueCreateInfo()
 	queueCreateInf.queueFamilyIndex = 0
@@ -253,8 +249,8 @@ VulkanInit := !() -> void
 
 	formsCount := u32
 	vkGetPhysicalDeviceSurfaceFormatsKHR(vkPhysCard,vkSurface,formsCount&,null)
-	formts := TVector.{VkSurfaceFormatKHR}(formsCount)
-	vkGetPhysicalDeviceSurfaceFormatsKHR(vkPhysCard,vkSurface,formsCount&,formts)
+	formts := Vector.{VkSurfaceFormatKHR}(formsCount)
+	vkGetPhysicalDeviceSurfaceFormatsKHR(vkPhysCard,vkSurface,formsCount&,formts.Get())
 
 	printf("formats\n")
 	for it : formts
@@ -264,8 +260,8 @@ VulkanInit := !() -> void
 
 	presMods := u32
 	vkGetPhysicalDeviceSurfacePresentModesKHR(vkPhysCard,vkSurface,presMods&,null)
-	pMods := TVector.{VkPresentModeKHR}(presMods)
-	vkGetPhysicalDeviceSurfacePresentModesKHR(vkPhysCard,vkSurface,presMods&,pMods)
+	pMods := Vector.{VkPresentModeKHR}(presMods)
+	vkGetPhysicalDeviceSurfacePresentModesKHR(vkPhysCard,vkSurface,presMods&,pMods.Get())
 
 	printf("supported mods\n")
 
@@ -349,7 +345,7 @@ VulkanInit := !() -> void
 
 	mainCmd.CreateBuffer()
 
-	vkDescPool = gModelLayout.CreateDescriptorPool(1) //only need one for perspective data
+	vkDescPool = gModelLayout.CreateDescriptorPool(0,1) //only need one for perspective data
 	vkPerspSet = vkDescPool.CreateDescriptor()
 
 	testTextureFormat := VkFormatProperties

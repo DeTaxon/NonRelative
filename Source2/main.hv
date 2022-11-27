@@ -45,9 +45,6 @@ main := !(char^[] args) -> int
 	txt := new vTexture
 	txt.CreateTexture(gRepo.GetFile("Maps/FirstMap2/wut.webp"))
 
-	planeModel := vModel
-	planeModel.LoadFile(gRepo.GetFile("Models/Plane.zip/Plane.ply"))
-
 	cam := new vCamera()
 	cam.SetPerspective(x,y,0.001,100,80deg)
 
@@ -59,6 +56,10 @@ main := !(char^[] args) -> int
 
 	vkAllocateDescriptorSets(vkLogCard,newSetCR&,modelTextureSet&)
 	vSetTexture(modelTextureSet,txt,gSamplerNearest)
+
+	itProp := new vProp()
+	itProp.itModel = mdl
+	itProp.modelTextureSet = modelTextureSet
 
 	while true
 	{
@@ -78,20 +79,8 @@ main := !(char^[] args) -> int
 			cam.leftRightAng = 0.0f
 		}
 
-		globalPos := centf()
-		calculatedPos := centf()
-		cam.ApplyCamera(globalPos,calculatedPos)
+		itProp.Draw(mainCmd,cam^)
 
-		sts := VkDescriptorSet[2]
-		sts[0] = vkPerspSet
-		sts[1] = modelTextureSet
-		vkCmdBindDescriptorSets(mainCmd.Get(),VK_PIPELINE_BIND_POINT_GRAPHICS,gModelLayout.Get(),0,2,sts[0]&,0,null)
-		vkCmdPushConstants(mainCmd.Get(),gModelLayout.Get(),VK_SHADER_STAGE_VERTEX_BIT,0,4*8,calculatedPos&) //4*8 = centf->TypeSize
-
-		mdl.AddToCmdBuffer(mainCmd.Get())
-
-
-		//mdl.
 		StopDraw()
 		
 		glfwSwapBuffers(glfwWindow)

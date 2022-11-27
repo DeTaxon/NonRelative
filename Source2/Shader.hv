@@ -14,8 +14,8 @@ VType_Double := 402
 
 VKType := class
 {
-	BaseType := u16
-	TypeCount := u16
+	BaseType := s16
+	TypeCount := s16
 	
 	this := !(int itType,int itCount) -> void
 	{

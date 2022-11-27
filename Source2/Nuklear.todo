@@ -1,0 +1,200 @@
+	if false
+	{
+	//MODEL START
+		memObjs := vMemObj[2]
+		hndls := VkBuffer[2]
+
+		bufC := VkBufferCreateInfo()
+		bufC.size = 32*4096
+		bufC.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT or_b VK_BUFFER_USAGE_TRANSFER_DST_BIT
+		bufC.sharingMode = VK_SHARING_MODE_EXCLUSIVE
+
+		memInfo := VkMemoryRequirements
+
+		vkCreateBuffer(vkLogCard,bufC&,null,hndls[0]&)
+		vkGetBufferMemoryRequirements(vkLogCard,hndls[0],memInfo&)
+		isVertGpu := bool
+		memObjs[0].CreateObject(memInfo.size,memInfo.memoryTypeBits,isVertGpu&)
+		
+		vkBindBufferMemory(vkLogCard,hndls[0],memObjs[0].Get(),0)
+
+		// memO := memObjs[0]&
+
+		// memPoint := memO.Map()
+		// memO.Unmap()
+
+		indSize := rFile.IndexCount*rFile.IndexType.GetSize()
+		bufC.size = 2*4096
+		bufC.usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT or_b VK_BUFFER_USAGE_TRANSFER_DST_BIT
+		vkCreateBuffer(vkLogCard,bufC&,null,hndls[1]&)
+		vkGetBufferMemoryRequirements(vkLogCard,hndls[1],memInfo&)
+
+		isIndGpu := bool
+		memObjs[1].CreateObject(memInfo.size,memInfo.memoryTypeBits,isIndGpu&)
+		vkBindBufferMemory(vkLogCard,hndls[1],memObjs[1].Get(),0)
+
+		// memO2 := memObjs[1]&
+		// memPoint = memO2.Map()
+		// memcpy(memPoint,rFile.inds->{void^},indSize)
+		// memO2.Unmap()
+	//MODEL END
+	
+	
+	
+	fbArray := TVector.{char}(512*512*4)
+	atlas := TVector.{char}(512*512*4)
+	
+	// nuklearContext = nk_rawfb_init(fbArray.Get(),atlas.Get(),512,512,512*4,0)
+	nuklearContext = calloc(1,nk_context_size())
+	nk_init_default(nuklearContext,null)
+
+	testBake := TVector.{char}(512*512*4)
+	atls_data := calloc(1,nk_atlas_size())
+
+	ax := 512
+	ay := 512
+	nk_font_atlas_init_default(atls_data)
+	nk_font_atlas_begin(atls_data)
+
+	fnt2 := nk_font_atlas_add_default(atls_data,24,null)
+
+	// ttf := gRepo.GetFile("./Pacifico.ttf")
+	// ttfMap := ttf.GetMap()
+	// fnt := nk_font_atlas_add_from_memory(atls_data,ttfMap.Get(),ttfMap.Size(),24,null)
+
+	// imgABC := nk_font_atlas_bake(atls_data,ax&,ay&,NK_FONT_ATLAS_RGBA32)
+	imgABC := nk_font_atlas_bake(atls_data,ax&,ay&,0)
+	nk_font_atlas_end(atls_data,null,null)
+	for i : ax
+	{
+		for j : ay
+		{
+			val := 255
+			if imgABC->{u8^}[(i + j*ax)*1] == 0
+				val = 0
+			atlas.Get()[(i + j*512)*4] = val
+			atlas.Get()[(i + j*512)*4 + 1] = val
+			atlas.Get()[(i + j*512)*4 + 2] = val
+		}
+	}
+
+	nk_style_set_font(nuklearContext,fnt2->{void^^}[1]&)
+
+	blankTexture := new vTexture
+	blankTexture.CreateObject(ax,ay,(x,y) ==> {
+		x.format = VK_FORMAT_R8G8B8A8_UNORM
+	})
+	BlankSet := VkDescriptorSet
+	vkAllocateDescriptorSets(vkLogCard,newSetCR&,BlankSet&)
+
+	nkPart := () ==> {
+
+		mx := double
+		my := double
+
+		nk_input_begin(nuklearContext)
+		glfwGetCursorPos(glfwWindow,mx&,my&)
+		nk_input_motion(nuklearContext,mx,my)
+		nk_input_button(nuklearContext,NK_BUTTON_LEFT,mx,my,glfwGetMouseButton(glfwWindow,GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
+		nk_input_end(nuklearContext)
+
+		resetColor := nk_color
+		resetColor.r = 128
+		resetColor.g = 255
+		resetColor.b = 0
+	
+		rect := nk_rect//(10,10,100,100)
+		rect.x = 100
+		rect.y = 100
+		rect.w = 250
+		rect.h = 250
+		if nk_begin(nuklearContext,"HI",rect,NK_WINDOW_MOVABLE + NK_WINDOW_BORDER + NK_WINDOW_CLOSABLE) != 0
+		{
+			nk_label(nuklearContext,"test",0x11)
+		}
+		nk_end(nuklearContext)
+
+		
+		// float pos[2]
+		// float uv[2]
+		// float color[4]
+
+		layT := nk_draw_vertex_layout_element[4]
+		layT[0].attribute = NK_VERTEX_POSITION
+		layT[0].format = NK_FORMAT_FLOAT
+		layT[0].offset = 0
+		layT[1].attribute = NK_VERTEX_TEXCOORD
+		layT[1].format = NK_FORMAT_FLOAT
+		layT[1].offset = 4*2
+		layT[2].attribute = NK_VERTEX_COLOR
+		layT[2].format = NK_FORMAT_R8G8B8A8
+		layT[2].offset = 4*4
+		layT[3].attribute = NK_VERTEX_ATTRIBUTE_COUNT
+		layT[3].format = NK_FORMAT_COUNT
+		layT[3].offset = 0
+
+		cfg := nk_convert_config
+		cfg.vertex_size = 8*4
+		cfg.vertex_layout = layT[0]&
+		cfg.circle_segment_count = 22
+		cfg.curve_segment_count = 22
+		cfg.arc_segment_count = 22
+		cfg.global_alpha = 1.0f
+		cfg.shape_AA = 1
+		cfg.line_AA = 1
+
+		vBuf := u8[1024]
+		iBuf := u8[1024]
+		cmds := u8[1024]
+
+		nk_buffer_init_default(cmds[0]&)
+
+		nk_buffer_init_fixed(vBuf[0]&,memObjs[0].Map(),1024)
+		nk_buffer_init_fixed(iBuf[0]&,memObjs[1].Map(),1024)
+		nk_convert(nuklearContext,cmds&,vBuf[0]&,iBuf[0]&,cfg&)
+		memObjs[0].Unmap()
+		memObjs[1].Unmap()
+
+		nk_clear(nuklearContext)
+		//nk_rawfb_render(nuklearContext,resetColor,1)
+	
+	
+		ptrToSet := gStageMem.Map()->{u8^}
+		//memcpy(ptrToSet,fbArray.Get(),fbArray.Size())
+		memcpy(ptrToSet,atlas,atlas.Size())
+		// for i : 256
+		// {
+		// 	memcpy(ptrToSet->{u8^}[i*512*4]&,atlas.Get()[i*256*4]&,512)
+		// }
+		gStageMem.Unmap()
+		vStageCpyToImage(blankTexture.itImg,ax,ay)
+		
+		vSetTexture(BlankSet,blankTexture,gSamplerNearest)
+	}
+}
+nk_draw_vertex_layout_element := class
+{
+	attribute := int
+    format := int
+    offset := size_t
+}
+nk_draw_null_texture := class 
+{
+    texture := void^ /* texture handle to a texture with a white pixel */
+    uvX := float /* coordinates to a white pixel in the texture  */
+    uvY := float /* coordinates to a white pixel in the texture  */
+}
+
+nk_convert_config := class
+{
+	global_alpha := float /* global alpha value */
+    line_AA := int /* line anti-aliasing flag can be turned off if you are tight on memory */
+    shape_AA := int /* shape anti-aliasing flag can be turned off if you are tight on memory */
+    circle_segment_count := u32 /* number of segments used for circles: default to 22 */
+    arc_segment_count := u32 /* number of segments used for arcs: default to 22 */
+    curve_segment_count := u32 /* number of segments used for curves: default to 22 */
+    nullValue := nk_draw_null_texture /* handle to texture with a white pixel for shape drawing */
+    vertex_layout := nk_draw_vertex_layout_element^  /* describes the vertex output format and packing */
+	vertex_size := size_t /* sizeof one vertex for vertex packing */
+	vertex_alignment := size_t /* vertex alignment: Can be obtained by NK_ALIGNOF */
+}

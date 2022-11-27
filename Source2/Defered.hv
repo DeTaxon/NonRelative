@@ -2,9 +2,9 @@
 gRenderPassModel := VkRenderPass
 gRenderPassLight := VkRenderPass
 
-vkImages := TVector.{VkImage}^
-vkImageViews := TVector.{VkImageView}^
-vkFramebuffers := TVector.{VkFramebuffer}^
+vkImages := Vector.{VkImage}^
+vkImageViews := Vector.{VkImageView}^
+vkFramebuffers := Vector.{VkFramebuffer}^
 
 gModelFramebuffer := VkFramebuffer
 
@@ -101,7 +101,7 @@ CreateSwapchain := !(int inW,int inH) -> void
 
 	imgCount := u32
 	vkGetSwapchainImagesKHR(vkLogCard,vkSwapchain,imgCount&,null)
-	vkImages = new TVector.{VkImage}(imgCount)
+	vkImages = new Vector.{VkImage}(imgCount)
 	vkGetSwapchainImagesKHR(vkLogCard,vkSwapchain,imgCount&,vkImages.Get())
 
 	attmDesc := VkAttachmentDescription[1]
@@ -139,8 +139,8 @@ CreateSwapchain := !(int inW,int inH) -> void
 
 	vkCreateRenderPass(vkLogCard,rpC&,null,gRenderPassLight&)
 
-	vkImageViews = new TVector.{VkImageView}(vkImages.Size())
-	vkFramebuffers = new TVector.{VkFramebuffer}(vkImages.Size())
+	vkImageViews = new Vector.{VkImageView}(vkImages.Size())
+	vkFramebuffers = new Vector.{VkFramebuffer}(vkImages.Size())
 	for it,i : vkImages^
 	{
 		imgViewC := VkImageViewCreateInfo()

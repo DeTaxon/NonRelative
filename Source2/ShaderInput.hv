@@ -1,0 +1,164 @@
+TShaderInput := class 
+{
+    itLayout := VkPipelineLayout
+
+    itSets := Vector.{TShaderSet^}
+
+    Get := !() -> VkPipelineLayout
+    {
+        return itLayout
+    }
+
+    CreateInput := !(TShaderSet^[] sets,TPushConstant^[] cnsts) -> void
+    {
+        itSets.Resize(sets.Size())
+        for it,i : sets
+            itSets[i] = it
+
+        vkPerspLayout = itSets[0].Get()
+        vkPerObjectLayout = itSets[1].Get()
+
+        assert(sets.Size() <= 10)
+        layouts := void^[10]
+        layouts[i] = sets[^i].Get()
+
+        cnstsPtr := void^
+        cnstsVec := Vector.{VkPushConstantRange}
+
+        if cnsts.Size() != 0
+        {
+            if cnsts.Size() == 1
+            {
+                cnstsPtr = cnsts[0].Get()
+            }else{
+                cnstsVec.Resize(cnsts.Size())
+                cnstsPtr = cnstsVec.Get()
+                for i : cnsts.Size()
+                {
+                    cnstsVec[i].stageFlags = cnsts[i].Get().stageFlags
+                    cnstsVec[i].offset = cnsts[i].Get().offset
+                    cnstsVec[i].size = cnsts[i].Get().size
+                }
+            }
+        }
+    
+        ppC := VkPipelineLayoutCreateInfo()
+        ppC.pushConstantRangeCount = 1
+        ppC.pPushConstantRanges&->{void^^}^ = cnstsPtr->{void^}
+        ppC.setLayoutCount = 2
+        ppC.pSetLayouts&->{void^^}^ = layouts&->{void^}
+    
+        vkCreatePipelineLayout(vkLogCard,ppC&,null,itLayout&)
+    }
+    CreateDescriptorPool := !(int setIndex,int poolSize) -> TDescriptorPool^
+    {
+        return new TDescriptorPool(this&,setIndex,poolSize)
+    }
+}
+
+TShaderSet := class extend TGCObject
+{
+    itSet := VkDescriptorSetLayout
+    Get := !() -> VkDescriptorSetLayout
+    {
+        return itSet
+    }
+}
+TUniformSet := class extend TShaderSet
+{
+    this := !() -> void
+    {
+        oneDesc := VkDescriptorSetLayoutBinding
+        oneDesc.binding = 0
+        oneDesc.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
+        oneDesc.descriptorCount = 1
+        oneDesc.stageFlags = VK_SHADER_STAGE_VERTEX_BIT
+        oneDesc.pImmutableSamplers = null
+    
+        setDesc := VkDescriptorSetLayoutCreateInfo()
+        setDesc.bindingCount = 1
+        setDesc.pBindings&->{void^^}^ = oneDesc&->{void^}
+    
+        vkCreateDescriptorSetLayout(vkLogCard,setDesc&,null,itSet&)
+    }
+}
+TImageSet := class extend TShaderSet
+{
+    this := !() -> void
+    {  
+        twoDesc := VkDescriptorSetLayoutBinding
+        twoDesc.binding = 0
+        twoDesc.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
+        twoDesc.descriptorCount = 1
+        twoDesc.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT
+        twoDesc.pImmutableSamplers = null
+    
+        set2Desc := VkDescriptorSetLayoutCreateInfo()
+        set2Desc.bindingCount = 1
+        set2Desc.pBindings&->{void^^}^ = twoDesc&->{void^}
+    
+        vkCreateDescriptorSetLayout(vkLogCard,set2Desc&,null,itSet&)
+    }
+}
+
+TPushConstant := class extend TGCObject
+{
+    cnst := VkPushConstantRange
+    Get := !() -> VkPushConstantRange^
+    {
+        return cnst&
+    }
+}
+TVertexPushConstant := class extend TPushConstant
+{
+    this := !(int itSize) -> void
+    {
+        cnst.stageFlags = VK_SHADER_STAGE_VERTEX_BIT
+        cnst.offset = 0
+        cnst.size = itSize
+    }
+}
+
+TDescriptorPool := class extend TGCObject
+{
+    baseLayout := TShaderInput^
+    vPool := VkDescriptorPool
+    itSet := TShaderSet^
+    this := !(TShaderInput^ itm,int setIndex, int poolSize) -> void
+    {
+        //descPoolSize := VkDescriptorPoolSize
+        //descPoolSize.descriptorCount = poolSize
+        ////descPoolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER //TODO
+        //descPoolSize.0 = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
+
+        baseLayout = itm
+        itSet = itm.itSets[setIndex]
+    
+        test := u32[2]
+        test[0] = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
+        test[1] = poolSize //count
+    
+        descPoolC := VkDescriptorPoolCreateInfo()
+        descPoolC.maxSets = 1
+        descPoolC.poolSizeCount = 1
+        descPoolC.pPoolSizes&->{void^^}^ = test[0]&->{void^}//descPoolSize
+    
+        vkCreateDescriptorPool(vkLogCard,descPoolC&,null,vPool&)
+    }
+    CreateDescriptor := !() -> VkDescriptorSet
+    {
+
+        lay := itSet.Get()
+        allDesc := VkDescriptorSetAllocateInfo()
+        allDesc.descriptorPool = vPool
+        allDesc.descriptorSetCount = 1
+        allDesc.pSetLayouts&->{void^^}^ = lay&
+
+        preRes := void^
+        vkAllocateDescriptorSets(vkLogCard,allDesc&,preRes&)
+        return preRes
+    }
+}
+
+vkPerspLayout := VkDescriptorSetLayout
+vkPerObjectLayout := VkDescriptorSetLayout
