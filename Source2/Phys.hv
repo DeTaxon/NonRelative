@@ -196,7 +196,7 @@ PhysHeightMap := class
 		
 		resSize := nDots.Size()*vec4f->TypeSize + Triangles2.Size()*2*3 + resSpheres.Size()*PhysHightSphere->TypeSize
 		
-		asIntP := nDots->{u32^}
+		asIntP := nDots.Get()->{u32^}
 		asIntP[0] = nDots.Size()*vec4f->TypeSize
 		asIntP[1] = resSpheres.Size()*PhysHightSphere->TypeSize
 		asIntP[2] = Triangles2.Size()*2*3
@@ -207,9 +207,9 @@ PhysHeightMap := class
 		Spheres = itMap[asIntP[0]]&->{PhysHightSphere^}
 		Triangles = itMap[asIntP[0] + asIntP[1]]&->{u16[3]^}
 
-		memcpy(Dots,nDots->{void^},asIntP[0])
-		memcpy(Spheres,resSpheres->{void^},asIntP[1])
-		memcpy(Triangles,Triangles2->{void^},asIntP[2])
+		memcpy(Dots,nDots.Get()->{void^},asIntP[0])
+		memcpy(Spheres,resSpheres.Get()->{void^},asIntP[1])
+		memcpy(Triangles,Triangles2.Get()->{void^},asIntP[2])
 
 		return resSize
 	}
@@ -239,7 +239,7 @@ PhysHeightMap := class
 
 	GetTris := !(vec4f pos,u16[32]^ triBuf, int^ triSize,int sInd)-> void
 	{
-		itSphere := ref Spheres[sInd]
+		itSphere := Spheres[sInd]&
 
 
 		if Distance(pos.xyz,itSphere.PosAndSize.xyz) > (pos.w + itSphere.PosAndSize.w)
@@ -288,8 +288,8 @@ PhysHeightMap := class
 	
 	TriangleDistanceH := !(vec4f pos, u16 ind,vec4f^ res) -> bool
 	{
-		itTri := ref Triangles[ind]
-		return TriangleDistanceH(pos,Dots[itTri[0]],Dots[itTri[1]],Dots[itTri[2]],res)
+		itTri := Triangles[ind]&
+		return TriangleDistanceH(pos,Dots[itTri^[0]],Dots[itTri^[1]],Dots[itTri^[2]],res)
 	}
 	TriangleDistanceH := !(vec4f pos, vec4f a, vec4f b, vec4f c,vec4f^ res) -> bool
 	{
@@ -369,7 +369,8 @@ PhysCheckPlayerVSHMap := !(PhysPlayer^ p,PhysHeightMap^ hMap,centf mapPosition) 
 				if p.ImpulseV.z < 0.0f
 				{
 					p.ImpulseV.z = 0.0f
-					p.System.pos.z = mapPosition.Apply(hV).z
+					tmp := mapPosition.Apply(hV) //TODO remove tmp
+					p.System.pos.z = tmp.z
 					fixes += 1
 				}
 				onMap = true

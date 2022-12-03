@@ -24,7 +24,11 @@ main := !(char^[] args) -> int
 	CreateSwapchain(x,y)
 	CreateFB()
 
-	//gPlayer = new PhysPlayer()
+	gPlayer = new PhysPlayer()
+	gPlayer.System.pos.x = 0.0
+	gPlayer.System.pos.y = 0.0
+	gPlayer.System.pos.z = 2.0
+	gPlayer.System.pos.w = 1.0
 
 	deferVert := LoadShaderModule("Shaders/ShaderCache/Defer.vert")
 	deferFrag := LoadShaderModule("Shaders/ShaderCache/Defer.frag")
@@ -46,11 +50,11 @@ main := !(char^[] args) -> int
 	mdl.LoadFile(fldFile)
 
 
-	//gMap = new PhysHeightMap
+	gMap = new PhysHeightMap
 
-	//mapFile := new RawModel
-	//mapFile.LoadFromFile(FSGetFile("Maps/FirstMap2/FirstMap.ply"))
-	//gMap.CreateDots(mapFile)
+	mapFile := new RawModel
+	mapFile.LoadFromFile(FSGetFile("Maps/FirstMap2/FirstMap.ply"))
+	gMap.CreateDots(mapFile)
 
 
 	txt := new vTexture
@@ -72,13 +76,13 @@ main := !(char^[] args) -> int
 	itProp.itModel = mdl
 	itProp.modelTextureSet = modelTextureSet
 
-	//TSpawnTask(() ==> {
-	//	while true
-	//	{
-	//		vPhysStage(0.01)
-	//		TSleep(0.01)
-	//	}
-	//})
+	TSpawnTask(() ==> {
+		while true
+		{
+			vPhysStage(0.01)
+			TSleep(0.01)
+		}
+	})
 
 	while true
 	{
@@ -88,6 +92,10 @@ main := !(char^[] args) -> int
 
 		learnShader.ApplyShaderToQueue(mainCmd.Get())
 		gCam.BindDescriptor(mainCmd.Get())
+
+		gCam.camPos.x = gPlayer.System.pos.x
+		gCam.camPos.y = gPlayer.System.pos.y
+		gCam.camPos.z = gPlayer.System.pos.z + 1.7
 
 		if buttons['y']
 		{
@@ -104,7 +112,7 @@ main := !(char^[] args) -> int
 		
 		glfwSwapBuffers(glfwWindow)
 		glfwPollEvents()
-		//TSleep(0.01)
+		TSleep(0.01)
 	}
 
 

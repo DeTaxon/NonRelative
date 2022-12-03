@@ -17,12 +17,30 @@ vPhysStage := !(double deltaTime) -> void
 	//	gPlayer.ImpulseV.z = -20
 	//zeroOffset := centf()
 	//vPhysStagePlayer(deltaTime,gPlayerMap,zeroOffset,2)
-	//gPlayer.System.pos += gPlayer.ImpulseV*deltaTime
+	TestStage()
+	gPlayer.System.pos += gPlayer.ImpulseV*deltaTime
+	TestStage()
 	//vPhysStagePlayer(deltaTime,gPlayerMap,zeroOffset,2)
 
 	//vPhysCheckMoves()
 
 	//gCam.camPos = gPlayer.System.pos + vec4f(0.0f,0.0f,1.7f,0.0f)
+}
+
+gNowTime := double //TODO remove
+
+TestStage := !() -> void
+{
+	zero := centf()
+	PhysCheckPlayerVSHMap(gPlayer,gMap,zero)
+}
+
+"*" := !(vec4f a, float b) -> vec4f //TODO remove to compiler
+{
+	result.x = a.x*b
+	result.y = a.y*b
+	result.z = a.z*b
+	result.w = a.w*b
 }
 //vPhysCheckMoves := !() -> void
 //{
