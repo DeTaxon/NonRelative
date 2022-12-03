@@ -1,29 +1,29 @@
 
 //gMetMapPhys := List.{Tuple.{vMap^,centf}}^
-//vPhysStage := !(double deltaTime) -> void
-//{
-//	gMetMapPhys = @temp new List.{Tuple.{vMap^,centf}}
-//	oldPlayerImpz := gPlayer.ImpulseV.z
-//	forw := 0.0f
-//	lft := 0.0f
-//	if buttons['w'] forw += 2.0f
-//	if buttons['s'] forw -= 2.0f
-//	if buttons['a'] lft += 2.0f
-//	if buttons['d'] lft -= 2.0f
-//	if buttons['S'] forw *= 3.0f
-//	gPlayer.ImpulseV = quantfAt(0.0f,0.0f,-1.0f,gCam.leftRightAng)*vec4f(-forw,-lft,0.0f,0.0f)
-//	gPlayer.ImpulseV.z = oldPlayerImpz - 9.8f*deltaTime
-//	if gPlayer.ImpulseV.z < -20.0
-//		gPlayer.ImpulseV.z = -20
-//	zeroOffset := centf()
-//	vPhysStagePlayer(deltaTime,gPlayerMap,zeroOffset,2)
-//	gPlayer.System.pos += gPlayer.ImpulseV*deltaTime
-//	vPhysStagePlayer(deltaTime,gPlayerMap,zeroOffset,2)
-//
-//	vPhysCheckMoves()
-//
-//	gCam.camPos = gPlayer.System.pos + vec4f(0.0f,0.0f,1.7f,0.0f)
-//}
+vPhysStage := !(double deltaTime) -> void
+{
+	//gMetMapPhys = new List.{Tuple.{vMap^,centf}}
+	oldPlayerImpz := gPlayer.ImpulseV.z
+	forw := 0.0f
+	lft := 0.0f
+	if buttons['w'] forw += 2.0f
+	if buttons['s'] forw -= 2.0f
+	if buttons['a'] lft += 2.0f
+	if buttons['d'] lft -= 2.0f
+	if buttons['S'] forw *= 3.0f
+	gPlayer.ImpulseV = quantfAt(0.0f,0.0f,-1.0f,gCam.leftRightAng)*vec4f(-forw,-lft,0.0f,0.0f)
+	gPlayer.ImpulseV.z = oldPlayerImpz - 9.8f*deltaTime
+	//if gPlayer.ImpulseV.z < -20.0
+	//	gPlayer.ImpulseV.z = -20
+	//zeroOffset := centf()
+	//vPhysStagePlayer(deltaTime,gPlayerMap,zeroOffset,2)
+	//gPlayer.System.pos += gPlayer.ImpulseV*deltaTime
+	//vPhysStagePlayer(deltaTime,gPlayerMap,zeroOffset,2)
+
+	//vPhysCheckMoves()
+
+	//gCam.camPos = gPlayer.System.pos + vec4f(0.0f,0.0f,1.7f,0.0f)
+}
 //vPhysCheckMoves := !() -> void
 //{
 //	if gMetMapPhys^.Size() != 0

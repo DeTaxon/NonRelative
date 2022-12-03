@@ -20,43 +20,44 @@ RawModel := class
 	IndexType := VKType
 	IndexCount := int
 
-	// GetVertAsFloat := !() -> float[]
-	// {
-	// 	floatCount := PositionType.TypeCount + NormalType.TypeCount + UVType.TypeCount
+	GetVertAsFloat := !() -> float[]
+	{
+		floatCount := PositionType.TypeCount + NormalType.TypeCount + UVType.TypeCount
 
-	// 	preRetI := 0
-	// 	preRet := @temp new float[floatCount*VertexCount]
+		preRetI := 0
+		preRet := new Vector.{float}(floatCount*VertexCount)
 
-	// 	from := verts->{u8^}
-	// 	moves := @temp new int[floatCount->{int}]
-	// 	for j : VertexCount
-	// 	{
-	// 		for typ : ![PositionType&,NormalType&,UVType&]
-	// 		{
-	// 			if typ.BaseType == VType_Void
-	// 				continue
-	// 			for i : typ.TypeCount
-	// 			{
-	// 				switch typ.BaseType
-	// 				{
-	// 					case VType_Half
-	// 						asHalf := from->{half^}
-	// 						preRet[preRetI] = asHalf^
-	// 						from = (asHalf + 1)->{u8^}
-	// 					case VType_Float
-	// 						asFloat := from->{float^}
-	// 						preRet[preRetI] = asFloat^
-	// 						from = (asFloat + 1)->{u8^}
-	// 					case void
-	// 						assert(false)
-	// 				}
-	// 				preRetI += 1
-	// 			}
-	// 		}
-	// 	}
+		from := verts->{u8^}
+		moves := new Vector.{int}(floatCount->{int})
+		for j : VertexCount
+		{
+			for typ : ![PositionType&,NormalType&,UVType&]
+			{
+				if typ.BaseType == VType_Void
+					continue
+				for i : typ.TypeCount
+				{
+					switch typ.BaseType
+					{
+						case VType_Half
+							assert(false)
+							//asHalf := from->{half^}
+							//preRet[preRetI] = asHalf^
+							//from = (asHalf + 1)->{u8^}
+						case VType_Float
+							asFloat := from->{float^}
+							preRet^[preRetI] = asFloat^
+							from = (asFloat[1]&)->{u8^}
+						case void
+							assert(false)
+					}
+					preRetI += 1
+				}
+			}
+		}
 
-	// 	return preRet
-	// }
+		return preRet
+	}
 	GetVertSize := !() -> int
 	{
 		preRet := 0
@@ -341,21 +342,25 @@ RawModel := class
 		switch IndexType.BaseType
 		{
 		case VType_UInt32
-				return inds->{u32[]}
+				ret := new Vector.{u32}(IndexCount)
+				asU32 := inds->{u32^}
+				ret^[^i] = asU32[i]
+				return ret
 		case VType_UInt16
-			{
-				asU16 := inds->{u16[]}
-				preRet := @temp new u32[asU16->len]
-				preRet[^i] = asU16[i]
-				return preRet
-			}
+			assert(false)
+			//{
+			//	asU16 := inds->{u16[]}
+			//	preRet := @temp new u32[asU16->len]
+			//	preRet[^i] = asU16[i]
+			//	return preRet
+			//}
 		case VType_UInt8
-			{
-				asU8 := inds->{u8[]}
-				preRet := @temp new u32[asU8->len]
-				preRet[^i] = asU8[i]
-				return preRet
-			}
+			//{
+			//	asU8 := inds->{int^}
+			//	preRet := new Vector.{u32}(asU8.Size())
+			//	preRet[^i] = asU8[i]
+			//	return preRet
+			//}
 		}
 		assert(false)
 		return null->{u32[]}

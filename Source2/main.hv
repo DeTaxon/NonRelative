@@ -1,27 +1,30 @@
 
-gRepo := vRepo^
 LoadShaderModule := !(char^ name) -> vShaderModule^
 {
-	fil := gRepo.GetFile(name)
+	fil := FSGetFile(name)
 	filMap := fil.GetMap()
 
 	result = new vShaderModule
 	result.LoadShaderModule(filMap.Get(),filMap.Size())
 }
 
+gPlayer := PhysPlayer^ 
+gCam := vCamera^
+gMap := PhysHeightMap^
+
+
 main := !(char^[] args) -> int
 {
 	x := 900
 	y := 900
 
-	gRepo = new vRepo
-	gRepo.Init(".")
-	
 	CreateWindow(x,y)
 	VulkanInit()
 	VoidCoreInit()
 	CreateSwapchain(x,y)
 	CreateFB()
+
+	//gPlayer = new PhysPlayer()
 
 	deferVert := LoadShaderModule("Shaders/ShaderCache/Defer.vert")
 	deferFrag := LoadShaderModule("Shaders/ShaderCache/Defer.frag")
@@ -39,14 +42,22 @@ main := !(char^[] args) -> int
 	learnShader.LoadShader(learnVert,learnFrag,opts&)
 
 	mdl := new vModel
-	fldFile := gRepo.GetFile("Maps/FirstMap2/FirstMap.ply")
+	fldFile := FSGetFile("Maps/FirstMap2/FirstMap.ply")
 	mdl.LoadFile(fldFile)
 
-	txt := new vTexture
-	txt.CreateTexture(gRepo.GetFile("Maps/FirstMap2/wut.webp"))
 
-	cam := new vCamera()
-	cam.SetPerspective(x,y,0.001,100,80deg)
+	//gMap = new PhysHeightMap
+
+	//mapFile := new RawModel
+	//mapFile.LoadFromFile(FSGetFile("Maps/FirstMap2/FirstMap.ply"))
+	//gMap.CreateDots(mapFile)
+
+
+	txt := new vTexture
+	txt.CreateTexture(FSGetFile("Maps/FirstMap2/wut.webp"))
+
+	gCam = new vCamera()
+	gCam.SetPerspective(x,y,0.001,100,80deg)
 
 	newSetCR := VkDescriptorSetAllocateInfo()
 	newSetCR.descriptorPool = gObjectLayoutSets
@@ -61,30 +72,39 @@ main := !(char^[] args) -> int
 	itProp.itModel = mdl
 	itProp.modelTextureSet = modelTextureSet
 
+	//TSpawnTask(() ==> {
+	//	while true
+	//	{
+	//		vPhysStage(0.01)
+	//		TSleep(0.01)
+	//	}
+	//})
+
 	while true
 	{
-		cam.InputCheck(0.1f)
+		//gCam.InputCheck(0.1f)
 		DrawGetImage()
 		StartDraw()
 
 		learnShader.ApplyShaderToQueue(mainCmd.Get())
-		cam.BindDescriptor(mainCmd.Get())
+		gCam.BindDescriptor(mainCmd.Get())
 
 		if buttons['y']
 		{
-			cam.camPos.x = 0
-			cam.camPos.y = 0
-			cam.camPos.z = 2
-			cam.upDownAng = 0.0f
-			cam.leftRightAng = 0.0f
+			gCam.camPos.x = 0
+			gCam.camPos.y = 0
+			gCam.camPos.z = 2
+			gCam.upDownAng = 0.0f
+			gCam.leftRightAng = 0.0f
 		}
 
-		itProp.Draw(mainCmd,cam^)
+		itProp.Draw(mainCmd,gCam^)
 
 		StopDraw()
 		
 		glfwSwapBuffers(glfwWindow)
 		glfwPollEvents()
+		//TSleep(0.01)
 	}
 
 

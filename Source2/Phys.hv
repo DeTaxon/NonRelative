@@ -71,7 +71,7 @@ PhysHeightMap := class
 	CreateDots := !(RawModel^ mdlValue) -> int
 	{
 		floats := mdlValue.GetVertAsFloat()
-		nDots := @temp new vec4f[mdlValue.VertexCount + 1]
+		nDots := new Vector.{vec4f}(mdlValue.VertexCount + 1)
 		
 		for i,j : nDots
 		{
@@ -80,8 +80,8 @@ PhysHeightMap := class
 		}
 	
 		inds32 := mdlValue.GetIndsU32()
-		triCount := inds32->len div 3
-		Triangles2 := new u16[3][triCount]
+		triCount := inds32.Size() div 3
+		Triangles2 := new Vector.{u16[3]}(triCount)
 		
 		for i : triCount
 		{
@@ -90,12 +90,12 @@ PhysHeightMap := class
 			Triangles2[i][2] = inds32[i*3 + 2] + 1
 		}
 		
-		SpheresStart := @temp new List.{PhysHightSphere^}
+		SpheresStart := new List.{PhysHightSphere^}
 		
-		phase := @temp new List.{Tuple.{PhysHightSphere^,bool}}
+		phase := new List.{Tuple.{PhysHightSphere^,bool}}
 		for tri,i : Triangles2
 		{
-			ns := @temp new PhysHightSphere
+			ns := new PhysHightSphere
 			a := nDots[tri[0]]
 			b := nDots[tri[1]]
 			c := nDots[tri[2]]
@@ -103,7 +103,7 @@ PhysHeightMap := class
 			aDs := Distance(a,center)
 			bDs := Distance(b,center)
 			cDs := Distance(c,center)
-			center.w = max(aDs,bDs,cDs)*1.01
+			center.w = max(aDs,max(bDs,cDs))*1.01
 			ns.PosAndSize = center
 			ns.TriCount = 1
 			ns.Triangles[0] = i
@@ -114,7 +114,7 @@ PhysHeightMap := class
 		fakeNodes := 0
 		while phase.Size() != 1
 		{
-			newPhase := @temp new List.{Tuple.{PhysHightSphere^,bool}}
+			newPhase := new List.{Tuple.{PhysHightSphere^,bool}}
 			
 			for it,i : phase^
 			{
@@ -146,9 +146,9 @@ PhysHeightMap := class
 					newPhase.Emplace(it.0,false)
 					fakeNodes += 1
 				}else{
-					ns := @temp new PhysHightSphere
+					ns := new PhysHightSphere
 					cent := (it.0.PosAndSize + candPos) / 2
-					cent.w = Distance(candPos.xyz,it.0.PosAndSize.xyz) + max(it.0.PosAndSize.w,candPos.w,it.0.PosAndSize.w)
+					cent.w = Distance(candPos.xyz,it.0.PosAndSize.xyz) + max(it.0.PosAndSize.w,max(candPos.w,it.0.PosAndSize.w))
 					candBool^ = true
 					ns.SpheresCount = 2
 					ns.CSpheres[0] = i + SpheresStart.Size()
@@ -168,14 +168,15 @@ PhysHeightMap := class
 		SpheresStart.Push(phase^[0].0)
 		
 		allctdNodes := 0
-		resSpheres := @temp new PhysHightSphere[SpheresStart.Size() - fakeNodes]
-	
+		resSpheres := new Vector.{PhysHightSphere}(SpheresStart.Size() - fakeNodes)
+
+		addSphereW := !(int,u16^)&-> void
 		addSphere := (int ind,u16^ resInt) ==> {
 			resInt^ = allctdNodes
-			nowSphere := ref resSpheres[allctdNodes]
+			nowSphere := resSpheres[allctdNodes]&
 			allctdNodes += 1
 
-			fromSphere := ref SpheresStart^[ind]
+			fromSphere := SpheresStart^[ind]
 			
 			nowSphere.PosAndSize = fromSphere.PosAndSize
 
@@ -186,30 +187,29 @@ PhysHeightMap := class
 			nowSphere.SpheresCount = fromSphere.SpheresCount
 			for i : nowSphere.SpheresCount
 			{
-				addSphere(fromSphere.CSpheres[i],nowSphere.CSpheres[i]&)
+				addSphereW(fromSphere.CSpheres[i],nowSphere.CSpheres[i]&)
 			}
 		}
+		addSphereW = addSphere
 		fkNode := u16
 		addSphere(SpheresStart.Size() - 1,fkNode&)
 		
-		resSize := nDots->len*vec4f->TypeSize + Triangles2->len*2*3 + resSpheres->len*PhysHightSphere->TypeSize
+		resSize := nDots.Size()*vec4f->TypeSize + Triangles2.Size()*2*3 + resSpheres.Size()*PhysHightSphere->TypeSize
 		
 		asIntP := nDots->{u32^}
-		asIntP[0] = nDots->len*vec4f->TypeSize
-		asIntP[1] = resSpheres->len*PhysHightSphere->TypeSize
-		asIntP[2] = Triangles2->len*2*3
+		asIntP[0] = nDots.Size()*vec4f->TypeSize
+		asIntP[1] = resSpheres.Size()*PhysHightSphere->TypeSize
+		asIntP[2] = Triangles2.Size()*2*3
 
 		//TODO: 16 byte align alloc
 		itMap := malloc(resSize)->{u8^}
-		Dots = itMap->{void^}
-		Spheres = itMap[asIntP[0]]&->{void^}
-		Triangles = itMap[asIntP[0] + asIntP[1]]&->{void^}
+		Dots = itMap->{vec4f^}
+		Spheres = itMap[asIntP[0]]&->{PhysHightSphere^}
+		Triangles = itMap[asIntP[0] + asIntP[1]]&->{u16[3]^}
 
 		memcpy(Dots,nDots->{void^},asIntP[0])
 		memcpy(Spheres,resSpheres->{void^},asIntP[1])
 		memcpy(Triangles,Triangles2->{void^},asIntP[2])
-
-		assert((Triangles->{void^}->{u64} + asIntP[2]->{u32}) == (Dots->{void^}->{u64} + resSize))
 
 		return resSize
 	}
