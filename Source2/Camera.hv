@@ -57,8 +57,8 @@ vCamera := class
 
 		perspConsts[0] = fovTM / aspect
 		perspConsts[1] = fovTM
-		perspConsts[2] = (camFar) / range
-		perspConsts[3] = (camFar*camNear/range)
+		perspConsts[2] = (camFar + camNear) / range
+		perspConsts[3] = 2.0*(camFar*camNear/range)
 
 		itMem := vkPerspMem&
 		if memOnGpu

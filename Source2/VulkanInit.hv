@@ -176,7 +176,7 @@ VulkanInit := !() -> void
 		}
 	}
 
-	vkPhysCard = devs[2] //TODO select device
+	vkPhysCard = devs[1] //TODO select device
 
     devExts := Vector.{VkExtensionProperties}
     devSupports := AVLSet.{char^}

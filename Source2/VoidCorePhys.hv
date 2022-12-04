@@ -10,14 +10,17 @@ vPhysStage := !(double deltaTime) -> void
 	if buttons['s'] forw -= 2.0f
 	if buttons['a'] lft += 2.0f
 	if buttons['d'] lft -= 2.0f
-	if buttons['S'] forw *= 3.0f
-	gPlayer.ImpulseV = quantfAt(0.0f,0.0f,-1.0f,gCam.leftRightAng)*vec4f(-forw,-lft,0.0f,0.0f)
+	if buttons['S'] {
+		forw *= 3.0f
+		lft *= 3.0f
+	}
+	gPlayer.ImpulseV = quantfAt(0.0f,0.0f,-1.0f,gCam.leftRightAng)*vec4f(forw,lft,0.0f,0.0f)
 	gPlayer.ImpulseV.z = oldPlayerImpz - 9.8f*deltaTime
 	//if gPlayer.ImpulseV.z < -20.0
 	//	gPlayer.ImpulseV.z = -20
 	//zeroOffset := centf()
 	//vPhysStagePlayer(deltaTime,gPlayerMap,zeroOffset,2)
-	TestStage()
+	TestStage() //TODO
 	gPlayer.System.pos += gPlayer.ImpulseV*deltaTime
 	TestStage()
 	//vPhysStagePlayer(deltaTime,gPlayerMap,zeroOffset,2)
@@ -33,14 +36,6 @@ TestStage := !() -> void
 {
 	zero := centf()
 	PhysCheckPlayerVSHMap(gPlayer,gMap,zero)
-}
-
-"*" := !(vec4f a, float b) -> vec4f //TODO remove to compiler
-{
-	result.x = a.x*b
-	result.y = a.y*b
-	result.z = a.z*b
-	result.w = a.w*b
 }
 //vPhysCheckMoves := !() -> void
 //{
