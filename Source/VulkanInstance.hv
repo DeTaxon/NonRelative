@@ -1,10 +1,13 @@
 VulkanInstance := class extend TGCObject
 {
 	Instance := void^
+	Funcs := VulkanFunctionsClass^
 
 	Init := !() -> void
 	{
 		innerLoadVKFuncs()
+
+		Funcs = new VulkanFunctionsClass
 
 		count := u32
 
@@ -37,6 +40,15 @@ VulkanInstance := class extend TGCObject
 		instCr.enabledExtensionCount = setExtensions.Size()
 		instCr.ppEnabledExtensionNames = setExtensions.Get()
 		createRes := vkCreateInstance(instCr&,null,Instance&)
+
+		for fnc , fncName : Funcs->AllFields
+		{
+			fnc&->{void^^}^ = vkGetInstanceProcAddr(Instance,fncName)
+			//printf("GetInstClass %p %s\n",fnc,fncName)
+		}
+
+		DebugStep()
+
 	}
 	LayerStep := virtual !(VkLayerProperties[] supportedLayers, List.{char^} usingLayers) -> void
 	{
@@ -45,6 +57,9 @@ VulkanInstance := class extend TGCObject
 	{
 	}
 	AppInfoStep := virtual !(VkApplicationInfo appInfo) -> void
+	{
+	}
+	DebugStep := virtual !() -> void
 	{
 	}
 }

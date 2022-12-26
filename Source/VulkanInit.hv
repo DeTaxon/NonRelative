@@ -96,6 +96,17 @@ VKNonRelative := class extend VulkanInstance
 		appInfo.engineVersion = 1
 		appInfo.apiVersion = 4194325//(1 << 22) + (0 << 11) + 21
 	}
+	DebugStep := virtual !() -> void
+	{
+		if vkCreateDebugReportCallbackEXT != null
+		{
+			debPrint := VkDebugReportCallbackCreateInfoEXT()
+			debPrint.sType = 1000011000
+			debPrint.pfnCallback&->{void^^}^ = VkDebugCallback->{void^}
+			debPrint.flags = 2 + 4 + 8// + 16
+			Funcs.vkCreateDebugReportCallbackEXT(vkInstance,debPrint&,null,vkDebugObj&)
+		}
+	}
 }
 
 vk := VKNonRelative^
@@ -109,14 +120,6 @@ VulkanInit := !() -> void
 
 	vkHVInit()
 
-	if vkCreateDebugReportCallbackEXT != null
-	{
-		debPrint := VkDebugReportCallbackCreateInfoEXT()
-		debPrint.sType = 1000011000
-		debPrint.pfnCallback&->{void^^}^ = VkDebugCallback->{void^}
-		debPrint.flags = 2 + 4 + 8// + 16
-		vkCreateDebugReportCallbackEXT(vkInstance,debPrint&,null,vkDebugObj&)
-	}
 
 	devCount := u32
 	vkEnumeratePhysicalDevices(vkInstance,devCount&,null)
