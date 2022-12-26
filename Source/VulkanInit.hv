@@ -98,14 +98,53 @@ VKNonRelative := class extend VulkanInstance
 	}
 	DebugStep := virtual !() -> void
 	{
-		if vkCreateDebugReportCallbackEXT != null
+		if Funcs.vkCreateDebugReportCallbackEXT != null
 		{
 			debPrint := VkDebugReportCallbackCreateInfoEXT()
 			debPrint.sType = 1000011000
 			debPrint.pfnCallback&->{void^^}^ = VkDebugCallback->{void^}
 			debPrint.flags = 2 + 4 + 8// + 16
-			Funcs.vkCreateDebugReportCallbackEXT(vkInstance,debPrint&,null,vkDebugObj&)
+			Funcs.vkCreateDebugReportCallbackEXT(Instance,debPrint&,null,vkDebugObj&)
 		}
+	}
+	DeviceSelectStep := virtual !(VkPhysicalDevice[] deviceList) -> int
+	{
+		for it,i : deviceList
+		{
+			printf("device id %i\n",i)
+
+			devProp := VkPhysicalDeviceProperties
+			Funcs.vkGetPhysicalDeviceProperties(it,devProp&)
+				
+			printf("-name %s\n",devProp.deviceName&)
+			printf("-type %i\n",devProp.deviceType)
+
+			propsCount := u32
+			Funcs.vkGetPhysicalDeviceQueueFamilyProperties(it,propsCount&,null)
+			prps := Vector.{VkQueueFamilyProperties}(propsCount)
+			Funcs.vkGetPhysicalDeviceQueueFamilyProperties(it,propsCount&,prps.Get())
+
+			for it,j : prps
+			{
+				printf("-quque family %i\n",j)
+				printf("-- queueCount %i\n",it.queueCount)
+				printf("-- queueFlags %X\n",it.queueFlags)
+			}
+		}
+		return 1
+	}
+	DeviceExtensionStep := virtual !(VkExtensionProperties[] deviceExtensions, List.{char^} expectDeviceExtensions) -> void 
+	{ 
+		expectDeviceExtensions.Push("VK_KHR_swapchain") //TODO check for swapchains
+
+		//halfFloatExt := "VK_KHR_16bit_storage" //TODO maybe add it
+		//if devSupports.Contain(halfFloatExt)
+		//{
+		//	physExts.Insert(halfFloatExt)
+		//	//physExts << "VK_KHR_get_physical_device_properties2" 
+		//	physExts.Insert("VK_KHR_storage_buffer_storage_class")
+		//	vkHalfFloatSupport = true
+		//}
 	}
 }
 
@@ -120,36 +159,8 @@ VulkanInit := !() -> void
 
 	vkHVInit()
 
-
-	devCount := u32
-	vkEnumeratePhysicalDevices(vkInstance,devCount&,null)
-	devs := Vector.{VkPhysicalDevice}(devCount)
-	vkEnumeratePhysicalDevices(vkInstance,devCount&,devs.Get())
-
-	for it,i : devs
-	{
-		printf("device id %i\n",i)
-
-		devProp := VkPhysicalDeviceProperties
-		vkGetPhysicalDeviceProperties(it,devProp&)
-			
-		printf("-name %s\n",devProp.deviceName&)
-		printf("-type %i\n",devProp.deviceType)
-
-		propsCount := u32
-		vkGetPhysicalDeviceQueueFamilyProperties(it,propsCount&,null)
-		prps := Vector.{VkQueueFamilyProperties}(propsCount)
-		vkGetPhysicalDeviceQueueFamilyProperties(it,propsCount&,prps.Get())
-
-		for it,j : prps
-		{
-			printf("-quque family %i\n",j)
-			printf("-- queueCount %i\n",it.queueCount)
-			printf("-- queueFlags %X\n",it.queueFlags)
-		}
-	}
-
-	vkPhysCard = devs[1] //TODO select device
+	vkPhysCard = vk.PhysicalDevice
+	vkLogCard = vk.LogicalDevice
 
 	devExts := Vector.{VkExtensionProperties}
 	devSupports := AVLSet.{char^}

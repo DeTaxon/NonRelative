@@ -3,6 +3,9 @@ VulkanInstance := class extend TGCObject
 	Instance := void^
 	Funcs := VulkanFunctionsClass^
 
+	PhysicalDevice := VkPhysicalDevice
+	LogicalDevice := VkDevice
+
 	Init := !() -> void
 	{
 		innerLoadVKFuncs()
@@ -22,8 +25,8 @@ VulkanInstance := class extend TGCObject
 		usingLayers := List.{char^}
 		usingExtensions := List.{char^}
 
-		LayerStep(lays&,usingLayers)
-		ExtensionStep(exts&,usingExtensions)
+		LayerStep(lays&,usingLayers) //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< LayerStep
+		ExtensionStep(exts&,usingExtensions) //<<<<<<<<<<<<<<<<<<<<<< ExtensionStep
 
 		appInfo := VkApplicationInfo()
 
@@ -39,7 +42,7 @@ VulkanInstance := class extend TGCObject
 		instCr.ppEnabledLayerNames = setLayers.Get()
 		instCr.enabledExtensionCount = setExtensions.Size()
 		instCr.ppEnabledExtensionNames = setExtensions.Get()
-		createRes := vkCreateInstance(instCr&,null,Instance&)
+		createRes := vkCreateInstance(instCr&,null,Instance&) //<<<<<<<<<<<<<<<<<<<<<<<<<<< CreateInstance
 
 		for fnc , fncName : Funcs->AllFields
 		{
@@ -47,21 +50,63 @@ VulkanInstance := class extend TGCObject
 			//printf("GetInstClass %p %s\n",fnc,fncName)
 		}
 
-		DebugStep()
+		DebugStep() //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<DebugStep
+
+		devCount := u32
+		Funcs.vkEnumeratePhysicalDevices(Instance,devCount&,null)
+		devs := Vector.{VkPhysicalDevice}(devCount)
+		Funcs.vkEnumeratePhysicalDevices(Instance,devCount&,devs.Get())
+		
+		numDevice := DeviceSelectStep(devs&) //TODO check if bad  //<<<<<<<<<<<<<<<<<<<<<<<<< DeviceSelectStep
+		
+		PhysicalDevice = devs[numDevice]
+
+		devExts := Vector.{VkExtensionProperties}
+		devSupports := AVLSet.{char^}
+
+		devExtsCount := u32
+		Funcs.vkEnumerateDeviceExtensionProperties(PhysicalDevice,null,devExtsCount&,null)
+		if devExtsCount != 0
+		{
+			devExts.Resize(devExtsCount)
+			Funcs.vkEnumerateDeviceExtensionProperties(PhysicalDevice,null,devExtsCount&,devExts.Get())
+		}
+
+
+		physExts := List.{char^}
+
+		DeviceExtensionStep(devExts&,physExts)
+
+		usingPhysExts := physExts.ToVector()
+
+		queueCreateInf := VkDeviceQueueCreateInfo()
+		queueCreateInf.queueFamilyIndex = 0 //TODO what is that?
+		zeroPrior := float
+		zeroPrior = 0.0
+		queueCreateInf.queueCount = 1 //TODO what is that?
+		queueCreateInf.pQueuePriorities = zeroPrior&
+		
+		zeroFeature := VkPhysicalDeviceFeatures //TODO what is that?
+
+		logDevice := VkDeviceCreateInfo()
+
+		logDevice.queueCreateInfoCount = 1
+		logDevice.pQueueCreateInfos = queueCreateInf&
+		logDevice.enabledLayerCount = 0 // usingLayers.Size() //TODO
+		logDevice.ppEnabledLayerNames = null //usingLayers.Get() //TODO
+		logDevice.enabledExtensionCount = usingPhysExts.Size()
+		logDevice.ppEnabledExtensionNames = usingPhysExts.Get()->{char^}
+		logDevice.pEnabledFeatures = zeroFeature&
+
+		res11 := Funcs.vkCreateDevice(PhysicalDevice,logDevice&,null,LogicalDevice&)
 
 	}
-	LayerStep := virtual !(VkLayerProperties[] supportedLayers, List.{char^} usingLayers) -> void
-	{
-	}
-	ExtensionStep := virtual !(VkExtensionProperties[] supportedExtensions, List.{char^} usingExtensions) -> void
-	{
-	}
-	AppInfoStep := virtual !(VkApplicationInfo appInfo) -> void
-	{
-	}
-	DebugStep := virtual !() -> void
-	{
-	}
+	LayerStep := virtual !(VkLayerProperties[] supportedLayers, List.{char^} usingLayers) -> void { assert(false) }
+	ExtensionStep := virtual !(VkExtensionProperties[] supportedExtensions, List.{char^} usingExtensions) -> void { assert(false) }
+	AppInfoStep := virtual !(VkApplicationInfo appInfo) -> void { assert(false) }
+	DebugStep := virtual !() -> void { assert(false) }
+	DeviceSelectStep := virtual !(VkPhysicalDevice[] deviceList) -> int { assert(false) }
+	DeviceExtensionStep := virtual !(VkExtensionProperties[] deviceExtensions, List.{char^} expectDeviceExtensions) -> void { assert(false) }
 }
 
 
