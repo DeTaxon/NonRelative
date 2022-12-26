@@ -16,7 +16,7 @@ gQuit := bool
 
 main := !(char^[] args) -> int
 {
-	x := 900
+	x := 1200
 	y := 900
 
 	CreateWindow(x,y)
@@ -114,7 +114,7 @@ main := !(char^[] args) -> int
 		glfwSwapBuffers(glfwWindow)
 		glfwPollEvents()
 
-		if glfwWindowShouldClose(glfwWindow)
+		if glfwWindowShouldClose(glfwWindow) or buttons['Q']
 		{
 			gQuit = true
 		}

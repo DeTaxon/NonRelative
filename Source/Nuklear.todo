@@ -175,26 +175,26 @@
 nk_draw_vertex_layout_element := class
 {
 	attribute := int
-    format := int
-    offset := size_t
+	format := int
+	offset := size_t
 }
 nk_draw_null_texture := class 
 {
-    texture := void^ /* texture handle to a texture with a white pixel */
-    uvX := float /* coordinates to a white pixel in the texture  */
-    uvY := float /* coordinates to a white pixel in the texture  */
+	texture := void^ /* texture handle to a texture with a white pixel */
+	uvX := float /* coordinates to a white pixel in the texture  */
+	uvY := float /* coordinates to a white pixel in the texture  */
 }
 
 nk_convert_config := class
 {
 	global_alpha := float /* global alpha value */
-    line_AA := int /* line anti-aliasing flag can be turned off if you are tight on memory */
-    shape_AA := int /* shape anti-aliasing flag can be turned off if you are tight on memory */
-    circle_segment_count := u32 /* number of segments used for circles: default to 22 */
-    arc_segment_count := u32 /* number of segments used for arcs: default to 22 */
-    curve_segment_count := u32 /* number of segments used for curves: default to 22 */
-    nullValue := nk_draw_null_texture /* handle to texture with a white pixel for shape drawing */
-    vertex_layout := nk_draw_vertex_layout_element^  /* describes the vertex output format and packing */
+	line_AA := int /* line anti-aliasing flag can be turned off if you are tight on memory */
+	shape_AA := int /* shape anti-aliasing flag can be turned off if you are tight on memory */
+	circle_segment_count := u32 /* number of segments used for circles: default to 22 */
+	arc_segment_count := u32 /* number of segments used for arcs: default to 22 */
+	curve_segment_count := u32 /* number of segments used for curves: default to 22 */
+	nullValue := nk_draw_null_texture /* handle to texture with a white pixel for shape drawing */
+	vertex_layout := nk_draw_vertex_layout_element^  /* describes the vertex output format and packing */
 	vertex_size := size_t /* sizeof one vertex for vertex packing */
 	vertex_alignment := size_t /* vertex alignment: Can be obtained by NK_ALIGNOF */
 }

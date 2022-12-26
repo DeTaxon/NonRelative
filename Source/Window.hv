@@ -22,6 +22,8 @@ glfwKeyPressRes := !(void^ win,int key, int scancode,int action) -> void
 			asCh = '0' + key - GLFW_KEY_0
 		case in GLFW_KEY_A..GLFW_KEY_Z
 			asCh = 'a' + key - GLFW_KEY_A
+		case GLFW_KEY_ESCAPE
+			asCh = 'Q'
 		case 340
 			asCh = 'S'
 		case 32
