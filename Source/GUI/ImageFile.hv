@@ -1,0 +1,64 @@
+
+webpGetFeatures := !(void^,u64,void^,int)^ -> int
+webpGetDataRGB := !(void^,u64,void^,u64,int)^ -> void^
+webpGetDataRGBA := !(void^,u64,void^,u64,int)^ -> void^
+
+InitWebP := !() -> bool
+{
+	if webpGetFeatures != null
+		return true
+	//itLib := GetLibrary("libwebp.so","libwebp.so.6","libwebp-7.dll")
+	itLib := GetLibrary("libwebp.so")
+	
+	webpGetFeatures&->{void^^}^ = itLib.Get("WebPGetFeaturesInternal")
+	webpGetDataRGB&->{void^^}^ = itLib.Get("WebPDecodeRGBInto")
+	webpGetDataRGBA&->{void^^}^ = itLib.Get("WebPDecodeRGBAInto")
+	
+	return true
+}
+
+TImageFile := class extend TGCObject
+{
+	itFile := vRepoFile^
+
+	haveAnimation := bool //TODO getters
+	haveAlpha := bool
+
+	itWidth := int
+	itHeight := int
+
+	this := !(vRepoFile^ setFile) -> void
+	{
+		itFile = setFile
+
+		InitWebP()
+
+		mp := itFile.GetMap()
+
+		webpInf := int[10] // width,height,has_alpha, has_animation,type, 5 x for feature
+
+		webpGetFeatures(mp.Get()->{void^},mp.Size()->{u64},webpInf[0]&->{void^},0x0208)
+		
+		itWidth = webpInf[0]
+		itHeight = webpInf[1]
+		haveAlpha = webpInf[2] != 0
+		haveAnimation = webpInf[3] != 0
+	}
+	StoreToMemory := !(char^ layoutType, void^ ptrToSet) -> void //TODO 
+	{
+		mp := itFile.GetMap()
+
+		if haveAnimation
+		{
+			//FEATURE: //TODO
+		}else{
+			switch layoutType
+			{
+				case "RGB"
+					webpGetDataRGB(mp.Get(),mp.Size(),ptrToSet,itWidth*itHeight*3,itWidth*3)
+				case "RGBA"
+					webpGetDataRGBA(mp.Get(),mp.Size(),ptrToSet,itWidth*itHeight*4,itWidth*4)
+			}
+		}
+	}
+}
