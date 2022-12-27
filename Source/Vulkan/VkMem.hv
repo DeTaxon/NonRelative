@@ -12,19 +12,21 @@ AppendClass VulkanInstance
 	CreateMemoryObject := !(int size, int memType,bool^ gpuSideI) -> TVkMemoryObject^
 	{
 		result = new TVkMemoryObject
-		result.CreateObject(size,memType,gpuSideI)
+		result.CreateObject(this&,size,memType,gpuSideI)
 	}
 }
 
 TVkMemoryObject := class
 {
+	itInstance := VulkanInstance^
 	memObj := VkDeviceMemory
 	objSize := int
 	gpuSize := int
 	gpuSide := bool
 
-	CreateObject := !(int size,int memType, bool^ gpuSideI) -> bool
+	CreateObject := !(VulkanInstance^ inst,int size,int memType, bool^ gpuSideI) -> bool
 	{
+		itInstance = inst
 		memId := -1
 		if(memType == 0)
 		{
@@ -69,18 +71,18 @@ TVkMemoryObject := class
 		allc1.allocationSize =  gpuSize
 		allc1.memoryTypeIndex = memId
 
-		vkAllocateMemory(vkLogCard,allc1&,null,memObj&)
+		inst.Funcs.vkAllocateMemory(inst.LogicalDevice,allc1&,null,memObj&)
 		objSize = size
 		return true
 	}
 	DestroyVK := !() -> void
 	{
-		vkFreeMemory(vkLogCard, memObj,null)
+		itInstance.Funcs.vkFreeMemory(itInstance.LogicalDevice, memObj,null)
 	}
 	Map := !() -> void^
 	{
 		memToRet := void^
-		vkMapMemory(vkLogCard,memObj,0,gpuSize,0,memToRet&)
+		itInstance.Funcs.vkMapMemory(itInstance.LogicalDevice,memObj,0,gpuSize,0,memToRet&)
 		return memToRet
 		
 	}
@@ -90,8 +92,8 @@ TVkMemoryObject := class
 		flushRange.memory = memObj
 		flushRange.offset = 0
 		flushRange.size = objSize
-		vkFlushMappedMemoryRanges(vkLogCard,1,flushRange&)
-		vkUnmapMemory(vkLogCard,memObj)
+		itInstance.Funcs.vkFlushMappedMemoryRanges(itInstance.LogicalDevice,1,flushRange&)
+		itInstance.Funcs.vkUnmapMemory(itInstance.LogicalDevice,memObj)
 	}
 	Get := !() -> VkDeviceMemory
 	{
