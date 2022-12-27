@@ -162,79 +162,21 @@ VulkanInit := !() -> void
 	vkPhysCard = vk.PhysicalDevice
 	vkLogCard = vk.LogicalDevice
 
-	devExts := Vector.{VkExtensionProperties}
-	devSupports := AVLSet.{char^}
-
-	devExtsCount := u32
-	vkEnumerateDeviceExtensionProperties(vkPhysCard,null,devExtsCount&,null)
-	if devExtsCount != 0
-	{
-		devExts.Resize(devExtsCount)
-		vkEnumerateDeviceExtensionProperties(vkPhysCard,null,devExtsCount&,devExts.Get())
-
-		printf("dev extensions\n")
-		for it,i : devExts
-		{
-			devSupports.Insert(it.extensionName[0]&)
-			printf("- %s\n",it.extensionName&)
-		}
-	}else{
-		printf("no device extensions found\n")
-	}
-
-	physExts := AVLSet.{char^}
-
-	physExts.Insert("VK_KHR_swapchain") //TODO check for swapchains
-
-	halfFloatExt := "VK_KHR_16bit_storage"
-	if devSupports.Contain(halfFloatExt)
-	{
-		physExts.Insert(halfFloatExt)
-		//physExts << "VK_KHR_get_physical_device_properties2" 
-		physExts.Insert("VK_KHR_storage_buffer_storage_class")
-		vkHalfFloatSupport = true
-	}
-
-	usingPhysExts := physExts.ToVector()
-
-	queueCreateInf := VkDeviceQueueCreateInfo()
-	queueCreateInf.queueFamilyIndex = 0
-	zeroPrior := float
-	zeroPrior = 0.0
-	queueCreateInf.queueCount = 1
-	queueCreateInf.pQueuePriorities = zeroPrior&
-	
-	zeroFeature := VkPhysicalDeviceFeatures
-
-	logDevice := VkDeviceCreateInfo()
-
-	logDevice.queueCreateInfoCount = 1
-	logDevice.pQueueCreateInfos = queueCreateInf&
-	logDevice.enabledLayerCount = 0 // usingLayers.Size() //TODO
-	logDevice.ppEnabledLayerNames = null //usingLayers.Get() //TODO
-	logDevice.enabledExtensionCount = usingPhysExts.Size()
-	logDevice.ppEnabledExtensionNames = usingPhysExts.Get()->{char^}
-	logDevice.pEnabledFeatures = zeroFeature&
-
-	res1 := vkCreateDevice(vkPhysCard,logDevice&,null,vkLogCard&)
-	assert(res1 == 0)
-
 	glfwCreateWindowSurface(vkInstance,glfwWindow,null,vkSurface&)
 
 	isPres := u32
-	vkGetPhysicalDeviceSurfaceSupportKHR(vkPhysCard,0,vkSurface,isPres&)
-
+	vk.Funcs.vkGetPhysicalDeviceSurfaceSupportKHR(vkPhysCard,0,vkSurface,isPres&)
 
 	surfAb := VkSurfaceCapabilitiesKHR
-	vkGetPhysicalDeviceSurfaceCapabilitiesKHR(vkPhysCard,vkSurface,surfAb&)
+	vk.Funcs.vkGetPhysicalDeviceSurfaceCapabilitiesKHR(vkPhysCard,vkSurface,surfAb&)
 
 	printf("surface settings\n")
 	printf("img count min = %i , max = %i\n",surfAb.minImageCount,surfAb.maxImageCount)
 
 	formsCount := u32
-	vkGetPhysicalDeviceSurfaceFormatsKHR(vkPhysCard,vkSurface,formsCount&,null)
+	vk.Funcs.vkGetPhysicalDeviceSurfaceFormatsKHR(vkPhysCard,vkSurface,formsCount&,null)
 	formts := Vector.{VkSurfaceFormatKHR}(formsCount)
-	vkGetPhysicalDeviceSurfaceFormatsKHR(vkPhysCard,vkSurface,formsCount&,formts.Get())
+	vk.Funcs.vkGetPhysicalDeviceSurfaceFormatsKHR(vkPhysCard,vkSurface,formsCount&,formts.Get())
 
 	printf("formats\n")
 	for it : formts
@@ -243,9 +185,9 @@ VulkanInit := !() -> void
 	}
 
 	presMods := u32
-	vkGetPhysicalDeviceSurfacePresentModesKHR(vkPhysCard,vkSurface,presMods&,null)
+	vk.Funcs.vkGetPhysicalDeviceSurfacePresentModesKHR(vkPhysCard,vkSurface,presMods&,null)
 	pMods := Vector.{VkPresentModeKHR}(presMods)
-	vkGetPhysicalDeviceSurfacePresentModesKHR(vkPhysCard,vkSurface,presMods&,pMods.Get())
+	vk.Funcs.vkGetPhysicalDeviceSurfacePresentModesKHR(vkPhysCard,vkSurface,presMods&,pMods.Get())
 
 	printf("supported mods\n")
 
@@ -273,7 +215,7 @@ VulkanInit := !() -> void
 	//		reqMod = it
 	//}
 	memReq := VkPhysicalDeviceMemoryProperties
-	vkGetPhysicalDeviceMemoryProperties(vkPhysCard,memReq&)
+	vk.Funcs.vkGetPhysicalDeviceMemoryProperties(vkPhysCard,memReq&)
 
 	for i : memReq.memoryTypeCount&->{int^}^
 	{
