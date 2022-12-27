@@ -6,6 +6,9 @@ VulkanInstance := class extend TGCObject
 	PhysicalDevice := VkPhysicalDevice
 	LogicalDevice := VkDevice
 
+	DrawQueue := VkQueue
+	TransferQueue := VkQueue
+
 	Init := !() -> void
 	{
 		innerLoadVKFuncs()
@@ -99,6 +102,9 @@ VulkanInstance := class extend TGCObject
 		logDevice.pEnabledFeatures = zeroFeature&
 
 		res11 := Funcs.vkCreateDevice(PhysicalDevice,logDevice&,null,LogicalDevice&)
+
+		Funcs.vkGetDeviceQueue(LogicalDevice,0,0,DrawQueue&)
+		TransferQueue = DrawQueue
 
 	}
 	LayerStep := virtual !(VkLayerProperties[] supportedLayers, List.{char^} usingLayers) -> void { assert(false) }

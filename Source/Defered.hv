@@ -460,7 +460,7 @@ StopDraw := !() -> void
 	mainCmd.Stop()
 
 	mainCmd.Submit()
-	vkQueueWaitIdle(vkQueue)
+	vkQueueWaitIdle(vk.DrawQueue)
 
 	res := VkResult
 	pI := VkPresentInfoKHR()
@@ -472,6 +472,6 @@ StopDraw := !() -> void
 	pI.pImageIndices&->{void^^}^ = nowImg&->{void^}
 	pI.pResults&->{void^^}^ = res&
 
-	vkQueuePresentKHR(vkQueue,pI&)
-	vkQueueWaitIdle(vkQueue)
+	vkQueuePresentKHR(vk.DrawQueue,pI&)
+	vkQueueWaitIdle(vk.DrawQueue)
 }

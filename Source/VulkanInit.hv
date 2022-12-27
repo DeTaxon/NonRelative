@@ -128,7 +128,17 @@ VKNonRelative := class extend VulkanInstance
 			{
 				printf("-quque family %i\n",j)
 				printf("-- queueCount %i\n",it.queueCount)
-				printf("-- queueFlags %X\n",it.queueFlags)
+
+				printf("-- queueFlags {")
+				if (it.queueFlags and_b 1) != 0
+					printf(" GRAPHICS")
+				if (it.queueFlags and_b 2) != 0
+					printf(" COMPUTE")
+				if (it.queueFlags and_b 4) != 0
+					printf(" TRANSFER")
+				if (it.queueFlags and_b 8) != 0
+					printf(" SPARSE_BINDING")
+				printf(" }\n")
 			}
 		}
 		return 1
@@ -247,7 +257,7 @@ VulkanInit := !() -> void
 	SwapImageColorSpace = formts[1].colorSpace
 	SwapImageMode = reqMod
 
-	vkGetDeviceQueue(vkLogCard,0,0,vkQueue&)
+	vkQueue = vk.DrawQueue
 
 	cmdPoolC := VkCommandPoolCreateInfo()
 	cmdPoolC.queueFamilyIndex = 0
