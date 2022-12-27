@@ -158,7 +158,7 @@ CreateSwapchain := !(int inW,int inH) -> void
 		imgViewC.subresourceRange.baseArrayLayer = 0
 		imgViewC.subresourceRange.layerCount = 1
 
-		vkCreateImageView(vkLogCard,imgViewC&,null,vkImageViews^[i]&)
+		vk.Funcs.vkCreateImageView(vk.LogicalDevice,imgViewC&,null,vkImageViews^[i]&)
 
 		fbC := VkFramebufferCreateInfo()
 		fbC.renderPass = gRenderPassLight
@@ -168,7 +168,7 @@ CreateSwapchain := !(int inW,int inH) -> void
 		fbC.height = inH
 		fbC.layers = 1
 
-		vkCreateFramebuffer(vkLogCard,fbC&,null,vkFramebuffers^[i]&)
+		vk.Funcs.vkCreateFramebuffer(vkLogCard,fbC&,null,vkFramebuffers^[i]&)
 	}
 }
 
@@ -273,7 +273,7 @@ CreateFB := !() -> void
 	fbC.height = gFBH
 	fbC.layers = 1
 
-	vkCreateFramebuffer(vkLogCard,fbC&,null,gModelFramebuffer&)
+	vk.Funcs.vkCreateFramebuffer(vk.LogicalDevice,fbC&,null,gModelFramebuffer&)
 
 	twoDesc := VkDescriptorSetLayoutBinding[2]
 	twoDesc[0].binding = 0
@@ -291,7 +291,7 @@ CreateFB := !() -> void
 	set2Desc.bindingCount = 2
 	set2Desc.pBindings&->{void^^}^ = twoDesc&
 
-	vkCreateDescriptorSetLayout(vkLogCard,set2Desc&,null,gLightObjectLayout&)
+	vk.Funcs.vkCreateDescriptorSetLayout(vk.LogicalDevice,set2Desc&,null,gLightObjectLayout&)
 
 	layouts := void^[2]
 	layouts[0] = gLightObjectLayout
@@ -307,7 +307,7 @@ CreateFB := !() -> void
 	ppC.setLayoutCount = 1
 	ppC.pSetLayouts&->{void^^}^ = layouts[0]&
 
-	vkCreatePipelineLayout(vkLogCard,ppC&,null,gLightLayout&)
+	vk.Funcs.vkCreatePipelineLayout(vk.LogicalDevice,ppC&,null,gLightLayout&)
 
 	// gLightShader = vGetShader("Defer") 
 
@@ -320,14 +320,14 @@ CreateFB := !() -> void
 	nPool.poolSizeCount = 1
 	nPool.pPoolSizes&->{void^^}^ = poolSize&
 
-	vkCreateDescriptorPool(vkLogCard,nPool&,null,gGBufferLayoutSets&)
+	vk.Funcs.vkCreateDescriptorPool(vk.LogicalDevice,nPool&,null,gGBufferLayoutSets&)
 
 	newSetCR := VkDescriptorSetAllocateInfo()
 	newSetCR.descriptorPool = gGBufferLayoutSets
 	newSetCR.descriptorSetCount = 1
 	newSetCR.pSetLayouts = gLightObjectLayout&
 
-	vkAllocateDescriptorSets(vkLogCard,newSetCR&,gGBufferTextureSet&)
+	vk.Funcs.vkAllocateDescriptorSets(vk.LogicalDevice,newSetCR&,gGBufferTextureSet&)
 
 	imgI := VkDescriptorImageInfo[2]
 	imgI[0].sampler = gSamplerNearest
@@ -343,7 +343,7 @@ CreateFB := !() -> void
 	wrT.pImageInfo&->{void^^}^ = imgI[0]&
 	wrT.dstSet = gGBufferTextureSet
 
-	vkUpdateDescriptorSets(vkLogCard,1,wrT&,0,null)
+	vk.Funcs.vkUpdateDescriptorSets(vk.LogicalDevice,1,wrT&,0,null)
 }
 nowImg := u32
 
@@ -460,7 +460,7 @@ StopDraw := !() -> void
 	mainCmd.Stop()
 
 	mainCmd.Submit()
-	vkQueueWaitIdle(vk.DrawQueue)
+	vk.Funcs.vkQueueWaitIdle(vk.DrawQueue)
 
 	res := VkResult
 	pI := VkPresentInfoKHR()
@@ -472,6 +472,6 @@ StopDraw := !() -> void
 	pI.pImageIndices&->{void^^}^ = nowImg&->{void^}
 	pI.pResults&->{void^^}^ = res&
 
-	vkQueuePresentKHR(vk.DrawQueue,pI&)
-	vkQueueWaitIdle(vk.DrawQueue)
+	vk.Funcs.vkQueuePresentKHR(vk.DrawQueue,pI&)
+	vk.Funcs.vkQueueWaitIdle(vk.DrawQueue)
 }

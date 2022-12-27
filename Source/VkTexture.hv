@@ -20,7 +20,7 @@ InitWebP := !() -> bool
 
 vTexture := class
 {
-	memObj := vMemObj
+	memObj := TVkMemoryObject^
 	itImg := VkImage
 	itImgView := VkImageView
 	itW := int
@@ -73,7 +73,7 @@ vTexture := class
 
 		vkGetImageMemoryRequirements(vkLogCard,itImg,memInfp&)
 
-		memObj.CreateObject(memInfp.size,memInfp.memoryTypeBits,null)
+		memObj = vk.CreateMemoryObject(memInfp.size,memInfp.memoryTypeBits,null)
 
 		vkBindImageMemory(vkLogCard,itImg,memObj.Get(),0)
 

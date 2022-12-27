@@ -2,7 +2,7 @@
 gSamplerNearest := VkSampler
 gSamplerLinear := VkSampler
 
-gStageMem := vMemObj^
+gStageMem := TVkMemoryObject^
 gStageMemBuffer := VkBuffer
 
 gDoubleMem := bool
@@ -17,8 +17,6 @@ VoidCoreInit := !() -> void
 
     //pVoidMP = new AllocOnlyMP.{4096,true}
 
-    gStageMem = new vMemObj
-
     stSize := 0x4c4c00
     bufC := VkBufferCreateInfo()
     bufC.size = stSize
@@ -27,7 +25,7 @@ VoidCoreInit := !() -> void
     vkCreateBuffer(vkLogCard,bufC&,null,gStageMemBuffer&)
     memInfo := VkMemoryRequirements
     vkGetBufferMemoryRequirements(vkLogCard,gStageMemBuffer,memInfo&)
-    gStageMem.CreateObject(stSize,memInfo.memoryTypeBits,null)
+    gStageMem = vk.CreateMemoryObject(stSize,memInfo.memoryTypeBits,null)
     vkBindBufferMemory(vkLogCard,gStageMemBuffer,gStageMem.Get(),0)
 
     //gCam."this"()

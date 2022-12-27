@@ -46,7 +46,7 @@ vCamera := class
 		}
 	}
 	
-	vkPerspMem := vMemObj
+	vkPerspMem := TVkMemoryObject^
 	vkPerspBuffer := VkBuffer
 
 	UpdatePerspective := !(float w, float h) -> void
@@ -60,7 +60,7 @@ vCamera := class
 		perspConsts[2] = (camFar + camNear) / range
 		perspConsts[3] = 2.0*(camFar*camNear/range)
 
-		itMem := vkPerspMem&
+		itMem := vkPerspMem
 		if memOnGpu
 			itMem = gStageMem
 		itMem2 := itMem.Map()
@@ -91,7 +91,7 @@ vCamera := class
 
 		vkCreateBuffer(vkLogCard,bufC&,null,vkPerspBuffer&)
 		vkGetBufferMemoryRequirements(vkLogCard,vkPerspBuffer,memInfo&)
-		vkPerspMem.CreateObject(memInfo.size,memInfo.memoryTypeBits,memOnGpu&)
+		vkPerspMem = vk.CreateMemoryObject(memInfo.size,memInfo.memoryTypeBits,memOnGpu&)
 		vkBindBufferMemory(vkLogCard,vkPerspBuffer,vkPerspMem.Get(),0)
 
 		bufInfo := VkDescriptorBufferInfo

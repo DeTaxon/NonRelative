@@ -7,7 +7,16 @@ AlignUp := !(int value, int align) -> int
 	return value
 }
 
-vMemObj := class
+AppendClass VulkanInstance
+{
+	CreateMemoryObject := !(int size, int memType,bool^ gpuSideI) -> TVkMemoryObject^
+	{
+		result = new TVkMemoryObject
+		result.CreateObject(size,memType,gpuSideI)
+	}
+}
+
+TVkMemoryObject := class
 {
 	memObj := VkDeviceMemory
 	objSize := int

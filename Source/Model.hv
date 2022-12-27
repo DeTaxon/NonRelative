@@ -1,6 +1,6 @@
 vModel := class 
 {
-	memObjs := vMemObj[2]
+	memObjs := TVkMemoryObject^[2]
 	hndls := VkBuffer[2]
 	indexCount := int
 	ReqShader := vShader^
@@ -41,11 +41,11 @@ vModel := class
 		vkCreateBuffer(vkLogCard,bufC&,null,hndls[0]&)
 		vkGetBufferMemoryRequirements(vkLogCard,hndls[0],memInfo&)
 		isVertGpu := bool
-		memObjs[0].CreateObject(memInfo.size,memInfo.memoryTypeBits,isVertGpu&)
+		memObjs[0] = vk.CreateMemoryObject(memInfo.size,memInfo.memoryTypeBits,isVertGpu&)
 		
 		vkBindBufferMemory(vkLogCard,hndls[0],memObjs[0].Get(),0)
 
-		memO := memObjs[0]&
+		memO := memObjs[0]
 		if isVertGpu
 			memO = gStageMem
 
@@ -62,11 +62,11 @@ vModel := class
 		vkGetBufferMemoryRequirements(vkLogCard,hndls[1],memInfo&)
 
 		isIndGpu := bool
-		memObjs[1].CreateObject(memInfo.size,memInfo.memoryTypeBits,isIndGpu&)
+		memObjs[1] = vk.CreateMemoryObject(memInfo.size,memInfo.memoryTypeBits,isIndGpu&)
 
 		vkBindBufferMemory(vkLogCard,hndls[1],memObjs[1].Get(),0)
 
-		memO2 := memObjs[1]&
+		memO2 := memObjs[1]
 		if isIndGpu
 			memO2 = gStageMem
 		memPoint = memO2.Map()
