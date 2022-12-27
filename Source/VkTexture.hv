@@ -180,42 +180,6 @@ vTexture := class
 			}
 			gStageMem.Unmap()
 			vStageCpyToImage(itImg,itW,itH)
-
-
-			//InitWebP()
-
-			//mp := itFile.GetMap()
-
-			//webpInf := int[10] // width,height,has_alpha, has_animation,type, 5 x for feature
-
-			//webpGetFeatures(mp.Get()->{void^},mp.Size()->{u64},webpInf[0]&->{void^},0x0208)
-
-			//has_alpha := webpInf[2] != 0
-			//has_animation := webpInf[3] != 0
-			//if not vkRGB8Support
-			//	has_alpha = true
-
-			//if has_animation
-			//{
-			//	//FEATURE:
-			//}else{
-			//	memTyp := CreateObject(webpInf[0],webpInf[1],(x,y) ==> {
-			//		x.format = VK_FORMAT_R8G8B8_UNORM
-			//		if has_alpha x.format = VK_FORMAT_R8G8B8A8_UNORM
-			//	})
-			//	ptrToSet := gStageMem.Map()->{u8^}
-
-			//	if has_alpha
-			//	{
-			//		webpGetDataRGBA(mp.Get(),mp.Size(),ptrToSet,itW*itH*4,itW*4)
-			//		//Recolor(ptrToSet,itW*itH,4)
-			//	}else{
-			//		webpGetDataRGB(mp.Get(),mp.Size(),ptrToSet,itW*itH*3,itW*3)
-			//		//Recolor(ptrToSet,itW*itH,3)
-			//	}
-			//	gStageMem.Unmap()
-			//	vStageCpyToImage(itImg,itW,itH)
-			//}
 		//}
 
 	}

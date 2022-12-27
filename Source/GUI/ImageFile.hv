@@ -29,6 +29,7 @@ TImageFile := class extend TGCObject
 
 	this := !(vRepoFile^ setFile) -> void
 	{
+		//TODO check image type
 		itFile = setFile
 
 		InitWebP()
