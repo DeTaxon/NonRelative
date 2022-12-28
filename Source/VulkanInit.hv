@@ -227,30 +227,39 @@ VulkanInit := !() -> void
 	memReq := VkPhysicalDeviceMemoryProperties
 	vk.Funcs.vkGetPhysicalDeviceMemoryProperties(vkPhysCard,memReq&)
 
-	for i : memReq.memoryTypeCount&->{int^}^
+	for heapI : memReq.memoryHeapCount&->{int^}^
 	{
-		printf("mem info %i %X\n",i,memReq.memoryTypes[i]&->{int^}^)
-		if (memReq.memoryTypes[i]&->{int^}^ 
-			and_b VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) != 0
-			{
-				printf("VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT\n")
-				if vkCpuMemId == -1
-					vkCpuMemId = i
-				gHostMem.Push(i)
-			}
-		if (memReq.memoryTypes[i]&->{int^}^ 
-			and_b VK_MEMORY_PROPERTY_HOST_COHERENT_BIT) != 0 
-				printf("VK_MEMORY_PROPERTY_HOST_COHERENT_BIT\n")
-		if (memReq.memoryTypes[i]&->{int^}^ 
-			and_b VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT) != 0 
-			{	
-				if vkGpuMemId == -1
-					vkGpuMemId = i
-				//if (memReq.memoryTypes[i]&->{int^}^ and_b VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) != 0
-					gDeviceMem.Push(i)
-				printf("VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT\n")
-			}
+		printf("memory heap %i, size %lli\n",heapI,memReq.memoryHeaps[heapI].size)
+
+		for i : memReq.memoryTypeCount&->{int^}^
+		{
+			if memReq.memoryTypes[i].heapIndex != heapI
+				continue
+
+			printf("mem info %i %X\n",i,memReq.memoryTypes[i]&->{int^}^)
+			if (memReq.memoryTypes[i]&->{int^}^ 
+				and_b VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) != 0
+				{
+					printf("VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT\n")
+					if vkCpuMemId == -1
+						vkCpuMemId = i
+					gHostMem.Push(i)
+				}
+			if (memReq.memoryTypes[i]&->{int^}^ 
+				and_b VK_MEMORY_PROPERTY_HOST_COHERENT_BIT) != 0 
+					printf("VK_MEMORY_PROPERTY_HOST_COHERENT_BIT\n")
+			if (memReq.memoryTypes[i]&->{int^}^ 
+				and_b VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT) != 0 
+				{	
+					if vkGpuMemId == -1
+						vkGpuMemId = i
+					//if (memReq.memoryTypes[i]&->{int^}^ and_b VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) != 0
+						gDeviceMem.Push(i)
+					printf("VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT\n")
+				}
+		}
 	}
+
 
 	//TODO: format priority
 	SwapImageFormat = formts[1].format
