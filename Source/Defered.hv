@@ -8,8 +8,8 @@ vkFramebuffers := Vector.{VkFramebuffer}^
 
 gModelFramebuffer := VkFramebuffer
 
-depthTexture := vTexture^
-fbTextures := vTexture^[2]
+depthTexture := TVkTexture^
+fbTextures := TVkTexture^[2]
 
 gLightShader := vShader^
 
@@ -184,18 +184,18 @@ CreateFB := !() -> void
 	// 	depthTexture = null
 	// }
 
-	fbTextures[0] = new vTexture
+	fbTextures[0] = new TVkTexture
 	fbTextures[0].CreateObject(gFBW,gFBH, (img,viw) ==> {
 		img.usage = VK_IMAGE_USAGE_SAMPLED_BIT or_b VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT or_b VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT
 	})
-	fbTextures[1] = new vTexture
+	fbTextures[1] = new TVkTexture
 	fbTextures[1].CreateObject(gFBW,gFBH, (img,viw) ==> {
 		img.usage = VK_IMAGE_USAGE_SAMPLED_BIT or_b VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT or_b VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT
 		img.format = VK_FORMAT_R32G32B32A32_SFLOAT
 	})
 
 	//create deth
-	depthTexture = new vTexture
+	depthTexture = new TVkTexture
 	depthTexture.CreateObject(gFBW,gFBH,(img,viv)==> {
 		img.format = VK_FORMAT_D16_UNORM
 		img.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT

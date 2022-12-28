@@ -4,7 +4,7 @@ vModel := class
 	hndls := VkBuffer[2]
 	indexCount := int
 	ReqShader := vShader^
-	ReqTexture := vTexture^
+	ReqTexture := TVkTexture^
 
 	physType := char^
 	physExtraData := void^

@@ -1,7 +1,7 @@
 
 
 
-vTexture := class
+TVkTexture := class
 {
 	memObj := TVkMemoryObject^
 	itImg := VkImage
