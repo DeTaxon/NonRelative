@@ -99,7 +99,7 @@ vStageCpyToImage := !(VkImage tCpy,int w, int h) -> void
 	stg1.subresourceRange.layerCount = 1
 
 
-	vkCmdPipelineBarrier(mainCmd.Get(),VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+	vk.Funcs.vkCmdPipelineBarrier(mainCmd.Get(),VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
 		VK_PIPELINE_STAGE_TRANSFER_BIT,0,0,null,0,null,1,stg1&)
 
 	cpyCmd := VkBufferImageCopy
@@ -109,7 +109,7 @@ vStageCpyToImage := !(VkImage tCpy,int w, int h) -> void
 	cpyCmd.imageExtent.height = h
 	cpyCmd.imageExtent.depth = 1
 
-	vkCmdCopyBufferToImage(mainCmd.Get(),vk.itStageMemoryBuffer,tCpy,VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,1,cpyCmd&)
+	vk.Funcs.vkCmdCopyBufferToImage(mainCmd.Get(),vk.itStageMemoryBuffer,tCpy,VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,1,cpyCmd&)
 
 	stg2 := VkImageMemoryBarrier()
 	stg2.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT
@@ -124,7 +124,7 @@ vStageCpyToImage := !(VkImage tCpy,int w, int h) -> void
 	stg2.subresourceRange.levelCount = 1
 	stg2.subresourceRange.layerCount = 1
 
-	vkCmdPipelineBarrier(mainCmd.Get(),VK_PIPELINE_STAGE_TRANSFER_BIT,VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,0,0,null,0,null,1,stg2&)
+	vk.Funcs.vkCmdPipelineBarrier(mainCmd.Get(),VK_PIPELINE_STAGE_TRANSFER_BIT,VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,0,0,null,0,null,1,stg2&)
 
 	mainCmd.Stop()
 	mainCmd.Submit()
@@ -142,5 +142,5 @@ vSetTexture := !(VkDescriptorSet toSet,TVkTexture^ donor,VkSampler smSampler) ->
 	wrT.pImageInfo&->{void^^}^ = imgI&
 	wrT.dstSet = toSet
 
-	vkUpdateDescriptorSets(vkLogCard,1,wrT&,0,null)
+	vk.Funcs.vkUpdateDescriptorSets(vk.LogicalDevice,1,wrT&,0,null)
 }

@@ -38,12 +38,12 @@ vModel := class
 
 		memInfo := VkMemoryRequirements
 
-		vkCreateBuffer(vkLogCard,bufC&,null,hndls[0]&)
-		vkGetBufferMemoryRequirements(vkLogCard,hndls[0],memInfo&)
+		vk.Funcs.vkCreateBuffer(vk.LogicalDevice,bufC&,null,hndls[0]&)
+		vk.Funcs.vkGetBufferMemoryRequirements(vk.LogicalDevice,hndls[0],memInfo&)
 		isVertGpu := bool
 		memObjs[0] = vk.CreateMemoryObject(memInfo.size,memInfo.memoryTypeBits,isVertGpu&)
 		
-		vkBindBufferMemory(vkLogCard,hndls[0],memObjs[0].Get(),0)
+		vk.Funcs.vkBindBufferMemory(vk.LogicalDevice,hndls[0],memObjs[0].Get(),0)
 
 		memO := memObjs[0]
 		if isVertGpu
@@ -58,13 +58,13 @@ vModel := class
 		indSize := rFile.IndexCount*rFile.IndexType.GetSize()
 		bufC.size = indSize
 		bufC.usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT or_b VK_BUFFER_USAGE_TRANSFER_DST_BIT
-		vkCreateBuffer(vkLogCard,bufC&,null,hndls[1]&)
-		vkGetBufferMemoryRequirements(vkLogCard,hndls[1],memInfo&)
+		vk.Funcs.vkCreateBuffer(vk.LogicalDevice,bufC&,null,hndls[1]&)
+		vk.Funcs.vkGetBufferMemoryRequirements(vk.LogicalDevice,hndls[1],memInfo&)
 
 		isIndGpu := bool
 		memObjs[1] = vk.CreateMemoryObject(memInfo.size,memInfo.memoryTypeBits,isIndGpu&)
 
-		vkBindBufferMemory(vkLogCard,hndls[1],memObjs[1].Get(),0)
+		vk.Funcs.vkBindBufferMemory(vk.LogicalDevice,hndls[1],memObjs[1].Get(),0)
 
 		memO2 := memObjs[1]
 		if isIndGpu
@@ -80,52 +80,17 @@ vModel := class
 	}
 	DestroyVK := !() -> void
 	{
-		vkDestroyBuffer(vkLogCard,hndls[0],null)
-		vkDestroyBuffer(vkLogCard,hndls[1],null)
+		vk.Funcs.vkDestroyBuffer(vk.LogicalDevice,hndls[0],null)
+		vk.Funcs.vkDestroyBuffer(vk.LogicalDevice,hndls[1],null)
 		memObjs[0].DestroyVK()
 		memObjs[1].DestroyVK()
 	}
-	ReloadModel := !(vRepoFile^ itFl) -> void
-	{
-		DestroyVK()
-		LoadFile(itFl)
-	}
-	//ReloadScript := !(vRepoFile^ itFl) -> void
-	//{
-	//	scr := ScriptCompile(itFl)
-	//	if scr != null
-	//	{
-	//		cpy := @temp new List.{ScriptThread^}
-	//		prp := @temp new AVLSet.{vProp^}
-
-	//		for it : hlRunThreads
-	//		{
-	//			cpy.Push(it)
-	//			prp.Insert(it.thrdVObject->{vProp^})
-	//		}
-
-	//		for it : cpy^
-	//		{
-	//			it.Destroy()
-	//		}
-
-	//		for it : prp^
-	//		{
-	//			ScriptRun(scr,it)
-	//		}
-	//		//TODO: destroy CompileUnit
-	//		
-	//		printf("reloaded script\n")
-	//	}else{
-	//		printf("failed reload\n")
-	//	}
-	//}
 	AddToCmdBuffer := !(VkCommandBuffer cmdB) -> void
 	{
 		offsets := VkDeviceSize
-		vkCmdBindVertexBuffers(cmdB,0,1,hndls[0]&,offsets&)
-		vkCmdBindIndexBuffer(cmdB,hndls[1],0,indexType.GetBaseIndexType())
-		vkCmdDrawIndexed(cmdB,indexCount,1,0,0,0)
+		vk.Funcs.vkCmdBindVertexBuffers(cmdB,0,1,hndls[0]&,offsets&)
+		vk.Funcs.vkCmdBindIndexBuffer(cmdB,hndls[1],0,indexType.GetBaseIndexType())
+		vk.Funcs.vkCmdDrawIndexed(cmdB,indexCount,1,0,0,0)
 	}
 	
 }

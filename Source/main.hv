@@ -96,7 +96,6 @@ main := !(char^[] args) -> int
 		}
 	})
 
-	
 	gPlayerMap.mapProps.Push(itProp)
 
 	oldTime := GetSteadyTime()
