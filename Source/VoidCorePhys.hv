@@ -18,25 +18,19 @@ vPhysStage := !(double deltaTime) -> void
 	gPlayer.ImpulseV.z = oldPlayerImpz - 9.8f*deltaTime
 	//if gPlayer.ImpulseV.z < -20.0
 	//	gPlayer.ImpulseV.z = -20
-	//zeroOffset := centf()
-	//vPhysStagePlayer(deltaTime,gPlayerMap,zeroOffset,2)
-	TestStage() //TODO
+	zeroOffset := centf()
+	vPhysStagePlayer(deltaTime,gPlayerMap,zeroOffset,2)
 	gPlayer.System.pos += gPlayer.ImpulseV*deltaTime
-	TestStage()
-	//vPhysStagePlayer(deltaTime,gPlayerMap,zeroOffset,2)
+	vPhysStagePlayer(deltaTime,gPlayerMap,zeroOffset,2)
 
 	//vPhysCheckMoves()
 
 	//gCam.camPos = gPlayer.System.pos + vec4f(0.0f,0.0f,1.7f,0.0f)
 }
 
+gPlayerMap := vMap^
 gNowTime := double //TODO remove
 
-TestStage := !() -> void
-{
-	zero := centf()
-	PhysCheckPlayerVSHMap(gPlayer,gMap,zero)
-}
 //vPhysCheckMoves := !() -> void
 //{
 //	if gMetMapPhys^.Size() != 0
@@ -48,33 +42,34 @@ TestStage := !() -> void
 //		}
 //	}
 //}
-//vPhysStagePlayer := !(double deltaTime,vMap^ someMap,centf offset,int depth) -> void
-//{
-//	if depth <= 0
-//		return void
-//
-//	for it : someMap.mapProps
-//	{
-//		if it.physObj != null
-//		{
-//	 		fixes := PhysVsPhys(gPlayer->{PhysCommon^},it.physObj,offset)
-//			if it.physObj.PhysType == PhysType_hmap //TODO: prop with map checker
-//			{
-//				if fixes != 0
-//					gMetMapPhys.Emplace(someMap,offset)
-//			}
-//		}
-//	}
-//
-//	for it : linksFromMap[someMap]
-//	{
-//		newPos := offset<*>it.relativePos
-//		vPhysStagePlayer(deltaTime,it.linkTo,newPos,depth-1)
-//	}
-//	for it : linksToMap[someMap]
-//	{	
-//		newPos := offset<*>it.relativePos.Inverse()
-//		vPhysStagePlayer(deltaTime,it.linkFrom,newPos,depth-1)
-//	}
-//
-//}
+vPhysStagePlayer := !(double deltaTime,vMap^ someMap,centf offset,int depth) -> void
+{
+	if depth <= 0
+		return void
+
+	//for it : someMap.mapProps
+	//{
+	//	if it.physObj != null
+	//	{
+	// 		fixes := PhysVsPhys(gPlayer->{PhysCommon^},it.physObj,offset)
+	//		if it.physObj.PhysType == PhysType_hmap //TODO: prop with map checker
+	//		{
+	//			if fixes != 0
+	//				gMetMapPhys.Emplace(someMap,offset)
+	//		}
+	//	}
+	//}
+	PhysCheckPlayerVSHMap(gPlayer,someMap.physMap,offset)
+
+	for it : linksFromMap[someMap]
+	{
+		newPos := offset<*>it.relativePos
+		vPhysStagePlayer(deltaTime,it.linkTo,newPos,depth-1)
+	}
+	for it : linksToMap[someMap]
+	{	
+		newPos := offset<*>it.relativePos.Inverse()
+		vPhysStagePlayer(deltaTime,it.linkFrom,newPos,depth-1)
+	}
+
+}

@@ -48,6 +48,9 @@ main := !(char^[] args) -> int
 	mdl.LoadFile(fldFile)
 
 	gMap = new PhysHeightMap
+	gMapMap := new vMap
+	gPlayerMap = gMapMap
+	gPlayerMap.physMap = gMap
 
 	mapFile := new RawModel
 	mapFile.LoadFromFile(FSGetFile("Maps/FirstMap2/FirstMap.ply"))
@@ -72,6 +75,16 @@ main := !(char^[] args) -> int
 	itProp.itModel = mdl
 	itProp.modelTextureSet = modelTextureSet
 
+	newLink := vMapLink
+	newLink.linkFrom = gMapMap
+	newLink.linkTo = gMapMap
+	newLink.relativePos.ang = quantf(0,0,0,1)
+	newLink.relativePos.pos.x = 45.5
+	newLink.relativePos.pos.w = 1.0
+
+	linksToMap[gMapMap].Push(newLink&)
+	linksFromMap[gMapMap].Push(newLink&)
+
 	TSpawnTask(() ==> {
 		oldTime := GetSteadyTime()
 		while not gQuit
@@ -83,9 +96,11 @@ main := !(char^[] args) -> int
 		}
 	})
 
+	
+	gPlayerMap.mapProps.Push(itProp)
 
 	oldTime := GetSteadyTime()
-	inputCoef := 0.1
+	inputCoef := 0.05
 	while not gQuit
 	{
 		nowTime := GetSteadyTime()
@@ -102,7 +117,7 @@ main := !(char^[] args) -> int
 		learnShader.ApplyShaderToQueue(mainCmd.Get())
 		gCam.BindDescriptor(mainCmd.Get())
 
-		itProp.Draw(mainCmd,gCam^)
+		DrawMap(mainCmd&,gPlayerMap,centf(),4)
 
 		StopDraw()
 		

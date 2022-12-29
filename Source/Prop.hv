@@ -1,22 +1,24 @@
 vProp := class extend TGCObject
 {
 
-    itModel := vModel^
+	itModel := vModel^
 	modelTextureSet := VkDescriptorSet
 
-    propPosition := centf
+	propPosition := centf
 
-    this := !() -> void
-    {
-        propPosition.pos.w = 1.0f //TODO this
-        propPosition.ang.w = 1.0f
-    }
+	this := !() -> void
+	{
+		propPosition.pos.w = 1.0f //TODO this
+		propPosition.ang.w = 1.0f
+	}
 
-    Draw := !(CmdBuffer cmd,vCamera cmr) -> void
-    {
-        calculatedPos := centf
+	Draw := !(CmdBuffer cmd,vCamera cmr,centf offset) -> void
+	{
+		calculatedPos := centf
 
-        cmr.ApplyCamera(propPosition,calculatedPos)
+		offstPos := propPosition<*>offset
+
+		cmr.ApplyCamera(offstPos,calculatedPos)
 
 		sts := VkDescriptorSet[2]
 		sts[0] = modelTextureSet //vkPerspSet
@@ -24,6 +26,6 @@ vProp := class extend TGCObject
 		vkCmdBindDescriptorSets(mainCmd.Get(),VK_PIPELINE_BIND_POINT_GRAPHICS,gModelLayout.Get(),1,1,sts[0]&,0,null)
 		vkCmdPushConstants(mainCmd.Get(),gModelLayout.Get(),VK_SHADER_STAGE_VERTEX_BIT,0,4*8,calculatedPos&) //4*8 = centf->TypeSize
 
-        itModel.AddToCmdBuffer(mainCmd.Get())
-    }
+		itModel.AddToCmdBuffer(mainCmd.Get())
+	}
 }
