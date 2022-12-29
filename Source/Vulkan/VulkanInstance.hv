@@ -105,8 +105,24 @@ VulkanInstance := class extend TGCObject
 
 		Funcs.vkGetDeviceQueue(LogicalDevice,0,0,DrawQueue&)
 		TransferQueue = DrawQueue
-
 	}
+	
+	itStageMemory := TVkMemoryObject^
+	itStageMemoryBuffer := VkBuffer
+	initCreateStageMemory := !() -> void
+	{
+    		stSize := 0x4c4c00
+    		bufC := VkBufferCreateInfo()
+    		bufC.size = stSize
+    		bufC.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT
+    		bufC.sharingMode = VK_SHARING_MODE_EXCLUSIVE
+    		Funcs.vkCreateBuffer(LogicalDevice,bufC&,null,itStageMemoryBuffer&)
+    		memInfo := VkMemoryRequirements
+    		Funcs.vkGetBufferMemoryRequirements(LogicalDevice,itStageMemoryBuffer,memInfo&)
+    		itStageMemory = CreateMemoryObject(stSize,memInfo.memoryTypeBits,null)
+    		Funcs.vkBindBufferMemory(LogicalDevice,itStageMemoryBuffer,itStageMemory.Get(),0)
+	}
+
 	LayerStep := virtual !(VkLayerProperties[] supportedLayers, List.{char^} usingLayers) -> void { assert(false) }
 	ExtensionStep := virtual !(VkExtensionProperties[] supportedExtensions, List.{char^} usingExtensions) -> void { assert(false) }
 	AppInfoStep := virtual !(VkApplicationInfo appInfo) -> void { assert(false) }

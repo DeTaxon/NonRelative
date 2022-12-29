@@ -47,7 +47,7 @@ vModel := class
 
 		memO := memObjs[0]
 		if isVertGpu
-			memO = gStageMem
+			memO = vk.itStageMemory
 
 		memPoint := memO.Map()
 		memcpy(memPoint,rFile.verts,vertSize)
@@ -68,7 +68,7 @@ vModel := class
 
 		memO2 := memObjs[1]
 		if isIndGpu
-			memO2 = gStageMem
+			memO2 = vk.itStageMemory
 		memPoint = memO2.Map()
 		memcpy(memPoint,rFile.inds->{void^},indSize)
 		memO2.Unmap()

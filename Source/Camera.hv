@@ -62,7 +62,7 @@ vCamera := class
 
 		itMem := vkPerspMem
 		if memOnGpu
-			itMem = gStageMem
+			itMem = vk.itStageMemory
 		itMem2 := itMem.Map()
 		memcpy(itMem2,perspConsts[0]&,4*4)
 		itMem.Unmap()

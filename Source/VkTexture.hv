@@ -1,8 +1,16 @@
-
+AppendClass VulkanInstance
+{
+	CreateTexture := virtual !() -> TVkTexture^
+	{
+		result = new TVkTexture
+		result.itInstance = this&
+	}
+}
 
 
 TVkTexture := class
 {
+	itInstance := VulkanInstance^
 	memObj := TVkMemoryObject^
 	itImg := VkImage
 	itImgView := VkImageView
@@ -49,20 +57,20 @@ TVkTexture := class
 		vi.format = newImg.format
 
 		memInfp := VkMemoryRequirements
-		vkCreateImage(vkLogCard,newImg&,null,itImg&)
+		itInstance.Funcs.vkCreateImage(itInstance.LogicalDevice,newImg&,null,itImg&)
 
 		if itImg == null
 			throw new Exception("Could not create texture")
 
-		vkGetImageMemoryRequirements(vkLogCard,itImg,memInfp&)
+		itInstance.Funcs.vkGetImageMemoryRequirements(itInstance.LogicalDevice,itImg,memInfp&)
 
-		memObj = vk.CreateMemoryObject(memInfp.size,memInfp.memoryTypeBits,null)
+		memObj = itInstance.CreateMemoryObject(memInfp.size,memInfp.memoryTypeBits,null)
 
-		vkBindImageMemory(vkLogCard,itImg,memObj.Get(),0)
+		itInstance.Funcs.vkBindImageMemory(itInstance.LogicalDevice,itImg,memObj.Get(),0)
 
 		vi.image = itImg
 
-		vkCreateImageView(vkLogCard,vi&,null,itImgView&)
+		itInstance.Funcs.vkCreateImageView(itInstance.LogicalDevice,vi&,null,itImgView&)
 
 		return memInfp.memoryTypeBits
 	}
@@ -75,159 +83,33 @@ TVkTexture := class
 	}
 	CreateTexture := !(vRepoFile^ itFile) -> void
 	{	
-		// end := StringEnd(itFile.objName)
+		imgFile := TImageFile(itFile)
 
-		// if end in !["tga","jpg","png"]
-		// {
-		// 	imgType := IL_TGA
-		// 	switch end
-		// 	{
-		// 		case "jpg" imgType = IL_JPG
-		// 		case "png" imgType = IL_PNG
-		// 	}
+		useAlpha := imgFile.haveAlpha
+		if not vkRGB8Support
+			useAlpha = true
 
-		// 	ptr := itFile.Map()
-		// 	defer itFile.Unmap()
-		
-		// 	ilImg := int
-		// 	ilGenImages(1,ilImg&)
-		// 	ilBindImage(ilImg)
-		// 	ilLoadL(imgType,ptr,itFile.Size())
-		// 	w := ilGetInteger(IL_IMAGE_WIDTH)
-		// 	h := ilGetInteger(IL_IMAGE_HEIGHT)
-		// 	frmt := ilGetInteger(IL_IMAGE_FORMAT)
+		memTyp := CreateObject(imgFile.itWidth,imgFile.itHeight,(x,y) ==> {
+			x.format = VK_FORMAT_R8G8B8_UNORM
+			if useAlpha x.format = VK_FORMAT_R8G8B8A8_UNORM
+		})
 
-		// 	containAlpha := frmt in ![IL_RGBA,IL_BGRA]
-		// 	if not vkRGB8Support
-		// 		containAlpha = true
+		ptrToSet := itInstance.itStageMemory.Map()->{u8^}
 
-		// 	itW = toPwr2(w)
-		// 	itH = toPwr2(h)
-
-		// 	memTyp := CreateObject(itW,itH)
-		// 	ptrToSet := gStageMem.Map()->{u8^}
-		// 	//ilCopyPixels := !(int xOff,int yOff,int zOff,int w, int h, int d,int format,int fType,void^ destin)^ -> void
-		// 	//ilConvertImage(IL_RGBA,IL_UNSIGNED_BYTE)
-		// 	//dat := ilGetData()
-		// 	//memcpy(ptrToSet,dat,1024*1024*4)
-		// 	ilCopyPixels(0,0,0,itW,itH,1,containAlpha ?: IL_RGBA : IL_RGB, IL_UNSIGNED_BYTE,ptrToSet)
-
-		// 	gStageMem.Unmap()
-		// 	vStageCpyToImage(itImg,itW,itH)
-
-		// }else if end == "bmp"
-		// {
-		// 	mp := itFile.Map()->{u8^}
-		// 	defer itFile.Unmap()
-
-		// 	bmpH := mp->{BMPMainHeader^}
-		// 	imgH := mp[BMPMainHeader->TypeSize]&->{BMPImgHeaderOld^}
-
-		// 	//printf("bmp size %i\n",bmpH.fileSize)
-		// 	//printf("header size %i , w %i , h %i, bpx %i\n",imgH.itSize,imgH.itW,imgH.itH,imgH.bitsPerPixel)
-		// 	offToData := mp[BMPMainHeader->TypeSize + 40]&
-		// 	itW = imgH.itW&->{int^}^
-		// 	itH = imgH.itH&->{int^}^
-
-		// 	memTyp := CreateObject(itW,itH)
-		// 	ptrToSet := gStageMem.Map()->{u8^}
-		// 	if imgH.bitsPerPixel == 24
-		// 	{
-		// 		for i : itW*itH
-		// 		{
-		// 			c := i*4
-		// 			ptrToSet[c] = offToData[2]
-		// 			ptrToSet[c + 1] = offToData[1]
-		// 			ptrToSet[c + 2] = offToData[0]
-		// 			ptrToSet[c + 3] = 255
-		// 			offToData = offToData[3]&
-		// 		}
-		// 	}else{
-		// 		for i : itW*itH
-		// 		{
-		// 			c := i*4
-		// 			ptrToSet[c] = offToData[2]
-		// 			ptrToSet[c + 1] = offToData[1]
-		// 			ptrToSet[c + 2] = offToData[0]
-		// 			ptrToSet[c + 3] = offToData[3]
-		// 			offToData = offToData[4]&
-		// 		}
-		// 	}
-		// 	Recolor(ptrToSet,itW*itH,4)
-		// 	gStageMem.Unmap()
-		// 	vStageCpyToImage(itImg,itW,itH)
-		// }else 
-		// if end == ".webp"
-		// {
-			imgFile := TImageFile(itFile)
-
-			useAlpha := imgFile.haveAlpha
-			if not vkRGB8Support
-				useAlpha = true
-
-			memTyp := CreateObject(imgFile.itWidth,imgFile.itHeight,(x,y) ==> {
-				x.format = VK_FORMAT_R8G8B8_UNORM
-				if useAlpha x.format = VK_FORMAT_R8G8B8A8_UNORM
-			})
-
-			ptrToSet := gStageMem.Map()->{u8^}
-
-			if useAlpha
-			{
-				imgFile.StoreToMemory("RGBA",ptrToSet)
-			}else{
-				imgFile.StoreToMemory("RGB",ptrToSet)
-			}
-			gStageMem.Unmap()
-			vStageCpyToImage(itImg,itW,itH)
-		//}
+		if useAlpha
+		{
+			imgFile.StoreToMemory("RGBA",ptrToSet)
+		}else{
+			imgFile.StoreToMemory("RGB",ptrToSet)
+		}
+		itInstance.itStageMemory.Unmap()
+		vStageCpyToImage(itImg,itW,itH) //TODO
 
 	}
-	// Reload := !(vRepoFile^ itFile) -> void
-	// {
-	// 	Destroy()
-	// 	CreateTexture(itFile)
-	// }
 	Destroy := virtual !() -> void
 	{
-		vkDestroyImageView(vkLogCard,itImgView,null)
-		vkDestroyImage(vkLogCard,itImg,null)
+		itInstance.Funcs.vkDestroyImageView(itInstance.LogicalDevice,itImgView,null)
+		itInstance.Funcs.vkDestroyImage(itInstance.LogicalDevice,itImg,null)
 		memObj.DestroyVK()
 	}
-	// LoadNotFound := !() -> void
-	// {
-	// 	ptrToSet := gStageMem.Map()->{u8^}
-	// 	for i : itW
-	// 	for j : itH
-	// 	{
-	// 		c := (j*itW + i)*4
-	// 		switch (i + j) % 4
-	// 		{
-	// 		case 0
-	// 			ptrToSet[c    ] = 255
-	// 			ptrToSet[c + 1] = 0
-	// 			ptrToSet[c + 2] = 50
-	// 			ptrToSet[c + 3] = 0
-	// 		case 1
-	// 			ptrToSet[c    ] = 0
-	// 			ptrToSet[c + 1] = 0
-	// 			ptrToSet[c + 2] = 0
-	// 			ptrToSet[c + 3] = 255
-	// 		case 2
-	// 			ptrToSet[c    ] = 0
-	// 			ptrToSet[c + 1] = 50
-	// 			ptrToSet[c + 2] = 255
-	// 			ptrToSet[c + 3] = 255
-	// 		case 3
-	// 			ptrToSet[c    ] = 0
-	// 			ptrToSet[c + 1] = 255
-	// 			ptrToSet[c + 2] = 0
-	// 			ptrToSet[c + 3] = 255
-	// 		}
-	// 	}
-	// 	Recolor(ptrToSet,itW*itH,4)
-	// 	gStageMem.Unmap()
-
-	// 	vStageCpyToImage(itImg,itW,itH)
-	// }
 }

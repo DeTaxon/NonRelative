@@ -54,7 +54,7 @@ main := !(char^[] args) -> int
 	mapFile.LoadFromFile(FSGetFile("Maps/FirstMap2/FirstMap.ply"))
 	gMap.CreateDots(mapFile)
 
-	txt := new TVkTexture
+	txt := vk.CreateTexture() //TODO
 	txt.CreateTexture(FSGetFile("Maps/FirstMap2/wut.webp"))
 
 	gCam = new vCamera()
