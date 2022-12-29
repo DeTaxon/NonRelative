@@ -47,7 +47,6 @@ main := !(char^[] args) -> int
 	fldFile := FSGetFile("Maps/FirstMap2/FirstMap.ply")
 	mdl.LoadFile(fldFile)
 
-
 	gMap = new PhysHeightMap
 
 	mapFile := new RawModel
@@ -66,7 +65,7 @@ main := !(char^[] args) -> int
 	newSetCR.pSetLayouts = vkPerObjectLayout&
 	modelTextureSet := VkDescriptorSet
 
-	vkAllocateDescriptorSets(vkLogCard,newSetCR&,modelTextureSet&)
+	vk.Funcs.vkAllocateDescriptorSets(vk.LogicalDevice,newSetCR&,modelTextureSet&)
 	vSetTexture(modelTextureSet,txt,gSamplerNearest)
 
 	itProp := new vProp()
@@ -84,9 +83,15 @@ main := !(char^[] args) -> int
 		}
 	})
 
+
+	oldTime := GetSteadyTime()
+	inputCoef := 0.1
 	while not gQuit
 	{
-		gCam.InputCheck(0.1f)
+		nowTime := GetSteadyTime()
+		delta := nowTime - oldTime
+
+		gCam.InputCheck(delta*inputCoef)
 		@work DrawGetImage()
 		StartDraw()
 
@@ -96,16 +101,6 @@ main := !(char^[] args) -> int
 
 		learnShader.ApplyShaderToQueue(mainCmd.Get())
 		gCam.BindDescriptor(mainCmd.Get())
-
-
-		if buttons['y']
-		{
-			gCam.camPos.x = 0
-			gCam.camPos.y = 0
-			gCam.camPos.z = 2
-			gCam.upDownAng = 0.0f
-			gCam.leftRightAng = 0.0f
-		}
 
 		itProp.Draw(mainCmd,gCam^)
 
