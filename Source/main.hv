@@ -100,7 +100,7 @@ main := !(char^[] args) -> int
 	gPlayerMap.mapProps.Push(itProp)
 
 	oldTime := GetSteadyTime()
-	inputCoef := 0.05
+	inputCoef := 0.005
 	while not gQuit
 	{
 		nowTime := GetSteadyTime()

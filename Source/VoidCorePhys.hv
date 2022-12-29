@@ -1,5 +1,5 @@
 
-//gMetMapPhys := List.{Tuple.{vMap^,centf}}^
+gMetMapPhys := List.{Tuple.{vMap^,centf}}
 vPhysStage := !(double deltaTime) -> void
 {
 	//gMetMapPhys = new List.{Tuple.{vMap^,centf}}
@@ -23,7 +23,9 @@ vPhysStage := !(double deltaTime) -> void
 	gPlayer.System.pos += gPlayer.ImpulseV*deltaTime
 	vPhysStagePlayer(deltaTime,gPlayerMap,zeroOffset,2)
 
-	//vPhysCheckMoves()
+	vPhysCheckMoves()
+
+	gMetMapPhys.Destroy()
 
 	//gCam.camPos = gPlayer.System.pos + vec4f(0.0f,0.0f,1.7f,0.0f)
 }
@@ -31,17 +33,17 @@ vPhysStage := !(double deltaTime) -> void
 gPlayerMap := vMap^
 gNowTime := double //TODO remove
 
-//vPhysCheckMoves := !() -> void
-//{
-//	if gMetMapPhys^.Size() != 0
-//	{
-//		tst := ref gMetMapPhys^[0]
-//		if gPlayerMap != tst.0 or tst.1.Size() != 0 
-//		{
-//			gPlayer.System.pos = tst.1.Inverse().Apply(gPlayer.System.pos)
-//		}
-//	}
-//}
+vPhysCheckMoves := !() -> void
+{
+	if gMetMapPhys.Size() != 0
+	{
+		tst := ref gMetMapPhys[0]
+		if gPlayerMap != tst.0 or tst.1.Size() != 0 
+		{
+			gPlayer.System.pos = tst.1.Inverse().Apply(gPlayer.System.pos)
+		}
+	}
+}
 vPhysStagePlayer := !(double deltaTime,vMap^ someMap,centf offset,int depth) -> void
 {
 	if depth <= 0
@@ -59,7 +61,10 @@ vPhysStagePlayer := !(double deltaTime,vMap^ someMap,centf offset,int depth) -> 
 	//		}
 	//	}
 	//}
-	PhysCheckPlayerVSHMap(gPlayer,someMap.physMap,offset)
+
+	fixes :=PhysCheckPlayerVSHMap(gPlayer,someMap.physMap,offset)
+	if fixes != 0
+		gMetMapPhys.Emplace(someMap,offset)
 
 	for it : linksFromMap[someMap]
 	{
