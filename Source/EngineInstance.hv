@@ -1,5 +1,7 @@
+
 TEngine := class extend TGCObject
 {
+	vInstance := VulkanInstance^
 
 	LoadMap := !(StringView charPath) -> vMap^
 	{

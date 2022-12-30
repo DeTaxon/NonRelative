@@ -126,9 +126,9 @@ VulkanInstance := class extend TGCObject
 	}
 
 	DeviceMemory := List.{VulkanMemoryInfo^}
-	HostMemory := List.{VulkanMemoryInf^}
+	HostMemory := List.{VulkanMemoryInfo^}
 	BestTransferMemory := VulkanMemoryInfo^ 
-	CheckMemoryStep := !() -> void
+	CheckMemory := !() -> void
 	{
 		
 		memReq := VkPhysicalDeviceMemoryProperties
