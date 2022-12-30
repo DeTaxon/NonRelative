@@ -10,7 +10,6 @@ vMapLink := class
 vMap := class extend TGCObject
 {
 	mapName := char^
-	physMap := PhysHeightMap^
 	mapProps := List.{vProp^}
 
 	//AddProp := !(char^ modelName) -> vProp^

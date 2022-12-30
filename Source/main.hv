@@ -50,45 +50,22 @@ main := !(char^[] args) -> int
 
 	mdl := engine.LoadMesh("Maps/FirstMap2/FirstMap.ply")
 
-	gMap = new PhysHeightMap
-	gMapMap := new vMap
-	gPlayerMap = gMapMap
-	gPlayerMap.physMap = gMap
-
 	canvas := engine.LoadModel("Models/Canvas/Canvas.json")
-
-	mapFile := new RawModel
-	mapFile.LoadFromFile(FSGetFile("Maps/FirstMap2/FirstMap.ply"))
-	gMap.CreateDots(mapFile)
-
-	txt := engine.LoadTexture("Maps/FirstMap2/wut.webp")
 
 	gCam = new vCamera()
 	gCam.SetPerspective(x,y,0.001,100,80deg)
-
-	newSetCR := VkDescriptorSetAllocateInfo()
-	newSetCR.descriptorPool = gObjectLayoutSets
-	newSetCR.descriptorSetCount = 1
-	newSetCR.pSetLayouts = vkPerObjectLayout&
-	modelTextureSet := VkDescriptorSet
-
-	vk.Funcs.vkAllocateDescriptorSets(vk.LogicalDevice,newSetCR&,modelTextureSet&)
-	vSetTexture(modelTextureSet,txt,gSamplerNearest)
 
 	newProp := engine.CreateProp(canvas)
 
 	newProp.propPosition.pos = vec4f(0.0,0.0,1.7,1.0)
 	newProp.propPosition.ang = quantfAt(1.0,0.0,0.0,90deg)
 
-	itProp := new vProp()
-	itProp.itModel = mdl
-	itProp.modelTextureSet = modelTextureSet
-
-	mMap := engine.LoadMap("Maps/FirstMap2/FirstMap.json")
+	gPlayerMap = engine.LoadMap("Maps/FirstMap2/FirstMap.json")
+	gMapMap := gPlayerMap
 
 	newLink := vMapLink
-	newLink.linkFrom = gMapMap
-	newLink.linkTo = gMapMap
+	newLink.linkFrom = gPlayerMap
+	newLink.linkTo = gPlayerMap
 	newLink.relativePos.ang = quantf(0,0,0,1)
 	newLink.relativePos.pos.x = 45.5
 	newLink.relativePos.pos.w = 1.0
@@ -108,8 +85,6 @@ main := !(char^[] args) -> int
 			TSleep(1 / 30)
 		}
 	})
-
-	gPlayerMap.mapProps.Push(itProp)
 
 	oldTime := GetSteadyTime()
 	inputCoef := 0.005
