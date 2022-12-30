@@ -1,0 +1,72 @@
+TEngine := class extend TGCObject
+{
+
+	LoadMap := !(StringView charPath) -> vMap^
+	{
+	}
+
+	LoadMesh := !(StringView charPath) -> vModel^
+	{
+		return LoadMesh(FSGetFile(charPath))
+	}
+	LoadMesh := !(vRepoFile^ inFile) -> vModel^
+	{
+		result = new vModel
+		result.LoadFile(inFile)
+	}
+
+
+	LoadModel := !(StringView charPath) -> vModel^
+	{
+		return LoadModel(FSGetFile(charPath))
+	}
+	LoadModel := !(vRepoFile^ inFile) -> vModel^
+	{
+		js := new Json
+
+		mp := inFile.GetMap()
+
+		js.ParseString(mp.Get(),inFile.Size())
+
+		result = new vModel
+		
+		for it,ind  : js
+		{
+			switch ind
+			{
+				case "mesh"
+					result.LoadFile(inFile.GetFile(it.Value()))
+				case "texture"
+					result.ReqTexture = LoadTexture(inFile.GetFile(it.Value()))
+
+			}
+		}
+
+	}
+
+	CreateProp := !(vModel^ inModel) -> vProp^
+	{
+		result = new vProp()
+		result.itModel = inModel
+
+		newSetCR := VkDescriptorSetAllocateInfo()
+		newSetCR.descriptorPool = gObjectLayoutSets
+		newSetCR.descriptorSetCount = 1
+		newSetCR.pSetLayouts = vkPerObjectLayout&
+		modelTextureSet := VkDescriptorSet
+
+		vk.Funcs.vkAllocateDescriptorSets(vk.LogicalDevice,newSetCR&,result.modelTextureSet&) //TODO
+		vSetTexture(result.modelTextureSet,inModel.ReqTexture,gSamplerNearest)
+	}
+
+
+	LoadTexture := !(StringView charPath) -> TVkTexture^
+	{
+		return LoadTexture(FSGetFile(charPath))
+	}
+	LoadTexture := !(vRepoFile^ inFile) -> TVkTexture^
+	{
+		result = vk.CreateTexture() //TODO
+		result.CreateTexture(inFile)
+	}
+}

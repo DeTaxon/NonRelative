@@ -14,10 +14,15 @@ gMap := PhysHeightMap^
 
 gQuit := bool
 
+engine := TEngine^
+
 main := !(char^[] args) -> int
 {
 	x := 1200
 	y := 900
+	
+	//TODO can't create empty class
+	engine = new TEngine
 
 	CreateWindow(x,y)
 	VulkanInit()
@@ -43,21 +48,21 @@ main := !(char^[] args) -> int
 	opts.textureType = VKType(VType_Float,2)
 	learnShader.LoadShader(learnVert,learnFrag,opts&)
 
-	mdl := new vModel
-	fldFile := FSGetFile("Maps/FirstMap2/FirstMap.ply")
-	mdl.LoadFile(fldFile)
+	mdl := engine.LoadMesh("Maps/FirstMap2/FirstMap.ply")
 
 	gMap = new PhysHeightMap
 	gMapMap := new vMap
 	gPlayerMap = gMapMap
 	gPlayerMap.physMap = gMap
 
+	canvas := engine.LoadModel("Models/Canvas/Canvas.json")
+
+
 	mapFile := new RawModel
 	mapFile.LoadFromFile(FSGetFile("Maps/FirstMap2/FirstMap.ply"))
 	gMap.CreateDots(mapFile)
 
-	txt := vk.CreateTexture() //TODO
-	txt.CreateTexture(FSGetFile("Maps/FirstMap2/wut.webp"))
+	txt := engine.LoadTexture("Maps/FirstMap2/wut.webp")
 
 	gCam = new vCamera()
 	gCam.SetPerspective(x,y,0.001,100,80deg)
@@ -70,6 +75,11 @@ main := !(char^[] args) -> int
 
 	vk.Funcs.vkAllocateDescriptorSets(vk.LogicalDevice,newSetCR&,modelTextureSet&)
 	vSetTexture(modelTextureSet,txt,gSamplerNearest)
+
+	newProp := engine.CreateProp(canvas)
+
+	newProp.propPosition.pos = vec4f(0.0,0.0,1.7,1.0)
+	newProp.propPosition.ang = quantfAt(1.0,0.0,0.0,90deg)
 
 	itProp := new vProp()
 	itProp.itModel = mdl
@@ -84,6 +94,8 @@ main := !(char^[] args) -> int
 
 	linksToMap[gMapMap].Push(newLink&)
 	linksFromMap[gMapMap].Push(newLink&)
+
+	gMapMap.mapProps.Push(newProp)
 
 	TSpawnTask(() ==> {
 		oldTime := GetSteadyTime()
