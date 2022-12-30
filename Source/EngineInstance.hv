@@ -17,7 +17,29 @@ TEngine := class extend TGCObject
 			switch ind
 			{
 				case "props"
-					printf("here\n")
+					assert(it.IsArray()) //TODO
+					for prop : it
+					{
+						assert(prop.IsRecord()) //TODO
+						for propInfo, propInfoInd : prop
+						{
+							if propInfoInd == "model"
+							{
+								if propInfo.IsRecord()
+								{
+									mdl := LoadModel(inFile,propInfo)	
+									newProp := CreateProp(mdl)
+									printf("new prop %p\n",newProp)
+
+								}else if propInfo.IsField()
+								{
+									//TODO
+								}else{
+									assert(false) //TODO emit error
+								}
+							}
+						}
+					}
 			}
 		}
 	}
@@ -45,6 +67,10 @@ TEngine := class extend TGCObject
 
 		js.ParseString(mp.Get(),inFile.Size())
 
+		return LoadModel(inFile,js)
+	}
+	LoadModel := !(vRepoFile^ inFile,JsonNode^ js) -> vModel^
+	{
 		result = new vModel
 		
 		for it,ind  : js
