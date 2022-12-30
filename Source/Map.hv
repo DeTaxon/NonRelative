@@ -20,6 +20,18 @@ vMap := class extend TGCObject
 	//}
 }
 
+LinkMaps := !(vMap^ from, vMap^ to, vec4f posOffset, quantf angOffset = quantf(0.0,0.0,0.0,1.0)) -> void
+{
+	newLink := new vMapLink
+	newLink.linkFrom = from
+	newLink.linkTo = to
+	newLink.relativePos.ang = angOffset
+	newLink.relativePos.pos = posOffset
+
+	linksToMap[to].Push(newLink)
+	linksFromMap[from].Push(newLink)
+}
+
 DrawMap := !(CmdBuffer^ cmd,vMap^ hm,centf offset, int depth) -> void
 {
 	if depth <= 0

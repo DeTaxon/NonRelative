@@ -48,8 +48,6 @@ main := !(char^[] args) -> int
 	opts.textureType = VKType(VType_Float,2)
 	learnShader.LoadShader(learnVert,learnFrag,opts&)
 
-	mdl := engine.LoadMesh("Maps/FirstMap2/FirstMap.ply")
-
 	canvas := engine.LoadModel("Models/Canvas/Canvas.json")
 
 	gCam = new vCamera()
@@ -63,15 +61,7 @@ main := !(char^[] args) -> int
 	gPlayerMap = engine.LoadMap("Maps/FirstMap2/FirstMap.json")
 	gMapMap := gPlayerMap
 
-	newLink := vMapLink
-	newLink.linkFrom = gPlayerMap
-	newLink.linkTo = gPlayerMap
-	newLink.relativePos.ang = quantf(0,0,0,1)
-	newLink.relativePos.pos.x = 45.5
-	newLink.relativePos.pos.w = 1.0
-
-	linksToMap[gMapMap].Push(newLink&)
-	linksFromMap[gMapMap].Push(newLink&)
+	LinkMaps(gPlayerMap,gPlayerMap,vec4f(45.5,0.0,0.0,1.0),quantf(0,0,0,1))
 
 	gMapMap.mapProps.Push(newProp)
 
@@ -87,11 +77,12 @@ main := !(char^[] args) -> int
 	})
 
 	oldTime := GetSteadyTime()
-	inputCoef := 0.005
+	inputCoef := 0.5
 	while not gQuit
 	{
 		nowTime := GetSteadyTime()
 		delta := nowTime - oldTime
+		oldTime = nowTime
 
 		gCam.InputCheck(delta*inputCoef)
 		@work DrawGetImage()
