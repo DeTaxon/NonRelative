@@ -106,10 +106,10 @@ TVkTexture := class
 		vStageCpyToImage(itImg,itW,itH) //TODO
 
 	}
-	Destroy := virtual !() -> void
+	Destroy := virtual !() -> void //TODO double delete
 	{
 		itInstance.Funcs.vkDestroyImageView(itInstance.LogicalDevice,itImgView,null)
 		itInstance.Funcs.vkDestroyImage(itInstance.LogicalDevice,itImg,null)
-		memObj.DestroyVK()
+		memObj.Destroy()
 	}
 }

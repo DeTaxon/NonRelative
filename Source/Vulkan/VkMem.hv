@@ -9,10 +9,10 @@ AlignUp := !(int value, int align) -> int
 
 AppendClass VulkanInstance
 {
-	CreateMemoryObject := !(int size, int memType,bool^ gpuSideI) -> TVkMemoryObject^
+	CreateMemoryObject := !(int size, int memType,VulkanMemoryInfo^^ memInfo) -> TVkMemoryObject^
 	{
 		result = new TVkMemoryObject
-		result.CreateObject(this&,size,memType,gpuSideI)
+		result.CreateObject(this&,size,memType,memInfo)
 	}
 }
 
@@ -24,58 +24,52 @@ TVkMemoryObject := class
 	gpuSize := int
 	gpuSide := bool
 
-	CreateObject := !(VulkanInstance^ inst,int size,int memType, bool^ gpuSideI) -> bool
+	CreateObject := !(VulkanInstance^ inst,int size,int memType, VulkanMemoryInfo^^ memInfo) -> bool
 	{
 		itInstance = inst
-		memId := -1
-		if(memType == 0)
+
+		bestMemory := VulkanMemoryInfo^
+		if (memType == 0)
 		{
-			memId = gHostMem[0]
-			gpuSide = false
+			assert(false) //TODO
+			//memId = gHostMem[0]
+			//gpuSide = false
 		}else
 		{
-			for it : gHostMem
+			for it : itInstance.DeviceMemory
 			{
-				if ((1 shl it) and_b memType) != 0
-				{
-					memId = it
-					break
-				}
+				if ((1 shl it.index) and_b memType) == 0
+					continue
+
+				if bestMemory == null or bestMemory.heapSize < it.heapSize
+					bestMemory = it
 			}
-			if memId == -1
+			if bestMemory != null
 			{
-				for it : gDeviceMem
+				for it : itInstance.HostMemory
 				{
-					if ((1 shl it) and_b memType) != 0
-					{
-						memId = it
-						break
-					}
+					if ((1 shl it.index) and_b memType) == 0
+						continue
+
+					if bestMemory == null or bestMemory.heapSize < it.heapSize
+						bestMemory = it
 				}
-			}
-			gpuSide = true
-			if gHostMem[^] == memId
-			{
-				gpuSide = false
-				break
 			}
 		}
-		if gpuSideI != null
-			gpuSideI^ = gpuSide
 
-		gpuSize = AlignUp(size,0x40) //TODO unconst
-		gpuSize = max(gpuSize,0x500000)
-		gpuSize = size
+		memInfo?^ = bestMemory
+
+		gpuSize := size
 
 		allc1 := VkMemoryAllocateInfo()
 		allc1.allocationSize =  gpuSize
-		allc1.memoryTypeIndex = memId
+		allc1.memoryTypeIndex = bestMemory.index
 
 		inst.Funcs.vkAllocateMemory(inst.LogicalDevice,allc1&,null,memObj&)
-		objSize = size
+		objSize = gpuSize
 		return true
 	}
-	DestroyVK := !() -> void
+	Destroy := virtual !() -> void //TODO double Destroy
 	{
 		itInstance.Funcs.vkFreeMemory(itInstance.LogicalDevice, memObj,null)
 	}

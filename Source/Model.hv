@@ -42,21 +42,24 @@ vModel := class
 
 		vk.Funcs.vkCreateBuffer(vk.LogicalDevice,bufC&,null,hndls[0]&)
 		vk.Funcs.vkGetBufferMemoryRequirements(vk.LogicalDevice,hndls[0],memInfo&)
-		isVertGpu := bool
-		memObjs[0] = vk.CreateMemoryObject(memInfo.size,memInfo.memoryTypeBits,isVertGpu&)
+		memResInfo := VulkanMemoryInfo^
+		memObjs[0] = vk.CreateMemoryObject(memInfo.size,memInfo.memoryTypeBits,memResInfo&)
 		
 		vk.Funcs.vkBindBufferMemory(vk.LogicalDevice,hndls[0],memObjs[0].Get(),0)
 
 		memO := memObjs[0]
-		if isVertGpu
-			memO = vk.itStageMemory
+
+		assert(memResInfo.IsHostVisible())
+		//if isVertGpu
+		//	memO = vk.itStageMemory
 
 		memPoint := memO.Map()
 		memcpy(memPoint,rFile.verts,vertSize)
 		memO.Unmap()
 
-		if isVertGpu
-			vStageCpyToBuffer(hndls[0],vertSize)
+		//if isVertGpu
+		//	vStageCpyToBuffer(hndls[0],vertSize)
+
 		indSize := rFile.IndexCount*rFile.IndexType.GetSize()
 		bufC.size = indSize
 		bufC.usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT or_b VK_BUFFER_USAGE_TRANSFER_DST_BIT
@@ -64,21 +67,23 @@ vModel := class
 		vk.Funcs.vkGetBufferMemoryRequirements(vk.LogicalDevice,hndls[1],memInfo&)
 
 		isIndGpu := bool
-		memObjs[1] = vk.CreateMemoryObject(memInfo.size,memInfo.memoryTypeBits,isIndGpu&)
+		memResInd := VulkanMemoryInfo^
+		memObjs[1] = vk.CreateMemoryObject(memInfo.size,memInfo.memoryTypeBits,memResInd&)
 
 		vk.Funcs.vkBindBufferMemory(vk.LogicalDevice,hndls[1],memObjs[1].Get(),0)
 
 		memO2 := memObjs[1]
-		if isIndGpu
-			memO2 = vk.itStageMemory
+		assert(memResInd.IsHostVisible())
+		//if isIndGpu
+		//	memO2 = vk.itStageMemory
 		memPoint = memO2.Map()
 		memcpy(memPoint,rFile.inds->{void^},indSize)
 		memO2.Unmap()
-		if isIndGpu
-		{
-			assert(false)
-			//vStageCpyToBuffer(hndls[1],indSize)
-		}
+		//if isIndGpu
+		//{
+		//	assert(false)
+		//	//vStageCpyToBuffer(hndls[1],indSize)
+		//}
 	}
 	DestroyVK := !() -> void
 	{

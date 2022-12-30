@@ -8,7 +8,7 @@ vCamera := class
 	camPOV := float
 
 	perspConsts := float[4]
-	memOnGpu := bool
+	memConstInfo := VulkanMemoryInfo^
 
 	mouseCamX := double
 	mouseCamY := double
@@ -61,16 +61,12 @@ vCamera := class
 		perspConsts[3] = 2.0*(camFar*camNear/range)
 
 		itMem := vkPerspMem
-		if memOnGpu
-			itMem = vk.itStageMemory
+
+		assert(memConstInfo.IsHostVisible()) //TODO
+
 		itMem2 := itMem.Map()
 		memcpy(itMem2,perspConsts[0]&,4*4)
 		itMem.Unmap()
-		if memOnGpu
-		{
-			assert(false)
-			vStageCpyToBuffer(vkPerspBuffer,4*4)
-		}
 	}
 
 	SetPerspective := !(float w, float h, float near, float far, float pov) -> void
@@ -91,7 +87,7 @@ vCamera := class
 
 		vkCreateBuffer(vkLogCard,bufC&,null,vkPerspBuffer&)
 		vkGetBufferMemoryRequirements(vkLogCard,vkPerspBuffer,memInfo&)
-		vkPerspMem = vk.CreateMemoryObject(memInfo.size,memInfo.memoryTypeBits,memOnGpu&)
+		vkPerspMem = vk.CreateMemoryObject(memInfo.size,memInfo.memoryTypeBits,memConstInfo&)
 		vkBindBufferMemory(vkLogCard,vkPerspBuffer,vkPerspMem.Get(),0)
 
 		bufInfo := VkDescriptorBufferInfo
