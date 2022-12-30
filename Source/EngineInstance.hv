@@ -3,6 +3,23 @@ TEngine := class extend TGCObject
 
 	LoadMap := !(StringView charPath) -> vMap^
 	{
+		return LoadMap(FSGetFile(charPath))
+	}
+	LoadMap := !(vRepoFile^ inFile) -> vMap^
+	{
+		mp := inFile.GetMap()
+
+		js := new Json
+		js.ParseString(mp.Get(),mp.Size())
+
+		for it, ind : js
+		{
+			switch ind
+			{
+				case "props"
+					printf("here\n")
+			}
+		}
 	}
 
 	LoadMesh := !(StringView charPath) -> vModel^

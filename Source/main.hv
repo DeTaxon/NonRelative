@@ -57,7 +57,6 @@ main := !(char^[] args) -> int
 
 	canvas := engine.LoadModel("Models/Canvas/Canvas.json")
 
-
 	mapFile := new RawModel
 	mapFile.LoadFromFile(FSGetFile("Maps/FirstMap2/FirstMap.ply"))
 	gMap.CreateDots(mapFile)
@@ -84,6 +83,8 @@ main := !(char^[] args) -> int
 	itProp := new vProp()
 	itProp.itModel = mdl
 	itProp.modelTextureSet = modelTextureSet
+
+	mMap := engine.LoadMap("Maps/FirstMap2/FirstMap.json")
 
 	newLink := vMapLink
 	newLink.linkFrom = gMapMap
