@@ -102,7 +102,7 @@ CreateSwapchain := !(int inW,int inH) -> void
 	imgCount := u32
 	vkGetSwapchainImagesKHR(vkLogCard,vkSwapchain,imgCount&,null)
 	vkImages = new Vector.{VkImage}(imgCount)
-	vkGetSwapchainImagesKHR(vkLogCard,vkSwapchain,imgCount&,vkImages.Get())
+	vkGetSwapchainImagesKHR(vkLogCard,vkSwapchain,imgCount&,vkImages.GetPointer())
 
 	attmDesc := VkAttachmentDescription[1]
 	attmDesc[0].format = SwapImageFormat

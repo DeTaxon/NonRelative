@@ -122,7 +122,7 @@ VKNonRelative := class extend VulkanInstance
 			propsCount := u32
 			Funcs.vkGetPhysicalDeviceQueueFamilyProperties(it,propsCount&,null)
 			prps := Vector.{VkQueueFamilyProperties}(propsCount)
-			Funcs.vkGetPhysicalDeviceQueueFamilyProperties(it,propsCount&,prps.Get())
+			Funcs.vkGetPhysicalDeviceQueueFamilyProperties(it,propsCount&,prps.GetPointer())
 
 			for it,j : prps
 			{
@@ -186,7 +186,7 @@ VulkanInit := !() -> void
 	formsCount := u32
 	vk.Funcs.vkGetPhysicalDeviceSurfaceFormatsKHR(vkPhysCard,vkSurface,formsCount&,null)
 	formts := Vector.{VkSurfaceFormatKHR}(formsCount)
-	vk.Funcs.vkGetPhysicalDeviceSurfaceFormatsKHR(vkPhysCard,vkSurface,formsCount&,formts.Get())
+	vk.Funcs.vkGetPhysicalDeviceSurfaceFormatsKHR(vkPhysCard,vkSurface,formsCount&,formts.GetPointer())
 
 	printf("formats\n")
 	for it : formts
@@ -197,7 +197,7 @@ VulkanInit := !() -> void
 	presMods := u32
 	vk.Funcs.vkGetPhysicalDeviceSurfacePresentModesKHR(vkPhysCard,vkSurface,presMods&,null)
 	pMods := Vector.{VkPresentModeKHR}(presMods)
-	vk.Funcs.vkGetPhysicalDeviceSurfacePresentModesKHR(vkPhysCard,vkSurface,presMods&,pMods.Get())
+	vk.Funcs.vkGetPhysicalDeviceSurfacePresentModesKHR(vkPhysCard,vkSurface,presMods&,pMods.GetPointer())
 
 	printf("supported mods\n")
 

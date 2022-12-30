@@ -32,7 +32,7 @@ TShaderInput := class
 				cnstsPtr = cnsts[0].Get()
 			}else{
 				cnstsVec.Resize(cnsts.Size())
-				cnstsPtr = cnstsVec.Get()
+				cnstsPtr = cnstsVec.GetPointer()
 				for i : cnsts.Size()
 				{
 					cnstsVec[i].stageFlags = cnsts[i].Get().stageFlags

@@ -196,7 +196,7 @@ PhysHeightMap := class
 		
 		resSize := nDots.Size()*vec4f->TypeSize + Triangles2.Size()*2*3 + resSpheres.Size()*PhysHightSphere->TypeSize
 		
-		asIntP := nDots.Get()->{u32^}
+		asIntP := nDots.GetPointer()->{u32^}
 		asIntP[0] = nDots.Size()*vec4f->TypeSize
 		asIntP[1] = resSpheres.Size()*PhysHightSphere->TypeSize
 		asIntP[2] = Triangles2.Size()*2*3
@@ -207,9 +207,9 @@ PhysHeightMap := class
 		Spheres = itMap[asIntP[0]]&->{PhysHightSphere^}
 		Triangles = itMap[asIntP[0] + asIntP[1]]&->{u16[3]^}
 
-		memcpy(Dots,nDots.Get()->{void^},asIntP[0])
-		memcpy(Spheres,resSpheres.Get()->{void^},asIntP[1])
-		memcpy(Triangles,Triangles2.Get()->{void^},asIntP[2])
+		memcpy(Dots,nDots.GetPointer()->{void^},asIntP[0])
+		memcpy(Spheres,resSpheres.GetPointer()->{void^},asIntP[1])
+		memcpy(Triangles,Triangles2.GetPointer()->{void^},asIntP[2])
 
 		return resSize
 	}

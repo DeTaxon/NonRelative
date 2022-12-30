@@ -19,11 +19,11 @@ VulkanInstance := class extend TGCObject
 
 		vkEnumerateInstanceLayerProperties(count&,null)
 		lays := Vector.{VkLayerProperties}(count->{int})
-		vkEnumerateInstanceLayerProperties(count&,lays.Get())
+		vkEnumerateInstanceLayerProperties(count&,lays.GetPointer())
 
 		vkEnumerateInstanceExtensionProperties(null,count&,null)
 		exts := Vector.{VkExtensionProperties}(count->{int})
-		vkEnumerateInstanceExtensionProperties(null,count&,exts.Get())
+		vkEnumerateInstanceExtensionProperties(null,count&,exts.GetPointer())
 
 		usingLayers := List.{char^}
 		usingExtensions := List.{char^}
@@ -42,9 +42,9 @@ VulkanInstance := class extend TGCObject
 		setExtensions := usingExtensions.ToVector()
 
 		instCr.enabledLayerCount = setLayers.Size()
-		instCr.ppEnabledLayerNames = setLayers.Get()
+		instCr.ppEnabledLayerNames = setLayers.GetPointer()
 		instCr.enabledExtensionCount = setExtensions.Size()
-		instCr.ppEnabledExtensionNames = setExtensions.Get()
+		instCr.ppEnabledExtensionNames = setExtensions.GetPointer()
 		createRes := vkCreateInstance(instCr&,null,Instance&) //<<<<<<<<<<<<<<<<<<<<<<<<<<< CreateInstance
 
 		for fnc , fncName : Funcs->AllFields
@@ -58,7 +58,7 @@ VulkanInstance := class extend TGCObject
 		devCount := u32
 		Funcs.vkEnumeratePhysicalDevices(Instance,devCount&,null)
 		devs := Vector.{VkPhysicalDevice}(devCount)
-		Funcs.vkEnumeratePhysicalDevices(Instance,devCount&,devs.Get())
+		Funcs.vkEnumeratePhysicalDevices(Instance,devCount&,devs.GetPointer())
 		
 		numDevice := DeviceSelectStep(devs&) //TODO check if bad  //<<<<<<<<<<<<<<<<<<<<<<<<< DeviceSelectStep
 		
@@ -72,7 +72,7 @@ VulkanInstance := class extend TGCObject
 		if devExtsCount != 0
 		{
 			devExts.Resize(devExtsCount)
-			Funcs.vkEnumerateDeviceExtensionProperties(PhysicalDevice,null,devExtsCount&,devExts.Get())
+			Funcs.vkEnumerateDeviceExtensionProperties(PhysicalDevice,null,devExtsCount&,devExts.GetPointer())
 		}
 
 
@@ -98,7 +98,7 @@ VulkanInstance := class extend TGCObject
 		logDevice.enabledLayerCount = 0 // usingLayers.Size() //TODO
 		logDevice.ppEnabledLayerNames = null //usingLayers.Get() //TODO
 		logDevice.enabledExtensionCount = usingPhysExts.Size()
-		logDevice.ppEnabledExtensionNames = usingPhysExts.Get()->{char^}
+		logDevice.ppEnabledExtensionNames = usingPhysExts.GetPointer()->{char^}
 		logDevice.pEnabledFeatures = zeroFeature&
 
 		res11 := Funcs.vkCreateDevice(PhysicalDevice,logDevice&,null,LogicalDevice&)
