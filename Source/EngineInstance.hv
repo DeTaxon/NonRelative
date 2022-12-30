@@ -12,34 +12,35 @@ TEngine := class extend TGCObject
 		js := new Json
 		js.ParseString(mp.Get(),mp.Size())
 
+		result = new vMap
+
 		for it, ind : js
 		{
 			switch ind
 			{
-				case "props"
-					assert(it.IsArray()) //TODO
-					for prop : it
+			case "props"
+				assert(it.IsArray()) //TODO
+				for prop : it
+				{
+					assert(prop.IsRecord()) //TODO
+					for propInfo, propInfoInd : prop
 					{
-						assert(prop.IsRecord()) //TODO
-						for propInfo, propInfoInd : prop
+						if propInfoInd == "model"
 						{
-							if propInfoInd == "model"
+							if propInfo.IsRecord()
 							{
-								if propInfo.IsRecord()
-								{
-									mdl := LoadModel(inFile,propInfo)	
-									newProp := CreateProp(mdl)
-									printf("new prop %p\n",newProp)
-
-								}else if propInfo.IsField()
-								{
-									//TODO
-								}else{
-									assert(false) //TODO emit error
-								}
+								mdl := LoadModel(inFile,propInfo)	
+								newProp := CreateProp(mdl)
+								result.mapProps.Push(newProp)
+							}else if propInfo.IsField()
+							{
+								//TODO
+							}else{
+								assert(false) //TODO emit error
 							}
 						}
 					}
+				}
 			}
 		}
 	}
@@ -81,7 +82,21 @@ TEngine := class extend TGCObject
 					result.LoadFile(inFile.GetFile(it.Value()))
 				case "texture"
 					result.ReqTexture = LoadTexture(inFile.GetFile(it.Value()))
+				case "phys"
+					assert(it.IsRecord())
+					switch it^[StringSpan("type")&].Value()
+					{
+					case "hmap"
+						hFile := inFile.GetFile(it^[StringSpan("file")&].Value())
+						mapFile := RawModel
+						mapFile.LoadFromFile(hFile)
 
+						physMap := new PhysHeightMap()
+						physMap.CreateDots(mapFile&)
+						result.PhysModel = physMap->{PhysCommon^}
+					}
+				case void
+					assert(false)
 			}
 		}
 
@@ -91,6 +106,7 @@ TEngine := class extend TGCObject
 	{
 		result = new vProp()
 		result.itModel = inModel
+		result.PhysModel = inModel.PhysModel
 
 		newSetCR := VkDescriptorSetAllocateInfo()
 		newSetCR.descriptorPool = gObjectLayoutSets

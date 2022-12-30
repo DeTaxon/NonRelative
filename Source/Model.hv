@@ -13,6 +13,8 @@ vModel := class
 
 	indexType := VKType
 
+	PhysModel := PhysCommon^
+
 
 	LoadFile := !(vRepoFile^ itFl) -> bool
 	{

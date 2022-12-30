@@ -4,6 +4,8 @@ vProp := class extend TGCObject
 	itModel := vModel^
 	modelTextureSet := VkDescriptorSet
 
+	PhysModel := PhysCommon^
+
 	propPosition := centf
 
 	this := !() -> void
