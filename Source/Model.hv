@@ -47,18 +47,7 @@ vModel := class
 		
 		vk.Funcs.vkBindBufferMemory(vk.LogicalDevice,hndls[0],memObjs[0].Get(),0)
 
-		memO := memObjs[0]
-
-		assert(memResInfo.IsHostVisible())
-		//if isVertGpu
-		//	memO = vk.itStageMemory
-
-		memPoint := memO.Map()
-		memcpy(memPoint,rFile.verts,vertSize)
-		memO.Unmap()
-
-		//if isVertGpu
-		//	vStageCpyToBuffer(hndls[0],vertSize)
+		memObjs[0].TransferData(TArraySpan.{u8}(rFile.verts->{u8^},vertSize))
 
 		indSize := rFile.IndexCount*rFile.IndexType.GetSize()
 		bufC.size = indSize
@@ -72,18 +61,7 @@ vModel := class
 
 		vk.Funcs.vkBindBufferMemory(vk.LogicalDevice,hndls[1],memObjs[1].Get(),0)
 
-		memO2 := memObjs[1]
-		assert(memResInd.IsHostVisible())
-		//if isIndGpu
-		//	memO2 = vk.itStageMemory
-		memPoint = memO2.Map()
-		memcpy(memPoint,rFile.inds->{void^},indSize)
-		memO2.Unmap()
-		//if isIndGpu
-		//{
-		//	assert(false)
-		//	//vStageCpyToBuffer(hndls[1],indSize)
-		//}
+		memObjs[1].TransferData(TArraySpan.{u8}(rFile.inds->{u8^},indSize))
 	}
 	DestroyVK := !() -> void
 	{

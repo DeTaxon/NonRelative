@@ -22,7 +22,24 @@ TVkMemoryObject := class
 	memObj := VkDeviceMemory
 	objSize := int
 	gpuSize := int
-	gpuSide := bool
+	itMemInfo := VulkanMemoryInfo^
+
+	TransferData := !(u8[] dataView) -> void
+	{
+		assert(itMemInfo != null)
+
+		if itMemInfo.IsHostVisible()
+		{
+			ptr := Map()->{u8^}
+			for i : dataView.Size()
+			{
+				ptr[i] = dataView[i]
+			}
+			Unmap()
+		}else{
+			assert(false)
+		}
+	}
 
 	CreateObject := !(VulkanInstance^ inst,int size,int memType, VulkanMemoryInfo^^ memInfo) -> bool
 	{
@@ -58,6 +75,7 @@ TVkMemoryObject := class
 		}
 
 		memInfo?^ = bestMemory
+		itMemInfo = bestMemory
 
 		gpuSize = size
 

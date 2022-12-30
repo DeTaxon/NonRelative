@@ -60,13 +60,7 @@ vCamera := class
 		perspConsts[2] = (camFar + camNear) / range
 		perspConsts[3] = 2.0*(camFar*camNear/range)
 
-		itMem := vkPerspMem
-
-		assert(memConstInfo.IsHostVisible()) //TODO
-
-		itMem2 := itMem.Map()
-		memcpy(itMem2,perspConsts[0]&,4*4)
-		itMem.Unmap()
+		vkPerspMem.TransferData(TArraySpan.{u8}(perspConsts[0]&->{u8^}, 4*4)) //TODO
 	}
 
 	SetPerspective := !(float w, float h, float near, float far, float pov) -> void
