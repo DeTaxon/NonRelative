@@ -31,9 +31,16 @@ TVkMemoryObject := class
 		if itMemInfo.IsHostVisible()
 		{
 			ptr := Map()->{u8^}
-			for i : dataView.Size()
+
+			assert(dataView.Size() <= gpuSize)
+
+			srcPtr := dataView.GetPointer()
+			if srcPtr != null
 			{
-				ptr[i] = dataView[i]
+				memcpy(ptr,srcPtr,dataView.Size())
+			}else{
+				for it, i : dataView
+					ptr[i] = it
 			}
 			Unmap()
 		}else{
