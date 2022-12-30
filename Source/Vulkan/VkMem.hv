@@ -59,7 +59,7 @@ TVkMemoryObject := class
 
 		memInfo?^ = bestMemory
 
-		gpuSize := size
+		gpuSize = size
 
 		allc1 := VkMemoryAllocateInfo()
 		allc1.allocationSize =  gpuSize
