@@ -105,6 +105,8 @@ VulkanInstance := class extend TGCObject
 
 		Funcs.vkGetDeviceQueue(LogicalDevice,0,0,DrawQueue&)
 		TransferQueue = DrawQueue
+
+		CheckMemory()
 	}
 	
 	itStageMemory := TVkMemoryObject^
@@ -121,6 +123,45 @@ VulkanInstance := class extend TGCObject
     		Funcs.vkGetBufferMemoryRequirements(LogicalDevice,itStageMemoryBuffer,memInfo&)
     		itStageMemory = CreateMemoryObject(stSize,memInfo.memoryTypeBits,null)
     		Funcs.vkBindBufferMemory(LogicalDevice,itStageMemoryBuffer,itStageMemory.Get(),0)
+	}
+
+	DeviceMemory := List.{VulkanMemoryInfo^}
+	HostMemory := List.{VulkanMemoryInf^}
+	BestTransferMemory := VulkanMemoryInfo^ 
+	CheckMemoryStep := !() -> void
+	{
+		
+		memReq := VkPhysicalDeviceMemoryProperties
+		Funcs.vkGetPhysicalDeviceMemoryProperties(PhysicalDevice,memReq&)
+
+		for heapI : memReq.memoryHeapCount&->{int^}^
+		{
+			for i : memReq.memoryTypeCount&->{int^}^
+			{
+				if memReq.memoryTypes[i].heapIndex != heapI
+					continue
+
+				memBits := memReq.memoryTypes[i]&->{int^}^
+
+				newMemInfo := new VulkanMemoryInfo
+
+				newMemInfo.index = i
+				newMemInfo.flags = memBits
+				newMemInfo.heapSize = memReq.memoryHeaps[heapI].size
+
+				if (memBits and_b VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT) != 0
+				{
+					DeviceMemory.Push(newMemInfo)
+				}else{
+					if BestTransferMemory == null 
+						or BestTransferMemory.heapSize < newMemInfo.heapSize
+					{
+						BestTransferMemory = newMemInfo
+					}
+					HostMemory.Push(newMemInfo)
+				}
+			}
+		}
 	}
 
 	LayerStep := virtual !(VkLayerProperties[] supportedLayers, List.{char^} usingLayers) -> void { assert(false) }

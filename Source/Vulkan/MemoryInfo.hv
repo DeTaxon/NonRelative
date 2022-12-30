@@ -1,0 +1,6 @@
+VulkanMemoryInfo := class
+{
+	index := int
+	flags := int
+	heapSize := u64	
+}

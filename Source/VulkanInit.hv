@@ -225,7 +225,7 @@ VulkanInit := !() -> void
 	//		reqMod = it
 	//}
 	memReq := VkPhysicalDeviceMemoryProperties
-	vk.Funcs.vkGetPhysicalDeviceMemoryProperties(vkPhysCard,memReq&)
+	vk.Funcs.vkGetPhysicalDeviceMemoryProperties(vk.PhysicalDevice,memReq&)
 
 	for heapI : memReq.memoryHeapCount&->{int^}^
 	{
@@ -271,9 +271,9 @@ VulkanInit := !() -> void
 	cmdPoolC := VkCommandPoolCreateInfo()
 	cmdPoolC.queueFamilyIndex = 0
 	cmdPoolC.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT
-	vkCreateCommandPool(vkLogCard,cmdPoolC&,null,vkCmdPool&)
+	vk.Funcs.vkCreateCommandPool(vk.LogicalDevice,cmdPoolC&,null,vkCmdPool&)
 
-	vkResetCommandPool(vkLogCard,vkCmdPool,VK_COMMAND_POOL_RESET_RELEASE_RESOURCES_BIT)
+	vk.Funcs.vkResetCommandPool(vk.LogicalDevice,vkCmdPool,VK_COMMAND_POOL_RESET_RELEASE_RESOURCES_BIT)
 
 	crtFence := VkFenceCreateInfo()
 	vkCreateFence(vkLogCard,crtFence&,null,vkFence&)
