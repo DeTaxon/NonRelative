@@ -97,7 +97,7 @@ main := !(char^[] args) -> int
 		learnShader.ApplyShaderToQueue(mainCmd.Get())
 		gCam.BindDescriptor(mainCmd.Get())
 
-		DrawMap(mainCmd&,gPlayerMap,centf(),4)
+		DrawMap(mainCmd.Get(),gPlayerMap,centf(),4)
 
 		StopDraw()
 		

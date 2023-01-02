@@ -356,14 +356,13 @@ DrawGetImage := !() -> bool
 	{
 		return false
 	}
+
+	vkWaitForFences(vkLogCard,1,vkFence&,1,10000000)
 	return true
 }
 
 StartDraw := !() -> bool
 {
-	
-	vkWaitForFences(vkLogCard,1,vkFence&,1,10000000)
-
 	mainCmd.Reset()
 	mainCmd.Start()
 

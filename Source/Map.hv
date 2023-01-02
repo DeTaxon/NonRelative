@@ -33,7 +33,7 @@ LinkMaps := !(vMap^ from, vMap^ to, vec3f posOffset, quantf angOffset = quantf(0
 	linksFromMap[from].Push(newLink)
 }
 
-DrawMap := !(CmdBuffer^ cmd,vMap^ hm,centf offset, int depth) -> void
+DrawMap := !(VkCommandBuffer cmd,vMap^ hm,centf offset, int depth) -> void
 {
 	if depth <= 0
 		return void
