@@ -14,6 +14,20 @@ AppendClass VulkanInstance
 		result = new TVkMemoryObject
 		result.CreateObject(this&,size,memType,memInfo)
 	}
+	CreateMemBufferObject := !(int size, int memUsage) -> TVkMemBuffer^
+	{
+		result = new TVkMemBuffer
+		result.itInstance = this&
+
+		result.initBuffer(size,memUsage)
+
+		memInfo := VkMemoryRequirements
+		Funcs.vkGetBufferMemoryRequirements(LogicalDevice,result.itBuffer,memInfo&)
+
+		result.CreateObject(this&,size,memInfo.memoryTypeBits,null)
+		result.bindBuffer()
+	}
+
 }
 
 TVkMemoryObject := class
@@ -47,6 +61,7 @@ TVkMemoryObject := class
 			assert(false)
 		}
 	}
+	
 
 	CreateObject := !(VulkanInstance^ inst,int size,int memType, VulkanMemoryInfo^^ memInfo) -> bool
 	{

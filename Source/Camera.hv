@@ -46,8 +46,7 @@ vCamera := class
 		}
 	}
 	
-	vkPerspMem := TVkMemoryObject^
-	vkPerspBuffer := VkBuffer
+	vkPerspMem := TVkMemBuffer^
 
 	UpdatePerspective := !(float w, float h) -> void
 	{
@@ -69,23 +68,10 @@ vCamera := class
 		camFar = far
 		camPOV = pov
 
-		allc1 := VkMemoryAllocateInfo()
-		allc1.allocationSize =  4*4
-		//allc1.memoryTypeIndex = 1
-
-		bufC := VkBufferCreateInfo()
-		bufC.size = allc1.allocationSize
-		bufC.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT or_b VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT or_b VK_BUFFER_USAGE_TRANSFER_DST_BIT
-
-		memInfo := VkMemoryRequirements
-
-		vkCreateBuffer(vkLogCard,bufC&,null,vkPerspBuffer&)
-		vkGetBufferMemoryRequirements(vkLogCard,vkPerspBuffer,memInfo&)
-		vkPerspMem = vk.CreateMemoryObject(memInfo.size,memInfo.memoryTypeBits,memConstInfo&)
-		vkBindBufferMemory(vkLogCard,vkPerspBuffer,vkPerspMem.Get(),0)
+		vkPerspMem = vk.CreateMemBufferObject(4*4,VK_BUFFER_USAGE_VERTEX_BUFFER_BIT or_b VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT or_b VK_BUFFER_USAGE_TRANSFER_DST_BIT)
 
 		bufInfo := VkDescriptorBufferInfo
-		bufInfo.buffer = vkPerspBuffer 
+		bufInfo.buffer = vkPerspMem.itBuffer
 		bufInfo.offset = 0
 		bufInfo.range = 4*4
 		someWrite := VkWriteDescriptorSet()
@@ -96,7 +82,7 @@ vCamera := class
 		someWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
 		someWrite.pBufferInfo&->{void^^}^ = bufInfo&
 
-		vkUpdateDescriptorSets(vkLogCard,1,someWrite&,0,null)
+		vk.Funcs.vkUpdateDescriptorSets(vk.LogicalDevice,1,someWrite&,0,null)
 
 		UpdatePerspective(w,h)
 	}

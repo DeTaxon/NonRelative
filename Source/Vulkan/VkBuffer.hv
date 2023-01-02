@@ -1,0 +1,17 @@
+TVkMemBuffer := class extend TVkMemoryObject
+{
+	itBuffer := VkBuffer 
+
+	initBuffer := !(int bufSize,int bufUsage) -> void
+	{
+    		bufC := VkBufferCreateInfo()
+    		bufC.size = bufSize
+    		bufC.usage = bufUsage
+    		bufC.sharingMode = VK_SHARING_MODE_EXCLUSIVE //TODO 
+    		itInstance.Funcs.vkCreateBuffer(itInstance.LogicalDevice,bufC&,null,itBuffer&)
+	}
+	bindBuffer := !() -> void
+	{
+    		itInstance.Funcs.vkBindBufferMemory(itInstance.LogicalDevice,itBuffer,memObj,0)
+	}
+}
