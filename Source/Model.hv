@@ -15,14 +15,15 @@ vModel := class
 
 	PhysModel := PhysCommon^
 
+	vertexMemory := TVkMemBuffer^
+	indexMemory := TVkMemBuffer^
+
 
 	LoadFile := !(vRepoFile^ itFl) -> bool
 	{
 		rFile := new RawModel
 		if not rFile.LoadFromFile(itFl)
 			return false
-
-		//rFile.CheckSupport()
 
 		vertexInfo.positionType = rFile.PositionType
 		vertexInfo.normalType = rFile.NormalType
@@ -32,49 +33,23 @@ vModel := class
 		indexCount = rFile.IndexCount
 		
 		vertSize :=  rFile.VertexCount*rFile.GetVertSize()
+		vertexMemory = vk.CreateMemBufferObject(vertSize,VK_BUFFER_USAGE_VERTEX_BUFFER_BIT or_b VK_BUFFER_USAGE_TRANSFER_DST_BIT)
+		vertexMemory.TransferData(TArraySpan.{u8}(rFile.verts->{u8^},vertSize))
 
-		bufC := VkBufferCreateInfo()
-		bufC.size = vertSize
-		bufC.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT or_b VK_BUFFER_USAGE_TRANSFER_DST_BIT
-		bufC.sharingMode = VK_SHARING_MODE_EXCLUSIVE
-
-		memInfo := VkMemoryRequirements
-
-		vk.Funcs.vkCreateBuffer(vk.LogicalDevice,bufC&,null,hndls[0]&)
-		vk.Funcs.vkGetBufferMemoryRequirements(vk.LogicalDevice,hndls[0],memInfo&)
-		memResInfo := VulkanMemoryInfo^
-		memObjs[0] = vk.CreateMemoryObject(memInfo.size,memInfo.memoryTypeBits,memResInfo&)
-		
-		vk.Funcs.vkBindBufferMemory(vk.LogicalDevice,hndls[0],memObjs[0].Get(),0)
-
-		memObjs[0].TransferData(TArraySpan.{u8}(rFile.verts->{u8^},vertSize))
 
 		indSize := rFile.IndexCount*rFile.IndexType.GetSize()
-		bufC.size = indSize
-		bufC.usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT or_b VK_BUFFER_USAGE_TRANSFER_DST_BIT
-		vk.Funcs.vkCreateBuffer(vk.LogicalDevice,bufC&,null,hndls[1]&)
-		vk.Funcs.vkGetBufferMemoryRequirements(vk.LogicalDevice,hndls[1],memInfo&)
-
-		isIndGpu := bool
-		memResInd := VulkanMemoryInfo^
-		memObjs[1] = vk.CreateMemoryObject(memInfo.size,memInfo.memoryTypeBits,memResInd&)
-
-		vk.Funcs.vkBindBufferMemory(vk.LogicalDevice,hndls[1],memObjs[1].Get(),0)
-
-		memObjs[1].TransferData(TArraySpan.{u8}(rFile.inds->{u8^},indSize))
+		indexMemory = vk.CreateMemBufferObject(indSize,VK_BUFFER_USAGE_INDEX_BUFFER_BIT or_b VK_BUFFER_USAGE_TRANSFER_DST_BIT)
+		indexMemory.TransferData(TArraySpan.{u8}(rFile.inds->{u8^},indSize))
 	}
 	DestroyVK := !() -> void
 	{
-		vk.Funcs.vkDestroyBuffer(vk.LogicalDevice,hndls[0],null)
-		vk.Funcs.vkDestroyBuffer(vk.LogicalDevice,hndls[1],null)
-		memObjs[0].DestroyVK()
-		memObjs[1].DestroyVK()
 	}
 	AddToCmdBuffer := !(VkCommandBuffer cmdB) -> void
 	{
 		offsets := VkDeviceSize
-		vk.Funcs.vkCmdBindVertexBuffers(cmdB,0,1,hndls[0]&,offsets&)
-		vk.Funcs.vkCmdBindIndexBuffer(cmdB,hndls[1],0,indexType.GetBaseIndexType())
+
+		vk.Funcs.vkCmdBindVertexBuffers(cmdB,0,1,vertexMemory.GetBufferPointer(),offsets&)
+		vk.Funcs.vkCmdBindIndexBuffer(cmdB,indexMemory.GetBufferPointer()^,0,indexType.GetBaseIndexType())
 		vk.Funcs.vkCmdDrawIndexed(cmdB,indexCount,1,0,0,0)
 	}
 	

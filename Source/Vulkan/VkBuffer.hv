@@ -14,4 +14,9 @@ TVkMemBuffer := class extend TVkMemoryObject
 	{
     		itInstance.Funcs.vkBindBufferMemory(itInstance.LogicalDevice,itBuffer,memObj,0)
 	}
+
+	GetBufferPointer := !() -> VkBuffer^
+	{
+		return itBuffer&
+	}
 }
