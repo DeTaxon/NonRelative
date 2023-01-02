@@ -48,28 +48,6 @@ VoidCoreInit := !() -> void
 	vkCreateSampler(vkLogCard,imV&,null,gSamplerLinear&)
 }
 
-vStageCpyToBuffer := !(VkBuffer tCpy,int nSize) -> void
-{
-	cpyCmd := VkBufferCopy
-	cpyCmd.size = nSize
-	
-	mainCmd.Reset()
-	mainCmd.Start()
-	vkCmdCopyBuffer(mainCmd.Get(),vk.itStageMemoryBuffer,tCpy,1,cpyCmd&)
-	memBar := VkBufferMemoryBarrier()
-	memBar.srcAccessMask = VK_ACCESS_MEMORY_WRITE_BIT
-	memBar.dstAccessMask = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT
-	memBar.srcQueueFamilyIndex = 0
-	memBar.srcQueueFamilyIndex = not_b memBar.srcQueueFamilyIndex
-	memBar.dstQueueFamilyIndex = memBar.srcQueueFamilyIndex
-	memBar.buffer = tCpy
-	memBar.size = nSize
-
-	vkCmdPipelineBarrier(mainCmd.Get(),VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,0,0,null,1,memBar&,0,null)
-	mainCmd.Stop()
-	mainCmd.Submit()
-
-}
 vStageCpyToImage := !(VkImage tCpy,int w, int h) -> void
 {
 	mainCmd.Reset()
