@@ -16,6 +16,16 @@ AppendClass VulkanInstance
 		hm = not_b hm
 		Funcs.vkWaitForFences(LogicalDevice,1,itGlobFence&,0,hm)
 	}
+	PushDrawQueue := !( !(TVkCommandBuffer^)&->void cb) -> void
+	{
+		assert(TransferQueue == DrawQueue)
+		tmpCmd := TVkCommandBuffer(this&,itDrawCommandPool)
+		tmpCmd.Reset()
+		tmpCmd.Start()
+		cb(tmpCmd&)
+		tmpCmd.Stop()
+		tmpCmd.Submit(TransferQueue,null)
+	}
 
 	itGlobFence := VkFence //TODO i need more then one in future
 	itDrawCommandPool := VkCommandPool
