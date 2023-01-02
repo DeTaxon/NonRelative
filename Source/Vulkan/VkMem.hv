@@ -77,8 +77,10 @@ TVkMemoryObject := class
 			}
 			if bestMemory == null
 			{
-				for it : itInstance.HostMemory
+				for it : itInstance.HostMemory //TODO i don't need this stage
 				{
+					if not it.IsHostVisible()
+						continue
 					if ((1 shl it.index) and_b memType) == 0
 						continue
 
