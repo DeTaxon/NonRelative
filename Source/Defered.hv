@@ -361,11 +361,8 @@ DrawGetImage := !() -> bool
 	return true
 }
 
-StartDraw := !() -> bool
+StartDraw := !(VkCommandBuffer cmd) -> bool
 {
-	mainCmd.Reset()
-	mainCmd.Start()
-
 	clrValues := float[13]
 
 	clrValues[0] = 1.0f
@@ -391,13 +388,13 @@ StartDraw := !() -> bool
 	rpC.clearValueCount = 3
 	rpC.pClearValues&->{void^^}^ = clrValues[0]&
 	
-	vkCmdBeginRenderPass(mainCmd.Get(),rpC&,VK_SUBPASS_CONTENTS_INLINE)
+	vkCmdBeginRenderPass(cmd,rpC&,VK_SUBPASS_CONTENTS_INLINE)
 	return true
 }
-StopDraw := !() -> void
+StopDraw := !(VkCommandBuffer cmd) -> void
 {
 
-	vkCmdEndRenderPass(mainCmd.Get())
+	vkCmdEndRenderPass(cmd)
 		
 	imgBarCPre := VkImageMemoryBarrier[2]
 
@@ -425,20 +422,19 @@ StopDraw := !() -> void
 	beginInfo.clearValueCount = 1
 	beginInfo.pClearValues&->{void^^}^ = clrValues[0]&->{void^}
 	
-	vkCmdBeginRenderPass(mainCmd.Get(),beginInfo&,VK_SUBPASS_CONTENTS_INLINE)
+	vkCmdBeginRenderPass(cmd,beginInfo&,VK_SUBPASS_CONTENTS_INLINE)
 
-
-	gLightShader.ApplyShaderToQueue(mainCmd.Get())
+	gLightShader.ApplyShaderToQueue(cmd)
 	sts := VkDescriptorSet[2]
 	sts[0] = gGBufferTextureSet
-	vkCmdBindDescriptorSets(mainCmd.Get(),VK_PIPELINE_BIND_POINT_GRAPHICS,gLightLayout,0,1,sts[0]&,0,null)
+	vkCmdBindDescriptorSets(cmd,VK_PIPELINE_BIND_POINT_GRAPHICS,gLightLayout,0,1,sts[0]&,0,null)
 
 	scales := float[2]
 	scales[0] = gVulkanWindowW / gFBW
 	scales[1] = gVulkanWindowH / gFBH
-	vkCmdPushConstants(mainCmd.Get(),gLightLayout,VK_SHADER_STAGE_VERTEX_BIT,0,4*2,scales&)
+	vkCmdPushConstants(cmd,gLightLayout,VK_SHADER_STAGE_VERTEX_BIT,0,4*2,scales&)
 
-	vkCmdDraw(mainCmd.Get(),3,1,0,0)
+	vkCmdDraw(cmd,3,1,0,0)
 
 	//imgBarC := @temp new VkImageMemoryBarrier()
 	//imgBarC.srcAccessMask = VK_ACCESS_MEMORY_READ_BIT
@@ -454,23 +450,5 @@ StopDraw := !() -> void
 	//imgBarC.subresourceRange.baseArrayLayer = 0
 	//imgBarC.subresourceRange.layerCount = 1
 
-	vkCmdEndRenderPass(mainCmd.Get())
-	//vkFuncs.vkCmdPipelineBarrier(mainCmd.Get(),VK_PIPELINE_STAGE_TRANSFER_BIT,VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,0,0,null,0,null,1,imgBarC)
-	mainCmd.Stop()
-
-	mainCmd.Submit()
-	vk.Funcs.vkQueueWaitIdle(vk.DrawQueue)
-
-	res := VkResult
-	pI := VkPresentInfoKHR()
-	pI.pNext = null
-	pI.waitSemaphoreCount = 0
-	pI.pWaitSemaphores = null
-	pI.swapchainCount = 1
-	pI.pSwapchains&->{void^^}^ = vkSwapchain&->{void^}
-	pI.pImageIndices&->{void^^}^ = nowImg&->{void^}
-	pI.pResults&->{void^^}^ = res&
-
-	vk.Funcs.vkQueuePresentKHR(vk.DrawQueue,pI&)
-	vk.Funcs.vkQueueWaitIdle(vk.DrawQueue)
+	vkCmdEndRenderPass(cmd)
 }

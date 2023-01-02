@@ -8,13 +8,10 @@ vkLogCard := VkDevice
 vkSurface := VkSurfaceKHR
 vkQueue := VkQueue
 vkSwapchain := VkSwapchainKHR
-vkCmdPool := VkCommandPool
 vkFence := VkFence
 vkGraphPipe := VkPipeline
 
 vkDescPool := TDescriptorPool^
-
-mainCmd := CmdBuffer
 
 vkPerspSet := VkDescriptorSet
 
@@ -268,8 +265,6 @@ VulkanInit := !() -> void
 
 	vkQueue = vk.DrawQueue
 
-	vkCmdPool = vk.itDrawCommandPool
-
 	crtFence := VkFenceCreateInfo()
 	vkCreateFence(vkLogCard,crtFence&,null,vkFence&)
 
@@ -282,8 +277,6 @@ VulkanInit := !() -> void
 	],![
 		new TVertexPushConstant(2*4*4)
 	])
-
-	mainCmd.CreateBuffer()
 
 	vkDescPool = gModelLayout.CreateDescriptorPool(0,1) //only need one for perspective data
 	vkPerspSet = vkDescPool.CreateDescriptor()
