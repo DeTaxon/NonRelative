@@ -48,24 +48,22 @@ TVkMemBuffer := class extend TVkMemoryObject
 
 		if useStage
 		{
-			cpyCmd := VkBufferCopy
-			cpyCmd.size = dataView.Size()
-			
-			mainCmd.Reset() //TODO
-			mainCmd.Start()
-			itInstance.Funcs.vkCmdCopyBuffer(mainCmd.Get(),itInstance.itStageMemory.itBuffer,itBuffer,1,cpyCmd&)
-			memBar := VkBufferMemoryBarrier()
-			memBar.srcAccessMask = VK_ACCESS_MEMORY_WRITE_BIT
-			memBar.dstAccessMask = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT
-			memBar.srcQueueFamilyIndex = 0
-			memBar.srcQueueFamilyIndex = not_b memBar.srcQueueFamilyIndex
-			memBar.dstQueueFamilyIndex = memBar.srcQueueFamilyIndex
-			memBar.buffer = itBuffer
-			memBar.size = dataView.Size()
+			itInstance.PushTransferQueueAndWait(cmd ==> {
+				cpyCmd := VkBufferCopy
+				cpyCmd.size = dataView.Size()
+				
+				itInstance.Funcs.vkCmdCopyBuffer(cmd.Get(),itInstance.itStageMemory.itBuffer,itBuffer,1,cpyCmd&)
+				memBar := VkBufferMemoryBarrier()
+				memBar.srcAccessMask = VK_ACCESS_MEMORY_WRITE_BIT
+				memBar.dstAccessMask = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT
+				memBar.srcQueueFamilyIndex = 0
+				memBar.srcQueueFamilyIndex = not_b memBar.srcQueueFamilyIndex
+				memBar.dstQueueFamilyIndex = memBar.srcQueueFamilyIndex
+				memBar.buffer = itBuffer
+				memBar.size = dataView.Size()
 
-			itInstance.Funcs.vkCmdPipelineBarrier(mainCmd.Get(),VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,0,0,null,1,memBar&,0,null)
-			mainCmd.Stop()
-			mainCmd.Submit()
+				itInstance.Funcs.vkCmdPipelineBarrier(cmd.Get(),VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,0,0,null,1,memBar&,0,null)
+			})
 		}
 	}
 }

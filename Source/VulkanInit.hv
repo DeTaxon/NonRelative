@@ -268,12 +268,7 @@ VulkanInit := !() -> void
 
 	vkQueue = vk.DrawQueue
 
-	cmdPoolC := VkCommandPoolCreateInfo()
-	cmdPoolC.queueFamilyIndex = 0
-	cmdPoolC.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT
-	vk.Funcs.vkCreateCommandPool(vk.LogicalDevice,cmdPoolC&,null,vkCmdPool&)
-
-	vk.Funcs.vkResetCommandPool(vk.LogicalDevice,vkCmdPool,VK_COMMAND_POOL_RESET_RELEASE_RESOURCES_BIT)
+	vkCmdPool = vk.itDrawCommandPool
 
 	crtFence := VkFenceCreateInfo()
 	vkCreateFence(vkLogCard,crtFence&,null,vkFence&)
