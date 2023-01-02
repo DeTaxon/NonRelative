@@ -24,7 +24,8 @@ AppendClass VulkanInstance
 		memInfo := VkMemoryRequirements
 		Funcs.vkGetBufferMemoryRequirements(LogicalDevice,result.itBuffer,memInfo&)
 
-		result.CreateObject(this&,size,memInfo.memoryTypeBits,false)
+		result.CreateObject(this&,memInfo.size,memInfo.memoryTypeBits,false)
+		result.objSize = size
 		result.bindBuffer()
 	}
 
@@ -38,7 +39,7 @@ AppendClass VulkanInstance
 		memInfo := VkMemoryRequirements
 		Funcs.vkGetBufferMemoryRequirements(LogicalDevice,result.itBuffer,memInfo&)
 
-		result.CreateObject(this&,size,memInfo.memoryTypeBits,true)
+		result.CreateObject(this&,memInfo.size,memInfo.memoryTypeBits,true)
 		result.bindBuffer()
 	}
 
