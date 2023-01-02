@@ -52,31 +52,6 @@ TVkMemoryObject := class
 	gpuSize := int
 	itMemInfo := VulkanMemoryInfo^
 
-	TransferData := !(u8[] dataView) -> void
-	{
-		assert(itMemInfo != null)
-
-		if itMemInfo.IsHostVisible()
-		{
-			ptr := Map()->{u8^}
-
-			assert(dataView.Size() <= gpuSize)
-
-			srcPtr := dataView.GetPointer()
-			if srcPtr != null
-			{
-				memcpy(ptr,srcPtr,dataView.Size())
-			}else{
-				for it, i : dataView
-					ptr[i] = it
-			}
-			Unmap()
-		}else{
-			assert(false)
-		}
-	}
-	
-
 	CreateObject := !(VulkanInstance^ inst,int size,int memType, bool preferCpu) -> bool
 	{
 		itInstance = inst

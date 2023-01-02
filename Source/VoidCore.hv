@@ -75,11 +75,6 @@ vStageCpyToImage := !(VkImage tCpy,int w, int h) -> void
 	mainCmd.Reset()
 	mainCmd.Start()
 
-	//isr := @temp new VkImageSubresourceRange
-	//isr.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT
-	//isr.levelCount = 1
-	//isr.layerCount = 1
-
 	stg1 := VkImageMemoryBarrier()
 
 	stg1.srcAccessMask = 0
