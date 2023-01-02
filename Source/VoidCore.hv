@@ -105,7 +105,7 @@ vStageCpyToImage := !(VkImage tCpy,int w, int h) -> void
 	cpyCmd.imageExtent.height = h
 	cpyCmd.imageExtent.depth = 1
 
-	vk.Funcs.vkCmdCopyBufferToImage(mainCmd.Get(),vk.itStageMemoryBuffer,tCpy,VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,1,cpyCmd&)
+	vk.Funcs.vkCmdCopyBufferToImage(mainCmd.Get(),vk.itStageMemory.GetBufferPointer()^,tCpy,VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,1,cpyCmd&)
 
 	stg2 := VkImageMemoryBarrier()
 	stg2.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT

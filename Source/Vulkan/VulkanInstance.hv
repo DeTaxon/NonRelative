@@ -109,20 +109,11 @@ VulkanInstance := class extend TGCObject
 		CheckMemory()
 	}
 	
-	itStageMemory := TVkMemoryObject^
-	itStageMemoryBuffer := VkBuffer
+	itStageMemory := TVkMemBuffer^
 	initCreateStageMemory := !() -> void
 	{
     		stSize := 0x4c4c00
-    		bufC := VkBufferCreateInfo()
-    		bufC.size = stSize
-    		bufC.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT
-    		bufC.sharingMode = VK_SHARING_MODE_EXCLUSIVE
-    		Funcs.vkCreateBuffer(LogicalDevice,bufC&,null,itStageMemoryBuffer&)
-    		memInfo := VkMemoryRequirements
-    		Funcs.vkGetBufferMemoryRequirements(LogicalDevice,itStageMemoryBuffer,memInfo&)
-    		itStageMemory = CreateMemoryObject(stSize,memInfo.memoryTypeBits,null)
-    		Funcs.vkBindBufferMemory(LogicalDevice,itStageMemoryBuffer,itStageMemory.Get(),0)
+		itStageMemory = CreateTransferMemBuffer(stSize)
 	}
 
 	DeviceMemory := List.{VulkanMemoryInfo^}

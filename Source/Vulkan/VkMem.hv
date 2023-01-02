@@ -9,10 +9,10 @@ AlignUp := !(int value, int align) -> int
 
 AppendClass VulkanInstance
 {
-	CreateMemoryObject := !(int size, int memType,VulkanMemoryInfo^^ memInfo) -> TVkMemoryObject^
+	CreateMemoryObject := !(int size, int memType) -> TVkMemoryObject^
 	{
 		result = new TVkMemoryObject
-		result.CreateObject(this&,size,memType,memInfo)
+		result.CreateObject(this&,size,memType,false)
 	}
 	CreateMemBufferObject := !(int size, int memUsage) -> TVkMemBuffer^
 	{
@@ -24,7 +24,21 @@ AppendClass VulkanInstance
 		memInfo := VkMemoryRequirements
 		Funcs.vkGetBufferMemoryRequirements(LogicalDevice,result.itBuffer,memInfo&)
 
-		result.CreateObject(this&,size,memInfo.memoryTypeBits,null)
+		result.CreateObject(this&,size,memInfo.memoryTypeBits,false)
+		result.bindBuffer()
+	}
+
+	CreateTransferMemBuffer := !(int size) -> TVkMemBuffer^
+	{
+		result = new TVkMemBuffer
+		result.itInstance = this&
+
+		result.initBuffer(size,VK_BUFFER_USAGE_TRANSFER_SRC_BIT)
+
+		memInfo := VkMemoryRequirements
+		Funcs.vkGetBufferMemoryRequirements(LogicalDevice,result.itBuffer,memInfo&)
+
+		result.CreateObject(this&,size,memInfo.memoryTypeBits,true)
 		result.bindBuffer()
 	}
 
@@ -63,7 +77,7 @@ TVkMemoryObject := class
 	}
 	
 
-	CreateObject := !(VulkanInstance^ inst,int size,int memType, VulkanMemoryInfo^^ memInfo) -> bool
+	CreateObject := !(VulkanInstance^ inst,int size,int memType, bool preferCpu) -> bool
 	{
 		itInstance = inst
 
@@ -75,15 +89,18 @@ TVkMemoryObject := class
 			//gpuSide = false
 		}else
 		{
-			for it : itInstance.DeviceMemory
+			if not preferCpu
 			{
-				if ((1 shl it.index) and_b memType) == 0
-					continue
+				for it : itInstance.DeviceMemory
+				{
+					if ((1 shl it.index) and_b memType) == 0
+						continue
 
-				if bestMemory == null or bestMemory.heapSize < it.heapSize
-					bestMemory = it
+					if bestMemory == null or bestMemory.heapSize < it.heapSize
+						bestMemory = it
+				}
 			}
-			if bestMemory != null
+			if bestMemory == null
 			{
 				for it : itInstance.HostMemory
 				{
@@ -94,9 +111,21 @@ TVkMemoryObject := class
 						bestMemory = it
 				}
 			}
+			if bestMemory == null and preferCpu
+			{
+				for it : itInstance.DeviceMemory
+				{
+					if not it.IsHostVisible()
+						continue
+					if ((1 shl it.index) and_b memType) == 0
+						continue
+
+					if bestMemory == null or bestMemory.heapSize < it.heapSize
+						bestMemory = it
+				}
+			}
 		}
 
-		memInfo?^ = bestMemory
 		itMemInfo = bestMemory
 
 		gpuSize = size

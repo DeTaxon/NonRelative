@@ -64,7 +64,7 @@ TVkTexture := class
 
 		itInstance.Funcs.vkGetImageMemoryRequirements(itInstance.LogicalDevice,itImg,memInfp&)
 
-		memObj = itInstance.CreateMemoryObject(memInfp.size,memInfp.memoryTypeBits,null)
+		memObj = itInstance.CreateMemoryObject(memInfp.size,memInfp.memoryTypeBits)
 
 		itInstance.Funcs.vkBindImageMemory(itInstance.LogicalDevice,itImg,memObj.Get(),0)
 
