@@ -436,19 +436,5 @@ StopDraw := !(VkCommandBuffer cmd) -> void
 
 	vkCmdDraw(cmd,3,1,0,0)
 
-	//imgBarC := @temp new VkImageMemoryBarrier()
-	//imgBarC.srcAccessMask = VK_ACCESS_MEMORY_READ_BIT
-	//imgBarC.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT//VK_ACCESS_COLOR_ATTACHMENT_READ_BIT or_b VK_ACCESS_MEMORY_READ_BIT
-	//imgBarC.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED
-	//imgBarC.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
-	//imgBarC.srcQueueFamilyIndex = 0
-	//imgBarC.dstQueueFamilyIndex = 0
-	//imgBarC.image = vkImages[nowImg]
-	//imgBarC.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT
-	//imgBarC.subresourceRange.baseMipLevel = 0
-	//imgBarC.subresourceRange.levelCount = 1
-	//imgBarC.subresourceRange.baseArrayLayer = 0
-	//imgBarC.subresourceRange.layerCount = 1
-
 	vkCmdEndRenderPass(cmd)
 }
