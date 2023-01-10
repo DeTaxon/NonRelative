@@ -16,49 +16,8 @@ gQuit := bool
 
 engine := TEngine^
 
-nuklearContext := void^
-
 main := !(char^[] args) -> int
 {
-	uring_init()
-
-	fb := calloc(1024*1024*4,1)
-	texMem := calloc(512*512*4,1)
-	defContext := calloc(1024,1)->{u8^}
-	nuklearContext = calloc(1,nk_context_size())
-	//nk_init_default(nuklearContext,null)
-	rawCntx := nk_rawfb_init(fb,texMem,512,512,512*4,0)
-	nuklearContext = rawCntx
-
-	atls_data := calloc(1,nk_atlas_size())
-
-	ax := 512
-	ay := 512
-	nk_font_atlas_init_default(atls_data)
-	nk_font_atlas_begin(atls_data)
-
-	fnt2 := nk_font_atlas_add_default(atls_data,24,null)
-
-	// ttf := gRepo.GetFile("./Pacifico.ttf")
-	// ttfMap := ttf.GetMap()
-	// fnt := nk_font_atlas_add_from_memory(atls_data,ttfMap.Get(),ttfMap.Size(),24,null)
-
-	imgABC := nk_font_atlas_bake(atls_data,ax&,ay&,NK_FONT_ATLAS_RGBA32)
-	//imgABC := nk_font_atlas_bake(atls_data,ax&,ay&,0)
-	nk_font_atlas_end(atls_data,null,null)
-
-
-	rect := nk_rect//(10,10,100,100)
-	rect.x = 100
-	rect.y = 100
-	rect.w = 250
-	rect.h = 250
-	if nk_begin(nuklearContext,"HI",rect,NK_WINDOW_MOVABLE + NK_WINDOW_BORDER + NK_WINDOW_CLOSABLE) != 0
-	{
-		nk_style_set_font(nuklearContext,fnt2->{void^^}[1]&)
-		nk_label(nuklearContext,"test",0x11)
-	}
-	nk_end(nuklearContext)
 
 	x := 1200
 	y := 900
@@ -97,24 +56,20 @@ main := !(char^[] args) -> int
 	gCam = new vCamera()
 	gCam.SetPerspective(x,y,0.001,100,80deg)
 
-	newProp := engine.CreateProp(canvas)
+	canvasProp = engine.CreateProp(canvas)
 
-	newProp.propPosition.pos = vec4f(2.0,0.0,1.4,1.0)
-	newProp.propPosition.ang = quantfAt(0.0,0.0,1.0,-90deg) <*> quantfAt(1.0,0.0,0.0,90deg)
+	canvasProp.propPosition.pos = vec4f(2.0,0.0,1.4,1.0)
+	canvasProp.propPosition.ang = quantfAt(0.0,0.0,1.0,-90deg) <*> quantfAt(1.0,0.0,0.0,90deg)
 
 	gPlayerMap = engine.LoadMap("Maps/FirstMap2/FirstMap.json")
 	gMapMap := gPlayerMap
 
 	LinkMaps(gPlayerMap,gPlayerMap,45.5x,quantf(0,0,0,1))
 
-	gMapMap.mapProps.Push(newProp)
-	
-	tempMem := vk.itStageMemory
+	gMapMap.mapProps.Push(canvasProp)
 
-	clr := nk_color
-	nk_rawfb_render(rawCntx,clr,0)
-	tempMem.TransferData(TArraySpan.{u8}(fb->{u8^},512*512*4))
-	vStageCpyToImage(canvas.ReqTexture.itImg,512,512)
+	//NuklearTestInit()
+	//NuklearCreateStep()
 
 
 	TSpawnTask(() ==> {

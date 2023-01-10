@@ -2,6 +2,7 @@ vProp := class extend TGCObject
 {
 
 	itModel := vModel^
+	thisTexture := TVkTexture^
 	modelTextureSet := VkDescriptorSet
 
 	PhysModel := PhysCommon^
@@ -12,6 +13,12 @@ vProp := class extend TGCObject
 	{
 		propPosition.pos.w = 1.0f //TODO this
 		propPosition.ang.w = 1.0f
+	}
+
+	SetTexture := !(TVkTexture^ tex) -> void
+	{
+		thisTexture = tex
+		vSetTexture(modelTextureSet,tex,gSamplerNearest)
 	}
 
 	Draw := !(VkCommandBuffer cmd,vCamera cmr,centf offset) -> void
