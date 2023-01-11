@@ -6,22 +6,19 @@ NuklearTestInit := !() -> void
 	texMem = calloc(512*512*4,1)
 	defContext := calloc(1024,1)->{u8^}
 	nuklearContext = calloc(1,nk_context_size())
-	//nk_init_default(nuklearContext,null)
-	rawCntx = nk_rawfb_init(fb,texMem,512,512,512*4,0)
-	nuklearContext = rawCntx
 
 	atls_data := calloc(1,nk_atlas_size())
 
-	ax := 512
-	ay := 512
+	ax := 0
+	ay := 0
 	nk_font_atlas_init_default(atls_data)
 	nk_font_atlas_begin(atls_data)
 
-	//fnt2 := nk_font_atlas_add_default(atls_data,24,null)
+	fnt2 := nk_font_atlas_add_default(atls_data,24,null)
 
-	//ttf := FSGetFile("./Pacifico.ttf")
-	//ttfMap := ttf.GetMap()
-	//fnt := nk_font_atlas_add_from_memory(atls_data,ttfMap.Get(),ttfMap.Size(),24,null)
+	ttf := FSGetFile("./Pacifico.ttf")
+	ttfMap := ttf.GetMap()
+	fnt := nk_font_atlas_add_from_memory(atls_data,ttfMap.Get(),ttfMap.Size(),24,null)
 
 	imgABC := nk_font_atlas_bake(atls_data,ax&,ay&,NK_FONT_ATLAS_RGBA32)
 
@@ -34,6 +31,10 @@ NuklearTestInit := !() -> void
 	vStageCpyToImage(atlasImage.itImg,ax,ay)
 
 	nk_font_atlas_end(atls_data,atlasImage,null)
+
+	nk_init_default(nuklearContext,fnt->{void^^}[1]&)
+
+	nk_style_load_all_cursors(nuklearContext,atls_data->{nk_font_atlas^}.cursors[0]&)
 
 	rect := nk_rect//(10,10,100,100)
 	rect.x = 100
@@ -172,6 +173,46 @@ NuklearDrawStep := !(VkCommandBuffer cmdB) -> void
 		vk.Funcs.vkCmdDrawIndexed(cmdB,it,1,index_offset,0,0)
 		index_offset += it
 	}
+}
+
+nk_image := class
+{
+	handle := void^
+	w := u16
+	h := u16
+	region := u16[4]
+}
+nk_cursor := class
+{
+	img := nk_image
+	size := nk_vec2
+	offset := nk_vec2
+}
+nk_allocator := class
+{
+	userdata := void^
+	alloc := void^
+	free := void^
+}
+nk_font_atlas := class
+{
+	pixel := void^
+	tex_width := int
+	tex_height := int
+
+	permament := nk_allocator
+	temporary := nk_allocator
+
+	custom := nk_recti
+	cursors := nk_cursor[7] // NK_CURSOR_COUNT
+
+	glyph_count := int
+	glyphs := void^
+	default_font := void^
+	fonts := void^
+	config := void^
+	font_num := int
+
 }
 
 nk_draw_vertex_layout_element := class
