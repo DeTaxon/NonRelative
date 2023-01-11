@@ -129,6 +129,7 @@ TEngine := class extend TGCObject
 	modelTextureDescriptor := TDescriptorPool^
 
 	lightLayout := TShaderInput^
+	lightTexPool := TDescriptorPool^
 
 	Init := !() -> void
 	{
@@ -163,8 +164,9 @@ TEngine := class extend TGCObject
 		1
 		)
 
-		gLightLayout = lightLayout.Get()
-		gLightObjectLayout = lightLayout.itSets[0].Get()
+		lightTexPool = lightLayout.CreateDescriptorPool(0,1)
+		gGBufferTextureSet = lightTexPool.CreateDescriptor()
 
+		gLightLayout = lightLayout.Get()
 	}
 }

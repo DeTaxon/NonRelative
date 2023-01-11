@@ -14,7 +14,6 @@ fbTextures := TVkTexture^[2]
 gLightShader := vShader^
 
 gLightLayout := VkPipelineLayout
-gLightObjectLayout := VkDescriptorSetLayout
 gGBufferLayoutSets := VkDescriptorPool
 gGBufferTextureSet := VkDescriptorSet
 
@@ -274,24 +273,6 @@ CreateFB := !() -> void
 	fbC.layers = 1
 
 	vk.Funcs.vkCreateFramebuffer(vk.LogicalDevice,fbC&,null,gModelFramebuffer&)
-
-	poolSize := u32[2] 
-	poolSize[0] = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
-	poolSize[1] = 2
-
-	nPool := VkDescriptorPoolCreateInfo()
-	nPool.maxSets = 1
-	nPool.poolSizeCount = 1
-	nPool.pPoolSizes&->{void^^}^ = poolSize&
-
-	vk.Funcs.vkCreateDescriptorPool(vk.LogicalDevice,nPool&,null,gGBufferLayoutSets&)
-
-	newSetCR := VkDescriptorSetAllocateInfo()
-	newSetCR.descriptorPool = gGBufferLayoutSets
-	newSetCR.descriptorSetCount = 1
-	newSetCR.pSetLayouts = gLightObjectLayout&
-
-	vk.Funcs.vkAllocateDescriptorSets(vk.LogicalDevice,newSetCR&,gGBufferTextureSet&)
 
 	imgI := VkDescriptorImageInfo[2]
 	imgI[0].sampler = gSamplerNearest

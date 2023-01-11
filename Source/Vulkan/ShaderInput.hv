@@ -259,6 +259,7 @@ TShaderSet := class extend TGCObject
 	{
 		assert(false)
 	}
+	GetPoolScale := virtual !() -> int { return 1}
 }
 TUniformSet := class extend TShaderSet
 {
@@ -317,6 +318,7 @@ TImageSet := class extend TShaderSet
 	{
 		return VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
 	}
+	GetPoolScale := virtual !() -> int { return imgCount}
 }
 
 TPushConstant := class extend TGCObject
@@ -354,7 +356,7 @@ TDescriptorPool := class extend TGCObject
 	
 		test := u32[2]
 		test[0] = itSet.GetPoolType()
-		test[1] = poolSize //count
+		test[1] = poolSize*itSet.GetPoolScale() //count
 	
 		descPoolC := VkDescriptorPoolCreateInfo()
 		descPoolC.maxSets = poolSize
