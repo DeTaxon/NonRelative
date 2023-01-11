@@ -38,14 +38,7 @@ main := !(char^[] args) -> int
 	gPlayer = new PhysPlayer()
 	gPlayer.System.pos = vec4f(0.0,0.0,2.0,1.0)
 
-	deferVert := LoadShaderModule("Shaders/ShaderCache/Defer.vert")
-	deferFrag := LoadShaderModule("Shaders/ShaderCache/Defer.frag")
-	gLightShader = new vShader
-	gLightShader.LoadShaderLight(deferVert,deferFrag)
-
-	//gLightShader = engine.lightLayout.CreateShader(FSGetFile("Shaders/ShaderCache/Defer.vert"),FSGetFile("Shaders/ShaderCache/Defer.frag"))
-
-	// learnVert := LoadShaderModule("Shaders/ShaderCache/LearnVert.vert")
+	gLightShader = engine.lightLayout.CreateShader(FSGetFile("Shaders/ShaderCache/Defer.vert"),FSGetFile("Shaders/ShaderCache/Defer.frag"))
 	learnShader := engine.modelLayout.CreateShader(FSGetFile("Vert2.vert"),FSGetFile("Shaders/ShaderCache/LearnFrag.frag"))
 
 	canvas := engine.LoadModel("Models/Canvas/Canvas.json")
