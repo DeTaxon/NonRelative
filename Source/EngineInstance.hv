@@ -139,6 +139,10 @@ TEngine := class extend TGCObject
 	Init := !() -> void
 	{
 		modelLayout = vInstance.CreateLayout(![
+			VKType(VType_Float,3),
+			VKType(VType_Float,3),
+			VKType(VType_Float,2)
+		],![
 			new TUniformSet(),
 			new TImageSet()
 		],![

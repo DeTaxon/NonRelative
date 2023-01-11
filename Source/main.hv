@@ -48,11 +48,13 @@ main := !(char^[] args) -> int
 	learnVert := LoadShaderModule("Vert2.vert")
 	learnFrag := LoadShaderModule("Shaders/ShaderCache/LearnFrag.frag")
 	learnShader := new vShader
-	opts := vShaderVertexOptions
-	opts.positionType = VKType(VType_Float,3)
-	opts.normalType = VKType(VType_Float,3)
-	opts.textureType = VKType(VType_Float,2)
-	learnShader.LoadShader(learnVert,learnFrag,opts&)
+	//opts := vShaderVertexOptions
+	//opts.positionType = VKType(VType_Float,3)
+	//opts.normalType = VKType(VType_Float,3)
+	//opts.textureType = VKType(VType_Float,2)
+	//learnShader.LoadShader(learnVert,learnFrag,opts&)
+
+	learnShader = engine.modelLayout.CreateShader(FSGetFile("Vert2.vert"),FSGetFile("Shaders/ShaderCache/LearnFrag.frag"))
 
 	canvas := engine.LoadModel("Models/Canvas/Canvas.json")
 

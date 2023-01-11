@@ -207,9 +207,9 @@ vShader := class
 
 		pVSC := VkPipelineViewportStateCreateInfo()
 		pVSC.viewportCount = 1
-		pVSC.pViewports = null //vp&
+		pVSC.pViewports = null
 		pVSC.scissorCount = 1
-		pVSC.pScissors = null //sc&
+		pVSC.pScissors = null
 
 		rasterC := VkPipelineRasterizationStateCreateInfo()
 		rasterC.polygonMode = VK_POLYGON_MODE_FILL
