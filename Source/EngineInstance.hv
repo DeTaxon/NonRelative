@@ -132,12 +132,13 @@ TEngine := class extend TGCObject
 	}
 
 	modelLayout := TShaderInput^
+	modelPersDescriptor := TDescriptorPool^
+
+	lightLayout := TShaderInput^
 
 	Init := !() -> void
 	{
-		modelLayout = new TShaderInput
-		
-		modelLayout.CreateInput(![
+		modelLayout = vInstance.CreateLayout(![
 			new TUniformSet(),
 			new TImageSet()
 		],![
@@ -146,8 +147,9 @@ TEngine := class extend TGCObject
 
 		gModelLayout = modelLayout
 
-		vkDescPool = gModelLayout.CreateDescriptorPool(0,1) //only need one for perspective data
+		vkDescPool := gModelLayout.CreateDescriptorPool(0,1) //only need one for perspective data
 		vkPerspSet = vkDescPool.CreateDescriptor()
+		modelPersDescriptor = vkDescPool
 
 	}
 }

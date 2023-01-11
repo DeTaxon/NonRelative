@@ -1,5 +1,17 @@
+AppendClass VulkanInstance
+{
+	CreateLayout := !(TShaderSet^[] sets, TPushConstant^[] cnsts) -> TShaderInput^
+	{
+		result = new TShaderInput
+		result.itInstance = this&
+		result.CreateInput(sets,cnsts)
+	}
+}
+
+
 TShaderInput := class 
 {
+	itInstance := VulkanInstance^
 	itLayout := VkPipelineLayout
 
 	itSets := Vector.{TShaderSet^}
@@ -12,7 +24,7 @@ TShaderInput := class
 	CreateInput := !(TShaderSet^[] sets,TPushConstant^[] cnsts) -> void
 	{
 		for it : sets
-			it.Create(vk) //TODO instance
+			it.Create(itInstance)
 
 		itSets.Resize(sets.Size())
 		for it,i : sets
@@ -50,7 +62,7 @@ TShaderInput := class
 		ppC.setLayoutCount = 2
 		ppC.pSetLayouts&->{void^^}^ = layouts&->{void^}
 	
-		vkCreatePipelineLayout(vkLogCard,ppC&,null,itLayout&)
+		itInstance.Funcs.vkCreatePipelineLayout(vkLogCard,ppC&,null,itLayout&)
 	}
 	CreateDescriptorPool := !(int setIndex,int poolSize) -> TDescriptorPool^
 	{

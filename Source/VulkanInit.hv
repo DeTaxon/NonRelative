@@ -11,8 +11,6 @@ vkSwapchain := VkSwapchainKHR
 vkFence := VkFence
 vkGraphPipe := VkPipeline
 
-vkDescPool := TDescriptorPool^
-
 vkPerspSet := VkDescriptorSet
 
 gModelLayout := TShaderInput^
