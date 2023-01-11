@@ -36,8 +36,6 @@ TShaderInput := class
 		for it,i : sets
 			itSets[i] = it
 
-		vkPerObjectLayout = itSets[1].Get()
-
 		assert(sets.Size() <= 10)
 		layouts := void^[10]
 		layouts[i] = sets[^i].Get()
@@ -256,6 +254,11 @@ TShaderSet := class extend TGCObject
 	Create := virtual !(VulkanInstance^ inst) -> void
 	{
 	}
+
+	GetPoolType := virtual !() -> int
+	{
+		assert(false)
+	}
 }
 TUniformSet := class extend TShaderSet
 {
@@ -278,6 +281,10 @@ TUniformSet := class extend TShaderSet
 	
 		inst.Funcs.vkCreateDescriptorSetLayout(vkLogCard,setDesc&,null,itSet&)
 	}
+	GetPoolType := virtual !() -> int
+	{
+		return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
+	}
 }
 TImageSet := class extend TShaderSet
 {
@@ -298,6 +305,10 @@ TImageSet := class extend TShaderSet
 		set2Desc.pBindings&->{void^^}^ = twoDesc&->{void^}
 	
 		inst.Funcs.vkCreateDescriptorSetLayout(vkLogCard,set2Desc&,null,itSet&)
+	}
+	GetPoolType := virtual !() -> int
+	{
+		return VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
 	}
 }
 
@@ -324,7 +335,7 @@ TDescriptorPool := class extend TGCObject
 	baseLayout := TShaderInput^
 	vPool := VkDescriptorPool
 	itSet := TShaderSet^
-	this := !(TShaderInput^ itm,int setIndex, int poolSize) -> void
+	this := !(TShaderInput^ itm,int setIndex,int poolSize) -> void
 	{
 		//descPoolSize := VkDescriptorPoolSize
 		//descPoolSize.descriptorCount = poolSize
@@ -335,11 +346,11 @@ TDescriptorPool := class extend TGCObject
 		itSet = itm.itSets[setIndex]
 	
 		test := u32[2]
-		test[0] = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
+		test[0] = itSet.GetPoolType()
 		test[1] = poolSize //count
 	
 		descPoolC := VkDescriptorPoolCreateInfo()
-		descPoolC.maxSets = 1
+		descPoolC.maxSets = poolSize
 		descPoolC.poolSizeCount = 1
 		descPoolC.pPoolSizes&->{void^^}^ = test[0]&->{void^}//descPoolSize
 	
@@ -347,7 +358,6 @@ TDescriptorPool := class extend TGCObject
 	}
 	CreateDescriptor := !() -> VkDescriptorSet
 	{
-
 		lay := itSet.Get()
 		allDesc := VkDescriptorSetAllocateInfo()
 		allDesc.descriptorPool = vPool
@@ -358,5 +368,5 @@ TDescriptorPool := class extend TGCObject
 		vkAllocateDescriptorSets(vkLogCard,allDesc&,preRes&)
 		return preRes
 	}
+	//TODO need Destroy
 }
-vkPerObjectLayout := VkDescriptorSetLayout
