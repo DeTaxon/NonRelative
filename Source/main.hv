@@ -35,7 +35,6 @@ main := !(char^[] args) -> int
 	CreateSwapchain(x,y)
 	CreateFB()
 
-
 	gPlayer = new PhysPlayer()
 	gPlayer.System.pos = vec4f(0.0,0.0,2.0,1.0)
 

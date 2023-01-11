@@ -63,9 +63,9 @@ TShaderInput := class
 		}
 	
 		ppC := VkPipelineLayoutCreateInfo()
-		ppC.pushConstantRangeCount = 1
+		ppC.pushConstantRangeCount = cnsts.Size()
 		ppC.pPushConstantRanges&->{void^^}^ = cnstsPtr->{void^}
-		ppC.setLayoutCount = 2
+		ppC.setLayoutCount = sets.Size()
 		ppC.pSetLayouts&->{void^^}^ = layouts&->{void^}
 	
 		itInstance.Funcs.vkCreatePipelineLayout(vkLogCard,ppC&,null,itLayout&)
@@ -160,27 +160,25 @@ TShaderInput := class
 		//  VK_FALSE,   VkBool32              alphaToCoverageEnable
 		//  VK_FALSE    VkBool32              alphaToOneEnable
 
-		blndPre := VkPipelineColorBlendAttachmentState[2]
-		blndPre[0].srcColorBlendFactor = VK_BLEND_FACTOR_ONE
-		blndPre[0].dstColorBlendFactor = VK_BLEND_FACTOR_ZERO
-		blndPre[0].colorBlendOp = VK_BLEND_OP_ADD
-		blndPre[0].srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE
-		blndPre[0].dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO
-		blndPre[0].alphaBlendOp = VK_BLEND_OP_ADD
-		blndPre[0].colorWriteMask = VK_COLOR_COMPONENT_R_BIT or_b VK_COLOR_COMPONENT_G_BIT or_b VK_COLOR_COMPONENT_B_BIT or_b VK_COLOR_COMPONENT_A_BIT
+		assert(resultImageCount <= 4)
 
-		blndPre[1].srcColorBlendFactor = VK_BLEND_FACTOR_ONE
-		blndPre[1].dstColorBlendFactor = VK_BLEND_FACTOR_ZERO
-		blndPre[1].colorBlendOp = VK_BLEND_OP_ADD
-		blndPre[1].srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE
-		blndPre[1].dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO
-		blndPre[1].alphaBlendOp = VK_BLEND_OP_ADD
-		blndPre[1].colorWriteMask = VK_COLOR_COMPONENT_R_BIT or_b VK_COLOR_COMPONENT_G_BIT or_b VK_COLOR_COMPONENT_B_BIT or_b VK_COLOR_COMPONENT_A_BIT
-		//  VK_FALSE,  VkBool32   blendEnable
+		blndPre := VkPipelineColorBlendAttachmentState[4]
+
+		for i : resultImageCount
+		{
+			blndPre[i].srcColorBlendFactor = VK_BLEND_FACTOR_ONE
+			blndPre[i].dstColorBlendFactor = VK_BLEND_FACTOR_ZERO
+			blndPre[i].colorBlendOp = VK_BLEND_OP_ADD
+			blndPre[i].srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE
+			blndPre[i].dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO
+			blndPre[i].alphaBlendOp = VK_BLEND_OP_ADD
+			blndPre[i].colorWriteMask = VK_COLOR_COMPONENT_R_BIT or_b VK_COLOR_COMPONENT_G_BIT or_b VK_COLOR_COMPONENT_B_BIT or_b VK_COLOR_COMPONENT_A_BIT
+		}
+
 
 		blndC := VkPipelineColorBlendStateCreateInfo()
 		blndC.logicOp = VK_LOGIC_OP_COPY
-		blndC.attachmentCount = 2
+		blndC.attachmentCount = resultImageCount
 		blndC.pAttachments&->{void^^}^ = blndPre[0]&
 		//  VK_FALSE,                     VkBool32   logicOpEnable
 		//  { 0.0f, 0.0f, 0.0f, 0.0f }    float      blendConstants[4]
