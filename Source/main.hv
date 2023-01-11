@@ -58,8 +58,8 @@ main := !(char^[] args) -> int
 
 	gMapMap.mapProps.Push(canvasProp)
 
-	//NuklearTestInit()
-	//NuklearCreateStep()
+	NuklearTestInit()
+	NuklearCreateStep()
 
 
 	TSpawnTask(() ==> {

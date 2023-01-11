@@ -1,7 +1,5 @@
 vModel := class 
 {
-	memObjs := TVkMemoryObject^[2]
-	hndls := VkBuffer[2]
 	indexCount := int
 	ReqShader := vShader^
 	ReqTexture := TVkTexture^

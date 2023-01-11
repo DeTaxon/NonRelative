@@ -126,7 +126,7 @@ NuklearCreateStep := !() -> void
 	cmd := nk__draw_begin(nuklearContext,cmds[0]&)->{nk_draw_command^}
 	while cmd != null
 	{
-		printf("step %p\n",cmd.texture)
+		printf("step %p %i\n",cmd.texture,cmd.elem_count)
 		cmd = nk__draw_next(cmd,cmds[0]&,nuklearContext)->{nk_draw_command^}
 	}
 	
@@ -136,12 +136,40 @@ NuklearCreateStep := !() -> void
 	}
 	printf("\n")
 
-	gNuklearLayout.CreateInput(![
-		new TUniformSet()
-	],TArraySpan.{TPushConstant^}(null,0)) //TODO empty array ],![])
+	gNuklearLayout = engine.lightRenderPass.CreateLayout(![
+		VKType(VType_Float,2),
+		VKType(VType_Float,2),
+		VKType(VType_Float,4)
+	],![
+		new TImageSet(1)
+	],![],
+	1
+	)
+
+	textShader = gNuklearLayout.CreateShader(FSGetFile("text.vert"),FSGetFile("text.frag"))
+	
+	nuklearVertex = vk.CreateMemBufferObject(vRealVertBuf.Size(),VK_BUFFER_USAGE_VERTEX_BUFFER_BIT or_b VK_BUFFER_USAGE_TRANSFER_DST_BIT)
+	nuklearVertex.TransferData(vRealVertBuf&)
+	nuklearIndex = vk.CreateMemBufferObject(vRealIndBuf.Size(),VK_BUFFER_USAGE_INDEX_BUFFER_BIT or_b VK_BUFFER_USAGE_TRANSFER_DST_BIT)
+	nuklearIndex.TransferData(vRealIndBuf&)
+
+
+
 }
 
-gNuklearLayout := TShaderInput
+textList := List.{Tuple.{int,int}}
+
+nuklearVertex := TVkMemBuffer^
+nuklearIndex := TVkMemBuffer^
+
+gNuklearLayout := TShaderInput^
+textShader := vShader^ 
+
+
+NuklearDrawStep := !(VkCommandBuffer cmd) -> void
+{
+	textShader.ApplyShaderToQueue(cmd)
+}
 
 nk_draw_vertex_layout_element := class
 {
