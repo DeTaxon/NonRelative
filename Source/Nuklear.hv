@@ -24,33 +24,16 @@ NuklearTestInit := !() -> void
 	//fnt := nk_font_atlas_add_from_memory(atls_data,ttfMap.Get(),ttfMap.Size(),24,null)
 
 	imgABC := nk_font_atlas_bake(atls_data,ax&,ay&,NK_FONT_ATLAS_RGBA32)
-	//imgABC := nk_font_atlas_bake(atls_data,ax&,ay&,0)
 
 	atlasImage = vk.CreateTexture()
 	atlasImage.CreateObject(ax,ay)
 
-	hm := Vector.{u8}(512*512*4)
-
-	//memcpy(hm.GetPointer(),imgABC,ax*ay*4)
-
-	for x : 512
-	{
-		for y : 512
-		{
-			hm[(x + y*ax)*4 + 0] = texMem->{u8^}[x + y*ax]
-			hm[(x + y*ax)*4 + 1] = texMem->{u8^}[x + y*ax]
-			hm[(x + y*ax)*4 + 2] = texMem->{u8^}[x + y*ax]
-		}
-	}
-
 	tempMem := vk.itStageMemory
-	//tempMem.TransferData(TArraySpan.{u8}(imgABC->{u8^},ax*ay*4))
-	tempMem.TransferData(TArraySpan.{u8}(hm.GetPointer()->{u8^},ax*ay*4))
+	tempMem.TransferData(TArraySpan.{u8}(imgABC->{u8^},ax*ay*4))
 	printf("atlas %i %i\n",ax,ay)
 	vStageCpyToImage(atlasImage.itImg,ax,ay)
 
 	nk_font_atlas_end(atls_data,atlasImage,null)
-
 
 	rect := nk_rect//(10,10,100,100)
 	rect.x = 100
@@ -135,22 +118,6 @@ NuklearCreateStep := !() -> void
 		textList.Push(cmd.elem_count)
 		cmd = nk__draw_next(cmd,cmds[0]&,nuklearContext)->{nk_draw_command^}
 	}
-
-	ptr := vRealVertBuf.GetPointer()->{float^}
-	for j : 400
-	{
-		if j mod 5 == 0
-			printf("\n")
-		printf("%f ",ptr[j])
-		//a  := j*(4*4)
-		//printf("%f %f , %f %f\n",ptr[a + 0],ptr[a + 1],ptr[a + 2],ptr[a + 3])
-	}
-	
-	//for i : 2048
-	//{
-	//	printf("%i ",vRealIndBuf[i])
-	//}
-	printf("\n")
 
 	gNuklearLayout = engine.lightRenderPass.CreateLayout(![
 		VKType(VType_Float,2),

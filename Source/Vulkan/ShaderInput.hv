@@ -165,13 +165,24 @@ TShaderInput := class
 
 		for i : resultImageCount
 		{
-			blndPre[i].srcColorBlendFactor = VK_BLEND_FACTOR_ONE
-			blndPre[i].dstColorBlendFactor = VK_BLEND_FACTOR_ZERO
+			blndPre[i].blendEnable = VK_TRUE //TODO PERFOMANCE
+			blndPre[i].srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA
+			blndPre[i].dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA
 			blndPre[i].colorBlendOp = VK_BLEND_OP_ADD
 			blndPre[i].srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE
 			blndPre[i].dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO
 			blndPre[i].alphaBlendOp = VK_BLEND_OP_ADD
 			blndPre[i].colorWriteMask = VK_COLOR_COMPONENT_R_BIT or_b VK_COLOR_COMPONENT_G_BIT or_b VK_COLOR_COMPONENT_B_BIT or_b VK_COLOR_COMPONENT_A_BIT
+
+	
+			//TODO this code runs faster, but sometime i need alpha blending
+			//blndPre[i].srcColorBlendFactor = VK_BLEND_FACTOR_ONE
+			//blndPre[i].dstColorBlendFactor = VK_BLEND_FACTOR_ZERO
+			//blndPre[i].colorBlendOp = VK_BLEND_OP_ADD
+			//blndPre[i].srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE
+			//blndPre[i].dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO
+			//blndPre[i].alphaBlendOp = VK_BLEND_OP_ADD
+			//blndPre[i].colorWriteMask = VK_COLOR_COMPONENT_R_BIT or_b VK_COLOR_COMPONENT_G_BIT or_b VK_COLOR_COMPONENT_B_BIT or_b VK_COLOR_COMPONENT_A_BIT
 		}
 
 
