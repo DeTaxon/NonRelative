@@ -138,7 +138,7 @@ TEngine := class extend TGCObject
 			VKType(VType_Float,2)
 		],![
 			new TUniformSet(),
-			new TImageSet()
+			new TImageSet(1)
 		],![
 			new TVertexPushConstant(2*4*4)
 		],
@@ -153,15 +153,18 @@ TEngine := class extend TGCObject
 
 		modelTextureDescriptor = modelLayout.CreateDescriptorPool(1,100)
 
-		//lightLayout = vInstance.CreateLayout(![
-		//	//vertex input
-		//],![
-		//	new TImageSet()
-		//],![
-		//	new TVertexPushConstant(2*4)
-		//],
-		//1
-		//)
+		lightLayout = vInstance.CreateLayout(![
+			//vertex input
+		],![
+			new TImageSet(2)
+		],![
+			new TVertexPushConstant(2*4)
+		],
+		1
+		)
+
+		gLightLayout = lightLayout.Get()
+		gLightObjectLayout = lightLayout.itSets[0].Get()
 
 	}
 }

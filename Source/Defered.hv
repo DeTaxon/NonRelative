@@ -275,42 +275,6 @@ CreateFB := !() -> void
 
 	vk.Funcs.vkCreateFramebuffer(vk.LogicalDevice,fbC&,null,gModelFramebuffer&)
 
-	twoDesc := VkDescriptorSetLayoutBinding[2]
-	twoDesc[0].binding = 0
-	twoDesc[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
-	twoDesc[0].descriptorCount = 1
-	twoDesc[0].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT
-	twoDesc[0].pImmutableSamplers = null
-	twoDesc[1].binding = 1
-	twoDesc[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
-	twoDesc[1].descriptorCount = 1
-	twoDesc[1].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT
-	twoDesc[1].pImmutableSamplers = null
-
-	set2Desc := VkDescriptorSetLayoutCreateInfo()
-	set2Desc.bindingCount = 2
-	set2Desc.pBindings&->{void^^}^ = twoDesc&
-
-	vk.Funcs.vkCreateDescriptorSetLayout(vk.LogicalDevice,set2Desc&,null,gLightObjectLayout&)
-
-	layouts := void^[2]
-	layouts[0] = gLightObjectLayout
-
-	pcrC := VkPushConstantRange
-	pcrC.stageFlags = VK_SHADER_STAGE_VERTEX_BIT
-	pcrC.offset = 0
-	pcrC.size = 2*4
-
-	ppC := VkPipelineLayoutCreateInfo()
-	ppC.pushConstantRangeCount = 1
-	ppC.pPushConstantRanges&->{void^^}^ = pcrC&
-	ppC.setLayoutCount = 1
-	ppC.pSetLayouts&->{void^^}^ = layouts[0]&
-
-	vk.Funcs.vkCreatePipelineLayout(vk.LogicalDevice,ppC&,null,gLightLayout&)
-
-	// gLightShader = vGetShader("Defer") 
-
 	poolSize := u32[2] 
 	poolSize[0] = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
 	poolSize[1] = 2
