@@ -147,7 +147,9 @@ TEngine := class extend TGCObject
 			new TImageSet()
 		],![
 			new TVertexPushConstant(2*4*4)
-		])
+		],
+		2
+		)
 
 		gModelLayout = modelLayout
 

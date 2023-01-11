@@ -1,10 +1,10 @@
 AppendClass VulkanInstance
 {
-	CreateLayout := !(VKType[] vInput,TShaderSet^[] sets, TPushConstant^[] cnsts) -> TShaderInput^
+	CreateLayout := !(VKType[] vInput,TShaderSet^[] sets, TPushConstant^[] cnsts, int resImgCount) -> TShaderInput^
 	{
 		result = new TShaderInput
 		result.itInstance = this&
-		result.CreateInput(vInput,sets,cnsts)
+		result.CreateInput(vInput,sets,cnsts,resImgCount)
 	}
 }
 
@@ -16,14 +16,16 @@ TShaderInput := class
 
 	vertexInput := HybridQueue.{VKType,6}
 	itSets := Vector.{TShaderSet^}
+	resultImageCount := int
 
 	Get := !() -> VkPipelineLayout
 	{
 		return itLayout
 	}
 
-	CreateInput := !(VKType[] vInput,TShaderSet^[] sets,TPushConstant^[] cnsts) -> void
+	CreateInput := !(VKType[] vInput,TShaderSet^[] sets,TPushConstant^[] cnsts,int outputImageCount) -> void
 	{
+		resultImageCount = outputImageCount
 
 		for it : vInput
 			vertexInput.Push(it)
@@ -117,7 +119,7 @@ TShaderInput := class
 
 		plC.vertexBindingDescriptionCount = 1
 		plC.pVertexBindingDescriptions&->{void^^}^ = inputsBind&
-		plC.vertexAttributeDescriptionCount = 3 //TODO non number
+		plC.vertexAttributeDescriptionCount = vertexInput.Size()
 		plC.pVertexAttributeDescriptions&->{void^^}^ = inputsStuf[0]&
 
 		paC1 := VkPipelineInputAssemblyStateCreateInfo()
