@@ -80,18 +80,8 @@ TVkCommandBuffer := class extend TGCObject
 	}
 	Start := !() -> void
 	{
-		inhC := VkCommandBufferInheritanceInfo()
-
-		inhC.renderPass = gRenderPassModel //TODO
-		inhC.subpass = 0
-		inhC.framebuffer = gModelFramebuffer
-		inhC.occlusionQueryEnable = 0
-		inhC.queryFlags = 0
-		inhC.pipelineStatistics = 0
-
 		biC := VkCommandBufferBeginInfo()
 		biC.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT
-		biC.pInheritanceInfo&->{void^^}^ = inhC&->{void^}
 
 		itInstance.Funcs.vkBeginCommandBuffer(itCmdBuf,biC&)
 	}

@@ -17,52 +17,6 @@ gLightLayout := VkPipelineLayout
 gGBufferLayoutSets := VkDescriptorPool
 gGBufferTextureSet := VkDescriptorSet
 
-
-// gTextLayout := VkPipelineLayout
-// vkTextPipeLayout := VkPipelineLayout
-// gTextObjectLayout := VkDescriptorSetLayout
-
-// CreateTextLayout := !() -> void
-// {
-// 	layouts := void^[2]
-// 	layouts[0] = vkPerObjectLayout
-
-// 	ppC := VkPipelineLayoutCreateInfo()
-// 	ppC.pushConstantRangeCount = 0
-// 	ppC.setLayoutCount = 1
-// 	ppC.pSetLayouts&->{void^^}^ = layouts&->{void^}
-
-// 	vkCreatePipelineLayout(vkLogCard,ppC&,null,vkTextPipeLayout&)
-
-// 	twoDesc := VkDescriptorSetLayoutBinding[1]
-// 	twoDesc[0].binding = 0
-// 	twoDesc[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
-// 	twoDesc[0].descriptorCount = 1
-// 	twoDesc[0].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT
-// 	twoDesc[0].pImmutableSamplers = null
-
-// 	set2Desc := VkDescriptorSetLayoutCreateInfo()
-// 	set2Desc.bindingCount = 1
-// 	set2Desc.pBindings&->{void^^}^ = twoDesc&
-
-// 	vkCreateDescriptorSetLayout(vkLogCard,set2Desc&,null,gTextObjectLayout&)
-
-// 	layouts := void^[2]
-// 	layouts[0] = gTextObjectLayout
-
-// 	pcrC := VkPushConstantRange
-// 	pcrC.stageFlags = VK_SHADER_STAGE_VERTEX_BIT
-// 	pcrC.offset = 0
-// 	pcrC.size = 2*4
-
-// 	ppC := VkPipelineLayoutCreateInfo()
-// 	ppC.pushConstantRangeCount = 1
-// 	ppC.pPushConstantRanges&->{void^^}^ = pcrC&
-// 	ppC.setLayoutCount = 1
-// 	ppC.pSetLayouts&->{void^^}^ = layouts[0]&
-
-// 	vkCreatePipelineLayout(vkLogCard,ppC&,null,gTextLayout&)
-// }
 CreateSwapchain := !(int inW,int inH) -> void
 {
 	oldSwapchain := vkSwapchain
