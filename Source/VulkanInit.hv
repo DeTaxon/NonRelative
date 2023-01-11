@@ -281,5 +281,6 @@ VkDebugCallback := !(int flags,int bojType,u64 object,u64 location,int msgCode,c
 {
 	//assert(false)
 	printf("VkError <%s>\n",msg)
+	exit(0)
 	return 0
 }

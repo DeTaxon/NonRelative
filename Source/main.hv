@@ -43,17 +43,10 @@ main := !(char^[] args) -> int
 	gLightShader = new vShader
 	gLightShader.LoadShaderLight(deferVert,deferFrag)
 
-	// learnVert := LoadShaderModule("Shaders/ShaderCache/LearnVert.vert")
-	learnVert := LoadShaderModule("Vert2.vert")
-	learnFrag := LoadShaderModule("Shaders/ShaderCache/LearnFrag.frag")
-	learnShader := new vShader
-	//opts := vShaderVertexOptions
-	//opts.positionType = VKType(VType_Float,3)
-	//opts.normalType = VKType(VType_Float,3)
-	//opts.textureType = VKType(VType_Float,2)
-	//learnShader.LoadShader(learnVert,learnFrag,opts&)
+	//gLightShader = engine.lightLayout.CreateShader(FSGetFile("Shaders/ShaderCache/Defer.vert"),FSGetFile("Shaders/ShaderCache/Defer.frag"))
 
-	learnShader = engine.modelLayout.CreateShader(FSGetFile("Vert2.vert"),FSGetFile("Shaders/ShaderCache/LearnFrag.frag"))
+	// learnVert := LoadShaderModule("Shaders/ShaderCache/LearnVert.vert")
+	learnShader := engine.modelLayout.CreateShader(FSGetFile("Vert2.vert"),FSGetFile("Shaders/ShaderCache/LearnFrag.frag"))
 
 	canvas := engine.LoadModel("Models/Canvas/Canvas.json")
 

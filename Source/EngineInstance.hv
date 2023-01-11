@@ -124,6 +124,9 @@ TEngine := class extend TGCObject
 		result.CreateTexture(inFile)
 	}
 
+	modelRenderPass := TRenderPass^
+	lightRenderPass := TRenderPass^
+
 	modelLayout := TShaderInput^
 	modelPersDescriptor := TDescriptorPool^
 	modelTextureDescriptor := TDescriptorPool^
@@ -133,6 +136,18 @@ TEngine := class extend TGCObject
 
 	Init := !() -> void
 	{
+		//modelRenderPass = vInstance.CreateRenderPass(![
+		//	TRenderPassFrame(VK_FORMAT_R8G8B8A8_UNORM,	VK_IMAGE_LAYOUT_UNDEFINED,VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL),
+		//	TRenderPassFrame(VK_FORMAT_R32G32B32A32_SFLOAT,	VK_IMAGE_LAYOUT_UNDEFINED,VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL),
+		//],true)
+
+		//gRenderPassModel = modelRenderPass.Get()
+
+		lightRenderPass = vInstance.CreateRenderPass(![
+			TRenderPassFrame(SwapImageFormat,	VK_IMAGE_LAYOUT_UNDEFINED,VK_IMAGE_LAYOUT_PRESENT_SRC_KHR),
+		],false)
+		gRenderPassLight = lightRenderPass.Get()
+
 		modelLayout = vInstance.CreateLayout(![
 			VKType(VType_Float,3),
 			VKType(VType_Float,3),

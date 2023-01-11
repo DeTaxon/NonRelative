@@ -103,41 +103,6 @@ CreateSwapchain := !(int inW,int inH) -> void
 	vkImages = new Vector.{VkImage}(imgCount)
 	vkGetSwapchainImagesKHR(vkLogCard,vkSwapchain,imgCount&,vkImages.GetPointer())
 
-	attmDesc := VkAttachmentDescription[1]
-	attmDesc[0].format = SwapImageFormat
-	attmDesc[0].samples = VK_SAMPLE_COUNT_1_BIT
-	attmDesc[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR
-	attmDesc[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE
-	attmDesc[0].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE
-	attmDesc[0].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE
-	attmDesc[0].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED
-	attmDesc[0].finalLayout  = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
-
-	attmRef := VkAttachmentReference
-	attmRef.attachment = 0
-	attmRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
-
-	subpass := VkSubpassDescription
-	subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS
-	subpass.inputAttachmentCount = 0
-	subpass.pInputAttachments = null
-	subpass.colorAttachmentCount = 1
-	subpass.pColorAttachments&->{void^^}^ = attmRef&
-	subpass.pResolveAttachments = null
-	subpass.pDepthStencilAttachment = null
-	subpass.preserveAttachmentCount = 0
-	subpass.pPreserveAttachments = null
-
-	rpC := VkRenderPassCreateInfo()
-	rpC.attachmentCount = 1
-	rpC.pAttachments&->{void^^}^ = attmDesc[0]&
-	rpC.subpassCount = 1
-	rpC.pSubpasses&->{void^^}^ = subpass&
-	rpC.dependencyCount = 0
-	rpC.pDependencies = null
-
-	vkCreateRenderPass(vkLogCard,rpC&,null,gRenderPassLight&)
-
 	vkImageViews = new Vector.{VkImageView}(vkImages.Size())
 	vkFramebuffers = new Vector.{VkFramebuffer}(vkImages.Size())
 	for it,i : vkImages^
