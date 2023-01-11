@@ -3,12 +3,14 @@ AppendClass VulkanInstance
 	CreateRenderPass := !(TRenderPassFrame[] lst, bool useDepth) -> TRenderPass^
 	{
 		result = new TRenderPass
+		result.itInstance = this&
 		result.CreatePass(this&,lst,useDepth)
 	}
 }
 
 TRenderPass := class extend TGCObject
 {
+	itInstance := VulkanInstance^
 	itPass := VkRenderPass
 	Get := !() -> VkRenderPass { return itPass }
 	CreatePass := !(VulkanInstance^ inst,TRenderPassFrame[] lst, bool useDepth) -> void
@@ -78,6 +80,13 @@ TRenderPass := class extend TGCObject
 		}
 
 		inst.Funcs.vkCreateRenderPass(inst.LogicalDevice,rpC&,null,itPass&)
+	}
+	CreateLayout := !(VKType[] vInput,TShaderSet^[] sets, TPushConstant^[] cnsts, int resImgCount) -> TShaderInput^
+	{
+		result = new TShaderInput
+		result.itInstance = itInstance
+		result.itPass = this&
+		result.CreateInput(vInput,sets,cnsts,resImgCount)
 	}
 }
 

@@ -12,6 +12,7 @@ AppendClass VulkanInstance
 TShaderInput := class 
 {
 	itInstance := VulkanInstance^
+	itPass := TRenderPass^
 	itLayout := VkPipelineLayout
 
 	vertexInput := HybridQueue.{VKType,6}
@@ -222,7 +223,7 @@ TShaderInput := class
 		gpC.pMultisampleState&->{void^^}^ = sampleC&
 		gpC.pColorBlendState&->{void^^}^ = blndC&
 		gpC.layout = this.Get()
-		gpC.renderPass = gRenderPassModel //TODO replace
+		gpC.renderPass = itPass.Get()
 		gpC.basePipelineIndex = -1
 		gpC.pDepthStencilState&->{void^^}^ = dsC&
 		gpC.pDynamicState&->{void^^}^ = dins&
