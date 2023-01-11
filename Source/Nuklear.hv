@@ -127,6 +127,7 @@ NuklearCreateStep := !() -> void
 	while cmd != null
 	{
 		printf("step %p %i\n",cmd.texture,cmd.elem_count)
+		textList.Push(cmd.elem_count)
 		cmd = nk__draw_next(cmd,cmds[0]&,nuklearContext)->{nk_draw_command^}
 	}
 	
@@ -153,11 +154,13 @@ NuklearCreateStep := !() -> void
 	nuklearIndex = vk.CreateMemBufferObject(vRealIndBuf.Size(),VK_BUFFER_USAGE_INDEX_BUFFER_BIT or_b VK_BUFFER_USAGE_TRANSFER_DST_BIT)
 	nuklearIndex.TransferData(vRealIndBuf&)
 
-
-
+	nuklearPool = gNuklearLayout.CreateDescriptorPool(0,100)
+	nuklearDescp = nuklearPool.CreateDescriptor()
+	
+	vSetTexture(nuklearDescp,atlasImage,gSamplerNearest)
 }
 
-textList := List.{Tuple.{int,int}}
+textList := List.{int}
 
 nuklearVertex := TVkMemBuffer^
 nuklearIndex := TVkMemBuffer^
@@ -165,10 +168,29 @@ nuklearIndex := TVkMemBuffer^
 gNuklearLayout := TShaderInput^
 textShader := vShader^ 
 
+nuklearPool := TDescriptorPool^ 
+nuklearDescp := VkDescriptorSet
 
-NuklearDrawStep := !(VkCommandBuffer cmd) -> void
+NuklearDrawStep := !(VkCommandBuffer cmdB) -> void
 {
-	textShader.ApplyShaderToQueue(cmd)
+	offsets := VkDeviceSize
+
+	textShader.ApplyShaderToQueue(cmdB)
+
+	sts := VkDescriptorSet[2]
+	sts[0] = nuklearDescp //vkPerspSet
+	//sts[1] = modelTextureSet
+	vk.Funcs.vkCmdBindDescriptorSets(cmdB,VK_PIPELINE_BIND_POINT_GRAPHICS,gNuklearLayout.Get(),0,1,sts[0]&,0,null)
+
+	vk.Funcs.vkCmdBindVertexBuffers(cmdB,0,1,nuklearVertex.GetBufferPointer(),offsets&)
+	vk.Funcs.vkCmdBindIndexBuffer(cmdB,nuklearIndex.GetBufferPointer()^,0,VKType(VType_UInt16,1).GetBaseIndexType())
+
+	index_offset := 0
+	for it : textList
+	{
+		vk.Funcs.vkCmdDrawIndexed(cmdB,it,1,index_offset,0,0)
+		index_offset += it
+	}
 }
 
 nk_draw_vertex_layout_element := class
