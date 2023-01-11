@@ -98,7 +98,7 @@ NuklearCreateStep := !() -> void
 	layT[3].offset = 0
 
 	cfg := nk_convert_config
-	cfg.vertex_size = 8*4
+	cfg.vertex_size = 4*4 + 4
 	cfg.vertex_layout = layT[0]&
 	cfg.vertex_alignment = 4
 	cfg.circle_segment_count = 22
@@ -127,20 +127,28 @@ NuklearCreateStep := !() -> void
 	while cmd != null
 	{
 		printf("step %p %i\n",cmd.texture,cmd.elem_count)
+		printf("rect %f %f %f %f\n",cmd.clip_rect.x,cmd.clip_rect.y,cmd.clip_rect.w,cmd.clip_rect.h)
 		textList.Push(cmd.elem_count)
 		cmd = nk__draw_next(cmd,cmds[0]&,nuklearContext)->{nk_draw_command^}
 	}
-	
-	for i : 2048
+
+	ptr := vRealVertBuf.GetPointer()->{float^}
+	for j : 512
 	{
-		printf("%i ",vRealIndBuf[i])
+		a  := j*8
+		printf("%f %f , %f %f , %f %f %f %f\n",ptr[a + 0],ptr[a + 1],ptr[a + 2],ptr[a + 3],ptr[a + 4],ptr[a + 5],ptr[a + 6],ptr[a + 7])
 	}
+	
+	//for i : 2048
+	//{
+	//	printf("%i ",vRealIndBuf[i])
+	//}
 	printf("\n")
 
 	gNuklearLayout = engine.lightRenderPass.CreateLayout(![
 		VKType(VType_Float,2),
 		VKType(VType_Float,2),
-		VKType(VType_Float,4)
+		VKType(VType_UInt8,4)
 	],![
 		new TImageSet(1)
 	],![],
@@ -177,9 +185,8 @@ NuklearDrawStep := !(VkCommandBuffer cmdB) -> void
 
 	textShader.ApplyShaderToQueue(cmdB)
 
-	sts := VkDescriptorSet[2]
-	sts[0] = nuklearDescp //vkPerspSet
-	//sts[1] = modelTextureSet
+	sts := VkDescriptorSet[1]
+	sts[0] = nuklearDescp
 	vk.Funcs.vkCmdBindDescriptorSets(cmdB,VK_PIPELINE_BIND_POINT_GRAPHICS,gNuklearLayout.Get(),0,1,sts[0]&,0,null)
 
 	vk.Funcs.vkCmdBindVertexBuffers(cmdB,0,1,nuklearVertex.GetBufferPointer(),offsets&)
