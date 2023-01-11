@@ -15,7 +15,7 @@ vkDescPool := TDescriptorPool^
 
 vkPerspSet := VkDescriptorSet
 
-gModelLayout := TShaderInput
+gModelLayout := TShaderInput^
 
 vkRGB8Support := bool
 vkHalfFloatSupport := bool
@@ -267,19 +267,6 @@ VulkanInit := !() -> void
 
 	crtFence := VkFenceCreateInfo()
 	vkCreateFence(vkLogCard,crtFence&,null,vkFence&)
-
-	
-	// gModelLayout.StartInit()
-	// gModelLayout.EndInit()
-	gModelLayout.CreateInput(![
-		new TUniformSet(),
-		new TImageSet()
-	],![
-		new TVertexPushConstant(2*4*4)
-	])
-
-	vkDescPool = gModelLayout.CreateDescriptorPool(0,1) //only need one for perspective data
-	vkPerspSet = vkDescPool.CreateDescriptor()
 
 	testTextureFormat := VkFormatProperties
 	vkGetPhysicalDeviceFormatProperties(vkPhysCard,VK_FORMAT_R8G8B8_UNORM,testTextureFormat&)

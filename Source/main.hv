@@ -27,11 +27,14 @@ main := !(char^[] args) -> int
 
 	CreateWindow(x,y)
 	VulkanInit()
+	
+	engine.vInstance = vk
+	engine.Init()
+
 	VoidCoreInit()
 	CreateSwapchain(x,y)
 	CreateFB()
 
-	engine.vInstance = vk
 
 	gPlayer = new PhysPlayer()
 	gPlayer.System.pos = vec4f(0.0,0.0,2.0,1.0)

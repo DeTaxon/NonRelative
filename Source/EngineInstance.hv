@@ -130,4 +130,24 @@ TEngine := class extend TGCObject
 		result = vk.CreateTexture() //TODO
 		result.CreateTexture(inFile)
 	}
+
+	modelLayout := TShaderInput^
+
+	Init := !() -> void
+	{
+		modelLayout = new TShaderInput
+		
+		modelLayout.CreateInput(![
+			new TUniformSet(),
+			new TImageSet()
+		],![
+			new TVertexPushConstant(2*4*4)
+		])
+
+		gModelLayout = modelLayout
+
+		vkDescPool = gModelLayout.CreateDescriptorPool(0,1) //only need one for perspective data
+		vkPerspSet = vkDescPool.CreateDescriptor()
+
+	}
 }
