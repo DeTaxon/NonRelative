@@ -107,8 +107,6 @@ VulkanGLFWInstance := class extend VulkanInstance
 		surfaceImageViews = new Vector.{VkImageView}(surfaceImages.Size())
 		surfaceFramebuffers = new Vector.{VkFramebuffer}(surfaceImages.Size())
 
-		vkFramebuffers = surfaceFramebuffers
-
 		for it,i : surfaceImages^
 		{
 			imgViewC := VkImageViewCreateInfo()

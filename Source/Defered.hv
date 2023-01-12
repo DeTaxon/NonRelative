@@ -2,8 +2,6 @@
 gRenderPassModel := VkRenderPass
 gRenderPassLight := VkRenderPass
 
-vkFramebuffers := Vector.{VkFramebuffer}^
-
 gModelFramebuffer := VkFramebuffer
 
 depthTexture := TVkTexture^
