@@ -37,7 +37,7 @@ main := !(char^[] args) -> int
 	engine.Init()
 
 	VoidCoreInit()
-	CreateSwapchain(x,y)
+	vk.CreateSwapchain(x,y)
 	CreateFB()
 
 	gPlayer = new PhysPlayer()

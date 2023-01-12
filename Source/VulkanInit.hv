@@ -27,7 +27,7 @@ gVulkanWindowW := int
 gVulkanWindowH := int
 
 
-VKNonRelative := class extend VulkanInstance
+VKNonRelative := class extend VulkanGLFWInstance
 {
 	LayerStep := virtual !(VkLayerProperties[] supportedLayers, List.{char^} usingLayers) -> void
 	{
@@ -160,63 +160,8 @@ VulkanInit := !() -> void
 	vkPhysCard = vk.PhysicalDevice
 	vkLogCard = vk.LogicalDevice
 
-	glfwCreateWindowSurface(vkInstance,glfwWindow,null,vkSurface&)
-
-	isPres := u32
-	vk.Funcs.vkGetPhysicalDeviceSurfaceSupportKHR(vkPhysCard,0,vkSurface,isPres&)
-
-	surfAb := VkSurfaceCapabilitiesKHR
-	vk.Funcs.vkGetPhysicalDeviceSurfaceCapabilitiesKHR(vkPhysCard,vkSurface,surfAb&)
-
-	printf("surface settings\n")
-	printf("img count min = %i , max = %i\n",surfAb.minImageCount,surfAb.maxImageCount)
-
-	formsCount := u32
-	vk.Funcs.vkGetPhysicalDeviceSurfaceFormatsKHR(vkPhysCard,vkSurface,formsCount&,null)
-	formts := Vector.{VkSurfaceFormatKHR}(formsCount)
-	vk.Funcs.vkGetPhysicalDeviceSurfaceFormatsKHR(vkPhysCard,vkSurface,formsCount&,formts.GetPointer())
-
-	printf("formats\n")
-	for it : formts
-	{
-		printf("-format %i\n",it&->{int^}^)
-	}
-
-	presMods := u32
-	vk.Funcs.vkGetPhysicalDeviceSurfacePresentModesKHR(vkPhysCard,vkSurface,presMods&,null)
-	pMods := Vector.{VkPresentModeKHR}(presMods)
-	vk.Funcs.vkGetPhysicalDeviceSurfacePresentModesKHR(vkPhysCard,vkSurface,presMods&,pMods.GetPointer())
-
-	printf("supported mods\n")
-
-	for it : pMods
-	{
-		switch it
-		{
-			case VK_PRESENT_MODE_IMMEDIATE_KHR
-				printf("- IMMEDIATE\n")
-			case VK_PRESENT_MODE_MAILBOX_KHR
-				printf("- MAILBOX\n")
-			case VK_PRESENT_MODE_FIFO_KHR
-				printf("- FIFO\n")
-			case VK_PRESENT_MODE_FIFO_RELAXED_KHR
-				printf("- FIFO_RELAXED\n")
-			case void
-				printf("- unknown %i\n",it)
-		}
-	}
-	reqMod := pMods[0]
-	reqMod = VK_PRESENT_MODE_FIFO_KHR
-	//for gUserModes //TODO
-	//{
-	//	if it in pMods
-	//		reqMod = it
-	//}
-
-	//TODO: format priority
-	SwapImageFormat = formts[1].format
-	SwapImageColorSpace = formts[1].colorSpace
-	SwapImageMode = reqMod
+	vk.CreateSurface(glfwWindow)
+	vkSurface = vk.itSurface
 
 	crtFence := VkFenceCreateInfo()
 	vkCreateFence(vkLogCard,crtFence&,null,vkFence&)
