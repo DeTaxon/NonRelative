@@ -97,8 +97,41 @@ NuklearVulkanContext := class //extend TGCObject
 		renderMesh = vInstance.CreateMesh(vRealVertBuf&,vRealIndBuf&,VKType(VType_UInt16,1))
 	}
 
+	drawLayout := TShaderInput^
+	textShader := vShader^ 
+	
+	nuklearPool := TDescriptorPool^ 
+	nuklearDescp := VkDescriptorSet
+	CreateShader := !(TRenderPass^ pass) -> void
+	{
+		drawLayout = pass.CreateLayout(![
+			VKType(VType_Float,2),
+			VKType(VType_Float,2),
+			VKType(VType_UInt8,4)
+		],![
+			new TImageSet(1)
+		],![],
+		1
+		)
+
+		textShader = drawLayout.CreateShader(FSGetFile("text.vert"),FSGetFile("text.frag")) //TODO!!! embedd
+
+		nuklearPool = drawLayout.CreateDescriptorPool(0,100) //TODO unconst
+		nuklearDescp = nuklearPool.CreateDescriptor()
+		
+		vSetTexture(nuklearDescp,atlasTexture,gSamplerNearest)
+	}
+
 	Draw := !(VkCommandBuffer cmdB) -> void
 	{
+		offsets := VkDeviceSize
+
+		textShader.ApplyShaderToQueue(cmdB)
+
+		sts := VkDescriptorSet[1]
+		sts[0] = nuklearDescp
+		vInstance.Funcs.vkCmdBindDescriptorSets(cmdB,VK_PIPELINE_BIND_POINT_GRAPHICS,drawLayout.Get(),0,1,sts[0]&,0,null)
+
 		renderMesh.Bind(cmdB)
 
 		index_offset := 0
