@@ -90,7 +90,7 @@ main := !(char^[] args) -> int
 
 		surfaceIndex := u32
 		drawRes := true
-		@work vk.DrawGetImage(surfaceIndex&)
+		@work vk.DrawGetImage(surfaceIndex&,drawRes&)
 
 		if drawRes
 		{
@@ -114,6 +114,11 @@ main := !(char^[] args) -> int
 		
 		glfwSwapBuffers(glfwWindow)
 		glfwPollEvents()
+
+		if not drawRes
+		{
+			vk.CreateSwapchain(gWindowW,gWindowH)
+		}
 
 		if glfwWindowShouldClose(glfwWindow) or buttons['Q']
 		{

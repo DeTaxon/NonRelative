@@ -15,8 +15,6 @@ gModelLayout := TShaderInput^
 vkRGB8Support := bool
 vkHalfFloatSupport := bool
 
-gUserModes := List.{int}
-
 gVulkanWindowW := int
 gVulkanWindowH := int
 

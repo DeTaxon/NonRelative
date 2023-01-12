@@ -145,18 +145,20 @@ VulkanGLFWInstance := class extend VulkanInstance
 	{
 		return surfaceFramebuffers[indx]
 	}
-	DrawGetImage := !(u32^ imageIndex) -> bool
+	DrawGetImage := !(u32^ imageIndex,bool^ resCall) -> bool
 	{
+		resCall^ = true
+
 		Funcs.vkResetFences(vkLogCard,1,vkFence&)
 		resAq := Funcs.vkAcquireNextImageKHR(LogicalDevice,itSwapchain,not_b 0U,null,vkFence,imageIndex)
 	
-		if resAq ==  VK_ERROR_OUT_OF_DATE_KHR// or resAq == VK_SUBOPTIMAL_KHR
+		Funcs.vkWaitForFences(vkLogCard,1,vkFence&,1,10000000)
+		if resAq ==  VK_ERROR_OUT_OF_DATE_KHR or resAq == VK_SUBOPTIMAL_KHR
 		{
-			DrawPresentImage(imageIndex^)
+			resCall^ = false
 			return false
 		}
 	
-		Funcs.vkWaitForFences(vkLogCard,1,vkFence&,1,10000000)
 		return true
 	}
 	DrawPresentImage := !(u32 imageIndex) -> void
