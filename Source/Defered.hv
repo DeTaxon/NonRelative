@@ -2,8 +2,6 @@
 gRenderPassModel := VkRenderPass
 gRenderPassLight := VkRenderPass
 
-vkImages := Vector.{VkImage}^
-vkImageViews := Vector.{VkImageView}^
 vkFramebuffers := Vector.{VkFramebuffer}^
 
 gModelFramebuffer := VkFramebuffer
@@ -83,8 +81,23 @@ DrawGetImage := !() -> bool
 	vkResetFences(vkLogCard,1,vkFence&)
 	resAq := vkAcquireNextImageKHR(vkLogCard,vkSwapchain,not_b 0U,null,vkFence,nowImg&)
 
-	if resAq ==  VK_ERROR_OUT_OF_DATE_KHR 
+	if resAq ==  VK_ERROR_OUT_OF_DATE_KHR or resAq == VK_SUBOPTIMAL_KHR
 	{
+		//if resAq == VK_SUBOPTIMAL_KHR
+		//{
+		//	res := VkResult
+		//	pI := VkPresentInfoKHR()
+		//	pI.pNext = null
+		//	pI.waitSemaphoreCount = 0
+		//	pI.pWaitSemaphores = null
+		//	pI.swapchainCount = 1
+		//	pI.pSwapchains&->{void^^}^ = vkSwapchain&->{void^}
+		//	pI.pImageIndices&->{void^^}^ = nowImg&->{void^}
+		//	pI.pResults&->{void^^}^ = res&
+
+		//	vk.Funcs.vkQueuePresentKHR(vk.DrawQueue,pI&)
+		//	vk.Funcs.vkQueueWaitIdle(vk.DrawQueue)
+		//}
 		return false
 	}
 

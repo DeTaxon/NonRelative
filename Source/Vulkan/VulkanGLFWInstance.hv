@@ -2,23 +2,28 @@ VulkanGLFWInstance := class extend VulkanInstance
 {
 	itSurface := VkSurfaceKHR
 	itSwapchain := VkSwapchainKHR
+
+	surfaceImages := Vector.{VkImage}^
+	surfaceImageViews := Vector.{VkImageView}^
+	surfaceFramebuffers := Vector.{VkFramebuffer}^
+
 	CreateSurface := !(void^ window) -> void
 	{
 		glfwCreateWindowSurface(Instance,window,null,itSurface&)
 
 		isPres := u32
-		vk.Funcs.vkGetPhysicalDeviceSurfaceSupportKHR(vkPhysCard,0,itSurface,isPres&)
+		Funcs.vkGetPhysicalDeviceSurfaceSupportKHR(PhysicalDevice,0,itSurface,isPres&)
 
 		surfAb := VkSurfaceCapabilitiesKHR
-		vk.Funcs.vkGetPhysicalDeviceSurfaceCapabilitiesKHR(vkPhysCard,itSurface,surfAb&)
+		Funcs.vkGetPhysicalDeviceSurfaceCapabilitiesKHR(PhysicalDevice,itSurface,surfAb&)
 
 		printf("surface settings\n")
 		printf("img count min = %i , max = %i\n",surfAb.minImageCount,surfAb.maxImageCount)
 
 		formsCount := u32
-		vk.Funcs.vkGetPhysicalDeviceSurfaceFormatsKHR(vkPhysCard,itSurface,formsCount&,null)
+		Funcs.vkGetPhysicalDeviceSurfaceFormatsKHR(PhysicalDevice,itSurface,formsCount&,null)
 		formts := Vector.{VkSurfaceFormatKHR}(formsCount)
-		vk.Funcs.vkGetPhysicalDeviceSurfaceFormatsKHR(vkPhysCard,itSurface,formsCount&,formts.GetPointer())
+		Funcs.vkGetPhysicalDeviceSurfaceFormatsKHR(PhysicalDevice,itSurface,formsCount&,formts.GetPointer())
 
 		printf("formats\n")
 		for it : formts
@@ -27,9 +32,9 @@ VulkanGLFWInstance := class extend VulkanInstance
 		}
 
 		presMods := u32
-		vk.Funcs.vkGetPhysicalDeviceSurfacePresentModesKHR(vkPhysCard,itSurface,presMods&,null)
+		Funcs.vkGetPhysicalDeviceSurfacePresentModesKHR(PhysicalDevice,itSurface,presMods&,null)
 		pMods := Vector.{VkPresentModeKHR}(presMods)
-		vk.Funcs.vkGetPhysicalDeviceSurfacePresentModesKHR(vkPhysCard,itSurface,presMods&,pMods.GetPointer())
+		Funcs.vkGetPhysicalDeviceSurfacePresentModesKHR(PhysicalDevice,itSurface,presMods&,pMods.GetPointer())
 
 		printf("supported mods\n")
 
@@ -64,7 +69,7 @@ VulkanGLFWInstance := class extend VulkanInstance
 	}
 	CreateSwapchain := !(int inW,int inH) -> void
 	{
-		oldSwapchain := vkSwapchain
+		oldSwapchain := itSwapchain
 	
 		gVulkanWindowW = inW
 		gVulkanWindowH = inH
@@ -87,21 +92,24 @@ VulkanGLFWInstance := class extend VulkanInstance
 		crtSwap.clipped = 0
 		crtSwap.oldSwapchain = null
 		
-		vkCreateSwapchainKHR(vkLogCard,crtSwap&,null,vkSwapchain&)
+		Funcs.vkCreateSwapchainKHR(LogicalDevice,crtSwap&,null,itSwapchain&)
 	
 		if oldSwapchain != null
 		{
-			vkDestroySwapchainKHR(vkLogCard,oldSwapchain,null)
+			Funcs.vkDestroySwapchainKHR(LogicalDevice,oldSwapchain,null)
 		}
 	
 		imgCount := u32
-		vkGetSwapchainImagesKHR(vkLogCard,vkSwapchain,imgCount&,null)
-		vkImages = new Vector.{VkImage}(imgCount)
-		vkGetSwapchainImagesKHR(vkLogCard,vkSwapchain,imgCount&,vkImages.GetPointer())
+		vkGetSwapchainImagesKHR(vkLogCard,itSwapchain,imgCount&,null)
+		surfaceImages = new Vector.{VkImage}(imgCount)
+		vkGetSwapchainImagesKHR(vkLogCard,itSwapchain,imgCount&,surfaceImages.GetPointer())
 	
-		vkImageViews = new Vector.{VkImageView}(vkImages.Size())
-		vkFramebuffers = new Vector.{VkFramebuffer}(vkImages.Size())
-		for it,i : vkImages^
+		surfaceImageViews = new Vector.{VkImageView}(surfaceImages.Size())
+		surfaceFramebuffers = new Vector.{VkFramebuffer}(surfaceImages.Size())
+
+		vkFramebuffers = surfaceFramebuffers
+
+		for it,i : surfaceImages^
 		{
 			imgViewC := VkImageViewCreateInfo()
 			imgViewC.image = it
@@ -118,17 +126,61 @@ VulkanGLFWInstance := class extend VulkanInstance
 			imgViewC.subresourceRange.baseArrayLayer = 0
 			imgViewC.subresourceRange.layerCount = 1
 	
-			vk.Funcs.vkCreateImageView(vk.LogicalDevice,imgViewC&,null,vkImageViews^[i]&)
+			Funcs.vkCreateImageView(LogicalDevice,imgViewC&,null,surfaceImageViews^[i]&)
 	
 			fbC := VkFramebufferCreateInfo()
-			fbC.renderPass = gRenderPassLight
+			fbC.renderPass = gRenderPassLight //TODO!! unconst
 			fbC.attachmentCount = 1
-			fbC.pAttachments&->{void^^}^ = vkImageViews^[i]&
+			fbC.pAttachments&->{void^^}^ = surfaceImageViews^[i]&
 			fbC.width = inW
 			fbC.height = inH
 			fbC.layers = 1
 	
-			vk.Funcs.vkCreateFramebuffer(vkLogCard,fbC&,null,vkFramebuffers^[i]&)
+			Funcs.vkCreateFramebuffer(LogicalDevice,fbC&,null,surfaceFramebuffers^[i]&)
 		}
+		vkSwapchain = itSwapchain
+	}
+	DrawGetImage := !() -> bool
+	{
+		vkResetFences(vkLogCard,1,vkFence&)
+		resAq := vkAcquireNextImageKHR(vkLogCard,vkSwapchain,not_b 0U,null,vkFence,nowImg&)
+	
+		if resAq ==  VK_ERROR_OUT_OF_DATE_KHR// or resAq == VK_SUBOPTIMAL_KHR
+		{
+			//if resAq == VK_SUBOPTIMAL_KHR
+			//{
+			//	res := VkResult
+			//	pI := VkPresentInfoKHR()
+			//	pI.pNext = null
+			//	pI.waitSemaphoreCount = 0
+			//	pI.pWaitSemaphores = null
+			//	pI.swapchainCount = 1
+			//	pI.pSwapchains&->{void^^}^ = vkSwapchain&->{void^}
+			//	pI.pImageIndices&->{void^^}^ = nowImg&->{void^}
+			//	pI.pResults&->{void^^}^ = res&
+	
+			//	vk.Funcs.vkQueuePresentKHR(vk.DrawQueue,pI&)
+			//	vk.Funcs.vkQueueWaitIdle(vk.DrawQueue)
+			//}
+			return false
+		}
+	
+		vkWaitForFences(vkLogCard,1,vkFence&,1,10000000)
+		return true
+	}
+	DrawPresentImage := !() -> void
+	{
+		res := VkResult
+		pI := VkPresentInfoKHR()
+		pI.pNext = null
+		pI.waitSemaphoreCount = 0
+		pI.pWaitSemaphores = null
+		pI.swapchainCount = 1
+		pI.pSwapchains&->{void^^}^ = vkSwapchain&->{void^}
+		pI.pImageIndices&->{void^^}^ = nowImg&->{void^}
+		pI.pResults&->{void^^}^ = res&
+
+		vk.Funcs.vkQueuePresentKHR(vk.DrawQueue,pI&)
+		vk.Funcs.vkQueueWaitIdle(vk.DrawQueue)
 	}
 }

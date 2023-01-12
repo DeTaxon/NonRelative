@@ -88,35 +88,39 @@ main := !(char^[] args) -> int
 
 		//gCam.InputCheck(delta*inputCoef)
 
+		drawRes := true
 		@work DrawGetImage()
 
-		vk.PushDrawQueueAndWait(cmd ==> {
-			StartDraw(cmd.Get())
+		if drawRes
+		{
+			vk.PushDrawQueueAndWait(cmd ==> {
+				StartDraw(cmd.Get())
 
-			gCam.camPos.x = gPlayer.System.pos.x
-			gCam.camPos.y = gPlayer.System.pos.y
-			gCam.camPos.z = gPlayer.System.pos.z + 1.7
+				gCam.camPos.x = gPlayer.System.pos.x
+				gCam.camPos.y = gPlayer.System.pos.y
+				gCam.camPos.z = gPlayer.System.pos.z + 1.7
 
-			learnShader.ApplyShaderToQueue(cmd.Get())
-			gCam.BindDescriptor(cmd.Get())
+				learnShader.ApplyShaderToQueue(cmd.Get())
+				gCam.BindDescriptor(cmd.Get())
 
-			DrawMap(cmd.Get(),gPlayerMap,centf(),4)
+				DrawMap(cmd.Get(),gPlayerMap,centf(),4)
 
-			StopDraw(cmd.Get())
-		})
+				StopDraw(cmd.Get())
+			})
 
-		res := VkResult
-		pI := VkPresentInfoKHR()
-		pI.pNext = null
-		pI.waitSemaphoreCount = 0
-		pI.pWaitSemaphores = null
-		pI.swapchainCount = 1
-		pI.pSwapchains&->{void^^}^ = vkSwapchain&->{void^}
-		pI.pImageIndices&->{void^^}^ = nowImg&->{void^}
-		pI.pResults&->{void^^}^ = res&
+			res := VkResult
+			pI := VkPresentInfoKHR()
+			pI.pNext = null
+			pI.waitSemaphoreCount = 0
+			pI.pWaitSemaphores = null
+			pI.swapchainCount = 1
+			pI.pSwapchains&->{void^^}^ = vkSwapchain&->{void^}
+			pI.pImageIndices&->{void^^}^ = nowImg&->{void^}
+			pI.pResults&->{void^^}^ = res&
 
-		vk.Funcs.vkQueuePresentKHR(vk.DrawQueue,pI&)
-		vk.Funcs.vkQueueWaitIdle(vk.DrawQueue)
+			vk.Funcs.vkQueuePresentKHR(vk.DrawQueue,pI&)
+			vk.Funcs.vkQueueWaitIdle(vk.DrawQueue)
+		}
 		
 		glfwSwapBuffers(glfwWindow)
 		glfwPollEvents()
