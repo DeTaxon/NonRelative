@@ -1,40 +1,15 @@
+
+nuklearC := NuklearVulkanContext^
+
 NuklearTestInit := !() -> void
 {
-	uring_init()
+	nuklearC = new NuklearVulkanContext
 
-	fb = calloc(1024*1024*4,1)
-	texMem = calloc(512*512*4,1)
-	defContext := calloc(1024,1)->{u8^}
-	nuklearContext = calloc(1,nk_context_size())
+	nuklearC.Init(vk)
 
-	atls_data := calloc(1,nk_atlas_size())
+	nuklearContext = nuklearC.itContext //calloc(1,nk_context_size())
 
-	ax := 0
-	ay := 0
-	nk_font_atlas_init_default(atls_data)
-	nk_font_atlas_begin(atls_data)
-
-	fnt2 := nk_font_atlas_add_default(atls_data,24,null)
-
-	ttf := FSGetFile("./Pacifico.ttf")
-	ttfMap := ttf.GetMap()
-	fnt := nk_font_atlas_add_from_memory(atls_data,ttfMap.Get(),ttfMap.Size(),24,null)
-
-	imgABC := nk_font_atlas_bake(atls_data,ax&,ay&,NK_FONT_ATLAS_RGBA32)
-
-	atlasImage = vk.CreateTexture()
-	atlasImage.CreateObject(ax,ay)
-
-	tempMem := vk.itStageMemory
-	tempMem.TransferData(TArraySpan.{u8}(imgABC->{u8^},ax*ay*4))
-	printf("atlas %i %i\n",ax,ay)
-	vStageCpyToImage(atlasImage.itImg,ax,ay)
-
-	nk_font_atlas_end(atls_data,atlasImage,null)
-
-	nk_init_default(nuklearContext,fnt->{void^^}[1]&)
-
-	nk_style_load_all_cursors(nuklearContext,atls_data->{nk_font_atlas^}.cursors[0]&)
+	atlasImage = nuklearC.atlasTexture
 
 	rect := nk_rect//(10,10,100,100)
 	rect.x = 100
@@ -52,8 +27,6 @@ NuklearTestInit := !() -> void
 }
 
 rawCntx := void^
-fb := void^
-texMem := void^
 
 nuklearContext := void^
 

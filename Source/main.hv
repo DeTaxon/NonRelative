@@ -18,9 +18,8 @@ engine := TEngine^
 
 main := !(char^[] args) -> int
 {
-
-	x := 512
-	y := 512
+	x := 1200
+	y := 600
 	
 	//TODO can't create empty class
 	engine = new TEngine

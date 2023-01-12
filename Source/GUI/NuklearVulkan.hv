@@ -1,0 +1,46 @@
+NuklearVulkanContext := class //extend TGCObject
+{
+	itContext := void^
+	vInstance := VulkanInstance^
+
+	atlasData := nk_font_atlas 
+	atlasTexture := TVkTexture^
+
+	Init := !(VulkanInstance^ vi) -> void
+	{
+		vInstance = vi
+		uring_init() //TODO once
+
+		itContext = calloc(nk_context_size(),1)
+
+		ax := 0
+		ay := 0
+		nk_font_atlas_init_default(atlasData&)
+		nk_font_atlas_begin(atlasData&)
+
+		fnt2 := nk_font_atlas_add_default(atlasData&,24,null)
+
+		//ttf := FSGetFile("./Pacifico.ttf")
+		//ttfMap := ttf.GetMap()
+		//fnt := nk_font_atlas_add_from_memory(atls_data,ttfMap.Get(),ttfMap.Size(),24,null)
+
+		imgABC := nk_font_atlas_bake(atlasData&,ax&,ay&,NK_FONT_ATLAS_RGBA32)
+
+		atlasTexture = vk.CreateTexture()
+		atlasTexture.CreateObject(ax,ay)
+
+		tempMem := vk.itStageMemory
+		tempMem.TransferData(TArraySpan.{u8}(imgABC->{u8^},ax*ay*4))
+		vStageCpyToImage(atlasTexture.itImg,ax,ay) //TODO refactor
+
+		nk_font_atlas_end(atlasData&,atlasTexture,null)
+
+		nk_init_default(itContext,fnt2->{void^^}[1]&)
+
+		nk_style_load_all_cursors(itContext,atlasData.cursors[0]&)
+	}
+	
+	Destroy := virtual !() -> void
+	{
+	}
+}
