@@ -6,7 +6,6 @@ vkPhysCard := VkPhysicalDevice
 vkLogCard := VkDevice
 
 vkSurface := VkSurfaceKHR
-vkQueue := VkQueue
 vkSwapchain := VkSwapchainKHR
 vkFence := VkFence
 vkGraphPipe := VkPipeline
@@ -23,9 +22,6 @@ SwapImageColorSpace := int
 SwapImageMode := int
 
 gUserModes := List.{int}
-
-gDeviceMem := List.{int}
-gHostMem := List.{int}
 
 gVulkanWindowW := int
 gVulkanWindowH := int
@@ -216,56 +212,18 @@ VulkanInit := !() -> void
 	//	if it in pMods
 	//		reqMod = it
 	//}
-	memReq := VkPhysicalDeviceMemoryProperties
-	vk.Funcs.vkGetPhysicalDeviceMemoryProperties(vk.PhysicalDevice,memReq&)
-
-	for heapI : memReq.memoryHeapCount&->{int^}^
-	{
-		printf("memory heap %i, size %lli\n",heapI,memReq.memoryHeaps[heapI].size)
-
-		for i : memReq.memoryTypeCount&->{int^}^
-		{
-			if memReq.memoryTypes[i].heapIndex != heapI
-				continue
-
-			printf("mem info %i %X\n",i,memReq.memoryTypes[i]&->{int^}^)
-			if (memReq.memoryTypes[i]&->{int^}^ 
-				and_b VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) != 0
-				{
-					printf("VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT\n")
-					gHostMem.Push(i)
-				}
-			if (memReq.memoryTypes[i]&->{int^}^ 
-				and_b VK_MEMORY_PROPERTY_HOST_COHERENT_BIT) != 0 
-					printf("VK_MEMORY_PROPERTY_HOST_COHERENT_BIT\n")
-			if (memReq.memoryTypes[i]&->{int^}^ 
-				and_b VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT) != 0 
-				{	
-					//if (memReq.memoryTypes[i]&->{int^}^ and_b VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) != 0
-						gDeviceMem.Push(i)
-					printf("VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT\n")
-				}
-		}
-	}
-
 
 	//TODO: format priority
 	SwapImageFormat = formts[1].format
 	SwapImageColorSpace = formts[1].colorSpace
 	SwapImageMode = reqMod
 
-	vkQueue = vk.DrawQueue
-
 	crtFence := VkFenceCreateInfo()
 	vkCreateFence(vkLogCard,crtFence&,null,vkFence&)
 
-	testTextureFormat := VkFormatProperties
-	vkGetPhysicalDeviceFormatProperties(vkPhysCard,VK_FORMAT_R8G8B8_UNORM,testTextureFormat&)
-	vkRGB8Support = (testTextureFormat.linearTilingFeatures and_b VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT) != 0
-	//printf("with alpha %x %x %x\n",tst.linearTilingFeatures,tst.optimalTilingFeatures,tst.bufferFeatures)
-
-	printf("RGB8SUpport %s\n",vkRGB8Support ?: "yes" : "no")
-	printf("HalfFloat support %s\n",vkHalfFloatSupport ?: "yes" : "no")
+	//testTextureFormat := VkFormatProperties
+	//vkGetPhysicalDeviceFormatProperties(vkPhysCard,VK_FORMAT_R8G8B8_UNORM,testTextureFormat&)
+	//vkRGB8Support = (testTextureFormat.linearTilingFeatures and_b VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT) != 0
 
 	printf("finished\n")
 }
