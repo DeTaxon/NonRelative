@@ -2,16 +2,10 @@
 gSamplerNearest := VkSampler
 gSamplerLinear := VkSampler
 
-gDoubleMem := bool
 gObjectLayoutSets := VkDescriptorPool
 
 VoidCoreInit := !() -> void
 {
-
-	gDoubleMem = true
-	if vkGpuMemId == vkCpuMemId or vkGpuMemId == -1
-		gDoubleMem = false
-
 	vk.initCreateStageMemory()
 
 	poolSize := u32[2] 
