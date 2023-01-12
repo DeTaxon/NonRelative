@@ -74,7 +74,6 @@ CreateFB := !() -> void
 
 	vk.Funcs.vkUpdateDescriptorSets(vk.LogicalDevice,1,wrT&,0,null)
 }
-nowImg := u32
 
 DrawGetImage := !() -> bool
 {
@@ -135,7 +134,7 @@ StartDraw := !(VkCommandBuffer cmd) -> bool
 	vkCmdBeginRenderPass(cmd,rpC&,VK_SUBPASS_CONTENTS_INLINE)
 	return true
 }
-StopDraw := !(VkCommandBuffer cmd) -> void
+StopDraw := !(VkCommandBuffer cmd,VkFramebuffer frm ) -> void
 {
 
 	vkCmdEndRenderPass(cmd)
@@ -160,7 +159,7 @@ StopDraw := !(VkCommandBuffer cmd) -> void
 	clrValues[11] = 0.0f
 
 	beginInfo.renderPass = gRenderPassLight
-	beginInfo.framebuffer = vkFramebuffers^[nowImg]
+	beginInfo.framebuffer = frm
 	beginInfo.renderArea.extent.width = gVulkanWindowW //surfAb.currentExtent.width
 	beginInfo.renderArea.extent.height = gVulkanWindowH //surfAb.currentExtent.height
 	beginInfo.clearValueCount = 1

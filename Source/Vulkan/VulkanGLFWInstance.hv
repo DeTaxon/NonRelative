@@ -140,6 +140,10 @@ VulkanGLFWInstance := class extend VulkanInstance
 		}
 		vkSwapchain = itSwapchain
 	}
+	GetSurfaceFramebuffer := !(u32 indx) -> VkFramebuffer
+	{
+		return surfaceFramebuffers[indx]
+	}
 	DrawGetImage := !(u32^ imageIndex) -> bool
 	{
 		Funcs.vkResetFences(vkLogCard,1,vkFence&)
@@ -156,6 +160,9 @@ VulkanGLFWInstance := class extend VulkanInstance
 	}
 	DrawPresentImage := !(u32 imageIndex) -> void
 	{
+
+		presArr := imageIndex
+
 		res := VkResult
 		pI := VkPresentInfoKHR()
 		pI.pNext = null
@@ -163,7 +170,7 @@ VulkanGLFWInstance := class extend VulkanInstance
 		pI.pWaitSemaphores = null
 		pI.swapchainCount = 1
 		pI.pSwapchains&->{void^^}^ = itSwapchain&->{void^}
-		pI.pImageIndices&->{void^^}^ = nowImg&->{void^}
+		pI.pImageIndices&->{void^^}^ = presArr&->{void^}
 		pI.pResults&->{void^^}^ = res&
 
 		vk.Funcs.vkQueuePresentKHR(vk.DrawQueue,pI&)

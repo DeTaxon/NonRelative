@@ -91,7 +91,6 @@ main := !(char^[] args) -> int
 		surfaceIndex := u32
 		drawRes := true
 		@work vk.DrawGetImage(surfaceIndex&)
-		nowImg = surfaceIndex
 
 		if drawRes
 		{
@@ -107,7 +106,7 @@ main := !(char^[] args) -> int
 
 				DrawMap(cmd.Get(),gPlayerMap,centf(),4)
 
-				StopDraw(cmd.Get())
+				StopDraw(cmd.Get(),vk.GetSurfaceFramebuffer(surfaceIndex))
 			})
 
 			vk.DrawPresentImage(surfaceIndex)
