@@ -11,6 +11,12 @@ VulkanGLFWInstance := class extend VulkanInstance
 	SwapImageColorSpace := int
 	SwapImageMode := int
 
+	surfaceWidth := int
+	surfaceHeight := int
+
+	GetSurfaceWidth := !() -> int { return surfaceWidth }
+	GetSurfaceHeight := !() -> int { return surfaceHeight }
+
 	CreateSurface := !(void^ window) -> void
 	{
 		glfwCreateWindowSurface(Instance,window,null,itSurface&)
@@ -74,9 +80,9 @@ VulkanGLFWInstance := class extend VulkanInstance
 	CreateSwapchain := !(int inW,int inH) -> void
 	{
 		oldSwapchain := itSwapchain
-	
-		gVulkanWindowW = inW
-		gVulkanWindowH = inH
+
+		surfaceWidth = inW
+		surfaceHeight = inH
 	
 		crtSwap := VkSwapchainCreateInfoKHR()
 		crtSwap.surface = itSurface

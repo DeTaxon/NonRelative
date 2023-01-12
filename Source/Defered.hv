@@ -124,8 +124,8 @@ StartDraw := !(VkCommandBuffer cmd) -> bool
 	rpC := VkRenderPassBeginInfo()
 	rpC.renderPass = gRenderPassModel
 	rpC.framebuffer = gModelFramebuffer
-	rpC.renderArea.extent.width = gVulkanWindowW //surfAb.currentExtent.width
-	rpC.renderArea.extent.height = gVulkanWindowH //surfAb.currentExtent.height
+	rpC.renderArea.extent.width = vk.GetSurfaceWidth() //surfAb.currentExtent.width
+	rpC.renderArea.extent.height = vk.GetSurfaceHeight() //surfAb.currentExtent.height
 	rpC.clearValueCount = 3
 	rpC.pClearValues&->{void^^}^ = clrValues[0]&
 	
@@ -158,8 +158,8 @@ StopDraw := !(VkCommandBuffer cmd,VkFramebuffer frm ) -> void
 
 	beginInfo.renderPass = gRenderPassLight
 	beginInfo.framebuffer = frm
-	beginInfo.renderArea.extent.width = gVulkanWindowW //surfAb.currentExtent.width
-	beginInfo.renderArea.extent.height = gVulkanWindowH //surfAb.currentExtent.height
+	beginInfo.renderArea.extent.width = vk.GetSurfaceWidth() //surfAb.currentExtent.width
+	beginInfo.renderArea.extent.height = vk.GetSurfaceHeight() //surfAb.currentExtent.height
 	beginInfo.clearValueCount = 1
 	beginInfo.pClearValues&->{void^^}^ = clrValues[0]&->{void^}
 	
@@ -171,8 +171,8 @@ StopDraw := !(VkCommandBuffer cmd,VkFramebuffer frm ) -> void
 	vkCmdBindDescriptorSets(cmd,VK_PIPELINE_BIND_POINT_GRAPHICS,gLightLayout,0,1,sts[0]&,0,null)
 
 	scales := float[2]
-	scales[0] = gVulkanWindowW / gFBW
-	scales[1] = gVulkanWindowH / gFBH
+	scales[0] = vk.GetSurfaceWidth() / gFBW
+	scales[1] = vk.GetSurfaceHeight() / gFBH
 	vkCmdPushConstants(cmd,gLightLayout,VK_SHADER_STAGE_VERTEX_BIT,0,4*2,scales&)
 
 	vkCmdDraw(cmd,3,1,0,0)

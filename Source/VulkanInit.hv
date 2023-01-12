@@ -15,10 +15,6 @@ gModelLayout := TShaderInput^
 vkRGB8Support := bool
 vkHalfFloatSupport := bool
 
-gVulkanWindowW := int
-gVulkanWindowH := int
-
-
 VKNonRelative := class extend VulkanGLFWInstance
 {
 	LayerStep := virtual !(VkLayerProperties[] supportedLayers, List.{char^} usingLayers) -> void

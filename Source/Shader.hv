@@ -138,16 +138,16 @@ vShader := class
 		vp := VkViewport 
 		vp.x = 0.0f
 		vp.y = 0.0f
-		vp.width = gVulkanWindowW->{float}
-		vp.height = gVulkanWindowH->{float}
+		vp.width = vk.GetSurfaceWidth()->{float}
+		vp.height = vk.GetSurfaceHeight()->{float}
 		vp.minDepth = 0.0f
 		vp.maxDepth = 1.0f
 
 		sc := VkRect2D
 		sc.offset.x = 0
 		sc.offset.y = 0
-		sc.extent.width = gVulkanWindowW
-		sc.extent.height = gVulkanWindowH
+		sc.extent.width = vk.GetSurfaceWidth()
+		sc.extent.height = vk.GetSurfaceHeight()
 
 		vkCmdBindPipeline(itBuf,VK_PIPELINE_BIND_POINT_GRAPHICS,itPipe)
 		vkCmdSetViewport(itBuf,0,1,vp&)
