@@ -16,16 +16,10 @@ gQuit := bool
 
 engine := TEngine^
 
-gX := int
-gY := int
-
 main := !(char^[] args) -> int
 {
-	x := 1200
-	y := 600
-
-	gX = x
-	gY = y
+	x := 1800
+	y := 1000
 	
 	//TODO can't create empty class
 	engine = new TEngine
@@ -117,7 +111,9 @@ main := !(char^[] args) -> int
 
 		if not drawRes
 		{
+			//TODO cases when one of values is zero
 			vk.CreateSwapchain(gWindowW,gWindowH)
+			gCam.UpdatePerspective(gWindowW,gWindowH)
 		}
 
 		if glfwWindowShouldClose(glfwWindow) or buttons['Q']

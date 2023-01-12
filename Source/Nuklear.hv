@@ -36,8 +36,8 @@ NuklearCreateStep := !() -> void
 }
 
 
-NuklearDrawStep := !(VkCommandBuffer cmdB) -> void
+NuklearDrawStep := !(VkCommandBuffer cmdB,int x, int y) -> void
 {
-	nuklearC.Draw(cmdB,gX,gY)
+	nuklearC.Draw(cmdB,x,y)
 }
 

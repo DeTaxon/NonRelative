@@ -177,7 +177,7 @@ StopDraw := !(VkCommandBuffer cmd,VkFramebuffer frm ) -> void
 
 	vkCmdDraw(cmd,3,1,0,0)
 
-	NuklearDrawStep(cmd)
+	NuklearDrawStep(cmd,vk.GetSurfaceWidth(),vk.GetSurfaceHeight())
 
 	vkCmdEndRenderPass(cmd)
 }
