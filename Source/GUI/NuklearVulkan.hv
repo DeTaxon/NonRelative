@@ -110,7 +110,9 @@ NuklearVulkanContext := class //extend TGCObject
 			VKType(VType_UInt8,4)
 		],![
 			new TImageSet(1)
-		],![],
+		],![
+			new TVertexPushConstant(2*4)
+		],
 		1
 		)
 
@@ -122,11 +124,16 @@ NuklearVulkanContext := class //extend TGCObject
 		vSetTexture(nuklearDescp,atlasTexture,gSamplerNearest)
 	}
 
-	Draw := !(VkCommandBuffer cmdB) -> void
+	Draw := !(VkCommandBuffer cmdB,int w, int h) -> void
 	{
 		offsets := VkDeviceSize
 
 		textShader.ApplyShaderToQueue(cmdB)
+
+		scales := float[2]
+		scales[0] = 1.0 / w
+		scales[1] = 1.0 / h
+		vInstance.Funcs.vkCmdPushConstants(cmdB,drawLayout.Get(),VK_SHADER_STAGE_VERTEX_BIT,0,4*2,scales&)
 
 		sts := VkDescriptorSet[1]
 		sts[0] = nuklearDescp
