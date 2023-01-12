@@ -8,7 +8,6 @@ NuklearTestInit := !() -> void
 	nuklearC.Init(vk)
 
 	nuklearContext = nuklearC.itContext //calloc(1,nk_context_size())
-
 	atlasImage = nuklearC.atlasTexture
 
 	rect := nk_rect//(10,10,100,100)
@@ -26,8 +25,6 @@ NuklearTestInit := !() -> void
 
 }
 
-rawCntx := void^
-
 nuklearContext := void^
 
 canvasProp := vProp^
@@ -35,63 +32,7 @@ atlasImage := TVkTexture^
 
 NuklearCreateStep := !() -> void
 {
-	tempMem := vk.itStageMemory
-
-	clr := nk_color
-	//nk_rawfb_render(rawCntx,clr,0)
-	//tempMem.TransferData(TArraySpan.{u8}(fb->{u8^},512*512*4))
-	//vStageCpyToImage(canvas.ReqTexture.itImg,512,512)
-
-	canvasProp.SetTexture(atlasImage)
-
-	layT := nk_draw_vertex_layout_element[4]
-	layT[0].attribute = NK_VERTEX_POSITION
-	layT[0].format = NK_FORMAT_FLOAT
-	layT[0].offset = 0
-	layT[1].attribute = NK_VERTEX_TEXCOORD
-	layT[1].format = NK_FORMAT_FLOAT
-	layT[1].offset = 4*2
-	layT[2].attribute = NK_VERTEX_COLOR
-	layT[2].format = NK_FORMAT_R8G8B8A8
-	layT[2].offset = 4*4
-	layT[3].attribute = NK_VERTEX_ATTRIBUTE_COUNT
-	layT[3].format = NK_FORMAT_COUNT
-	layT[3].offset = 0
-
-	cfg := nk_convert_config
-	cfg.vertex_size = 4*4 + 4
-	cfg.vertex_layout = layT[0]&
-	cfg.vertex_alignment = 4
-	cfg.circle_segment_count = 22
-	cfg.curve_segment_count = 22
-	cfg.arc_segment_count = 22
-	cfg.global_alpha = 1.0f
-	cfg.shape_AA = 1
-	cfg.line_AA = 1
-
-	vBuf := u8[1024]
-	iBuf := u8[1024]
-	cmds := u8[1024]
-
-	nk_buffer_init_default(cmds[0]&)
-
-	vRealVertBuf := Vector.{u8}(16*1024)
-	vRealIndBuf := Vector.{u8}(16*1024)
-
-	nk_buffer_init_fixed(vBuf[0]&,vRealVertBuf.GetPointer(),16*1024)
-	nk_buffer_init_fixed(iBuf[0]&,vRealIndBuf.GetPointer(),2048)
-	res := nk_convert(nuklearContext,cmds[0]&,vBuf[0]&,iBuf[0]&,cfg&)
-
-	printf("hm %i\n",res)
-
-	cmd := nk__draw_begin(nuklearContext,cmds[0]&)->{nk_draw_command^}
-	while cmd != null
-	{
-		printf("step %p %i\n",cmd.texture,cmd.elem_count)
-		printf("rect %f %f %f %f\n",cmd.clip_rect.x,cmd.clip_rect.y,cmd.clip_rect.w,cmd.clip_rect.h)
-		textList.Push(cmd.elem_count)
-		cmd = nk__draw_next(cmd,cmds[0]&,nuklearContext)->{nk_draw_command^}
-	}
+	nuklearC.RenderStep()
 
 	gNuklearLayout = engine.lightRenderPass.CreateLayout(![
 		VKType(VType_Float,2),
@@ -104,11 +45,6 @@ NuklearCreateStep := !() -> void
 	)
 
 	textShader = gNuklearLayout.CreateShader(FSGetFile("text.vert"),FSGetFile("text.frag"))
-	
-	nuklearVertex = vk.CreateMemBufferObject(vRealVertBuf.Size(),VK_BUFFER_USAGE_VERTEX_BUFFER_BIT or_b VK_BUFFER_USAGE_TRANSFER_DST_BIT)
-	nuklearVertex.TransferData(vRealVertBuf&)
-	nuklearIndex = vk.CreateMemBufferObject(vRealIndBuf.Size(),VK_BUFFER_USAGE_INDEX_BUFFER_BIT or_b VK_BUFFER_USAGE_TRANSFER_DST_BIT)
-	nuklearIndex.TransferData(vRealIndBuf&)
 
 	nuklearPool = gNuklearLayout.CreateDescriptorPool(0,100)
 	nuklearDescp = nuklearPool.CreateDescriptor()
@@ -116,7 +52,6 @@ NuklearCreateStep := !() -> void
 	vSetTexture(nuklearDescp,atlasImage,gSamplerNearest)
 }
 
-textList := List.{int}
 
 nuklearVertex := TVkMemBuffer^
 nuklearIndex := TVkMemBuffer^
@@ -137,87 +72,6 @@ NuklearDrawStep := !(VkCommandBuffer cmdB) -> void
 	sts[0] = nuklearDescp
 	vk.Funcs.vkCmdBindDescriptorSets(cmdB,VK_PIPELINE_BIND_POINT_GRAPHICS,gNuklearLayout.Get(),0,1,sts[0]&,0,null)
 
-	vk.Funcs.vkCmdBindVertexBuffers(cmdB,0,1,nuklearVertex.GetBufferPointer(),offsets&)
-	vk.Funcs.vkCmdBindIndexBuffer(cmdB,nuklearIndex.GetBufferPointer()^,0,VKType(VType_UInt16,1).GetBaseIndexType())
-
-	index_offset := 0
-	for it : textList
-	{
-		vk.Funcs.vkCmdDrawIndexed(cmdB,it,1,index_offset,0,0)
-		index_offset += it
-	}
+	nuklearC.Draw(cmdB)
 }
 
-nk_image := class
-{
-	handle := void^
-	w := u16
-	h := u16
-	region := u16[4]
-}
-nk_cursor := class
-{
-	img := nk_image
-	size := nk_vec2
-	offset := nk_vec2
-}
-nk_allocator := class
-{
-	userdata := void^
-	alloc := void^
-	free := void^
-}
-nk_font_atlas := class
-{
-	pixel := void^
-	tex_width := int
-	tex_height := int
-
-	permament := nk_allocator
-	temporary := nk_allocator
-
-	custom := nk_recti
-	cursors := nk_cursor[7] // NK_CURSOR_COUNT
-
-	glyph_count := int
-	glyphs := void^
-	default_font := void^
-	fonts := void^
-	config := void^
-	font_num := int
-
-}
-
-nk_draw_vertex_layout_element := class
-{
-	attribute := int
-	format := int
-	offset := size_t
-}
-nk_draw_null_texture := class 
-{
-	texture := void^ /* texture handle to a texture with a white pixel */
-	uvX := float /* coordinates to a white pixel in the texture  */
-	uvY := float /* coordinates to a white pixel in the texture  */
-}
-
-nk_draw_command := class
-{
-	elem_count := int
-	clip_rect := nk_rect
-	texture := void^
-}
-
-nk_convert_config := class
-{
-	global_alpha := float /* global alpha value */
-	line_AA := int /* line anti-aliasing flag can be turned off if you are tight on memory */
-	shape_AA := int /* shape anti-aliasing flag can be turned off if you are tight on memory */
-	circle_segment_count := u32 /* number of segments used for circles: default to 22 */
-	arc_segment_count := u32 /* number of segments used for arcs: default to 22 */
-	curve_segment_count := u32 /* number of segments used for curves: default to 22 */
-	nullValue := nk_draw_null_texture /* handle to texture with a white pixel for shape drawing */
-	vertex_layout := nk_draw_vertex_layout_element^  /* describes the vertex output format and packing */
-	vertex_size := size_t /* sizeof one vertex for vertex packing */
-	vertex_alignment := size_t /* vertex alignment: Can be obtained by NK_ALIGNOF */
-}

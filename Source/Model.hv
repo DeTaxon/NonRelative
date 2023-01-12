@@ -7,8 +7,6 @@ vModel := class
 	physType := char^
 	physExtraData := void^
 
-	vertexInfo := vShaderVertexOptions
-
 	indexType := VKType
 
 	PhysModel := PhysCommon^
@@ -22,10 +20,6 @@ vModel := class
 		rFile := new RawModel
 		if not rFile.LoadFromFile(itFl)
 			return false
-
-		vertexInfo.positionType = rFile.PositionType
-		vertexInfo.normalType = rFile.NormalType
-		vertexInfo.textureType = rFile.UVType
 	
 		indexType = rFile.IndexType
 		indexCount = rFile.IndexCount
