@@ -5,8 +5,6 @@ vkDebugObj := VkDebugReportCallbackEXT
 vkPhysCard := VkPhysicalDevice
 vkLogCard := VkDevice
 
-vkSurface := VkSurfaceKHR
-vkSwapchain := VkSwapchainKHR
 vkFence := VkFence
 vkGraphPipe := VkPipeline
 
@@ -16,10 +14,6 @@ gModelLayout := TShaderInput^
 
 vkRGB8Support := bool
 vkHalfFloatSupport := bool
-
-SwapImageFormat := int
-SwapImageColorSpace := int
-SwapImageMode := int
 
 gUserModes := List.{int}
 
@@ -161,7 +155,6 @@ VulkanInit := !() -> void
 	vkLogCard = vk.LogicalDevice
 
 	vk.CreateSurface(glfwWindow)
-	vkSurface = vk.itSurface
 
 	crtFence := VkFenceCreateInfo()
 	vkCreateFence(vkLogCard,crtFence&,null,vkFence&)

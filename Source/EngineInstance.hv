@@ -144,7 +144,7 @@ TEngine := class extend TGCObject
 		gRenderPassModel = modelRenderPass.Get()
 
 		lightRenderPass = vInstance.CreateRenderPass(![
-			TRenderPassFrame(SwapImageFormat,	VK_IMAGE_LAYOUT_UNDEFINED,VK_IMAGE_LAYOUT_PRESENT_SRC_KHR),
+			TRenderPassFrame(vk.SwapImageFormat,	VK_IMAGE_LAYOUT_UNDEFINED,VK_IMAGE_LAYOUT_PRESENT_SRC_KHR),
 		],false)
 		gRenderPassLight = lightRenderPass.Get()
 

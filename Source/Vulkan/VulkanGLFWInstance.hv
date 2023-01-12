@@ -7,6 +7,10 @@ VulkanGLFWInstance := class extend VulkanInstance
 	surfaceImageViews := Vector.{VkImageView}^
 	surfaceFramebuffers := Vector.{VkFramebuffer}^
 
+	SwapImageFormat := int
+	SwapImageColorSpace := int
+	SwapImageMode := int
+
 	CreateSurface := !(void^ window) -> void
 	{
 		glfwCreateWindowSurface(Instance,window,null,itSurface&)
@@ -75,7 +79,7 @@ VulkanGLFWInstance := class extend VulkanInstance
 		gVulkanWindowH = inH
 	
 		crtSwap := VkSwapchainCreateInfoKHR()
-		crtSwap.surface = vkSurface
+		crtSwap.surface = itSurface
 		crtSwap.minImageCount = 3
 		crtSwap.imageFormat = SwapImageFormat
 		crtSwap.imageColorSpace = SwapImageColorSpace
@@ -136,7 +140,6 @@ VulkanGLFWInstance := class extend VulkanInstance
 	
 			Funcs.vkCreateFramebuffer(LogicalDevice,fbC&,null,surfaceFramebuffers^[i]&)
 		}
-		vkSwapchain = itSwapchain
 	}
 	GetSurfaceFramebuffer := !(u32 indx) -> VkFramebuffer
 	{
