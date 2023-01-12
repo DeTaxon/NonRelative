@@ -88,8 +88,10 @@ main := !(char^[] args) -> int
 
 		//gCam.InputCheck(delta*inputCoef)
 
+		surfaceIndex := u32
 		drawRes := true
-		@work DrawGetImage()
+		@work vk.DrawGetImage(surfaceIndex&)
+		nowImg = surfaceIndex
 
 		if drawRes
 		{
@@ -108,18 +110,7 @@ main := !(char^[] args) -> int
 				StopDraw(cmd.Get())
 			})
 
-			res := VkResult
-			pI := VkPresentInfoKHR()
-			pI.pNext = null
-			pI.waitSemaphoreCount = 0
-			pI.pWaitSemaphores = null
-			pI.swapchainCount = 1
-			pI.pSwapchains&->{void^^}^ = vkSwapchain&->{void^}
-			pI.pImageIndices&->{void^^}^ = nowImg&->{void^}
-			pI.pResults&->{void^^}^ = res&
-
-			vk.Funcs.vkQueuePresentKHR(vk.DrawQueue,pI&)
-			vk.Funcs.vkQueueWaitIdle(vk.DrawQueue)
+			vk.DrawPresentImage(surfaceIndex)
 		}
 		
 		glfwSwapBuffers(glfwWindow)
