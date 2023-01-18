@@ -8,6 +8,8 @@ LoadShaderModule := !(char^ name) -> vShaderModule^
 	result.LoadShaderModule(filMap.Get(),filMap.Size())
 }
 
+win := GLFWWindow^ 
+
 gPlayer := PhysPlayer^ 
 gCam := vCamera^
 gMap := PhysHeightMap^
@@ -20,6 +22,9 @@ main := !(char^[] args) -> int
 {
 	x := 1800
 	y := 1000
+
+	win = new GLFWWindow
+	win.Init(x,y,"Hi Again")
 	
 	//TODO can't create empty class
 	engine = new TEngine

@@ -64,17 +64,6 @@ CreateWindow := !(int newW,int newH) -> void
 {
 	gWindowW = newW
 	gWindowH = newH
-	libGlfwInit()
-	glfwInit()
-
-	glfwWindowHint(GLFW_CLIENT_API,GLFW_NO_API)
-	glfwWindow = glfwCreateWindow(gWindowW,gWindowH,"Hi again",null,null)
-
-	glfwSetKeyCallback(glfwWindow,glfwKeyPressRes)
-	glfwSetWindowSizeCallback(glfwWindow,glfwWinResized)
-
-	glfwSetCursorPosCallback(glfwWindow,glfwMouseMove)
-	glfwSetInputMode(glfwWindow,GLFW_CURSOR,GLFW_CURSOR_DISABLED)
 }
 
 DestroyWindow := !() -> void
