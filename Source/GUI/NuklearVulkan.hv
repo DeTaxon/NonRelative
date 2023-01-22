@@ -6,7 +6,7 @@ NuklearVulkanContext := class //extend TGCObject
 	atlasData := nk_font_atlas 
 	atlasTexture := TVkTexture^
 
-	textList := List.{int}
+	textList := List.{Tuple.{int,float,float,float,float}}
 	renderMesh := TVkMesh^
 
 	Init := !(VulkanInstance^ vi) -> void
@@ -89,8 +89,7 @@ NuklearVulkanContext := class //extend TGCObject
 		while cmd != null
 		{
 			printf("step %p %i\n",cmd.texture,cmd.elem_count)
-			printf("rect %f %f %f %f\n",cmd.clip_rect.x,cmd.clip_rect.y,cmd.clip_rect.w,cmd.clip_rect.h)
-			textList.Push(cmd.elem_count)
+			textList.Emplace(cmd.elem_count,cmd.clip_rect.x,cmd.clip_rect.y,cmd.clip_rect.w,cmd.clip_rect.h)
 			cmd = nk__draw_next(cmd,cmds[0]&,nuklearContext)->{nk_draw_command^}
 		}
 
@@ -144,8 +143,30 @@ NuklearVulkanContext := class //extend TGCObject
 		index_offset := 0
 		for it : textList
 		{
-			vInstance.Funcs.vkCmdDrawIndexed(cmdB,it,1,index_offset,0,0)
-			index_offset += it
+			//TODO use max min
+			nX := it.1
+			if nX < 0 
+				nX = 0
+			nY := it.2
+			if nY < 0 
+				nY = 0
+
+			nW := it.3
+			if nW + nX >= w
+				nW = w - nX
+			nH := it.4
+			if nH + nY >= h
+				nH = h - nY
+
+			sc := VkRect2D
+			sc.offset.x = nX
+			sc.offset.y = nY
+			sc.extent.width = nW
+			sc.extent.height = nH
+
+			vInstance.Funcs.vkCmdSetScissor(cmdB,0,1,sc&)
+			vInstance.Funcs.vkCmdDrawIndexed(cmdB,it.0,1,index_offset,0,0)
+			index_offset += it.0
 		}
 	}
 	

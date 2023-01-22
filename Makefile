@@ -1,4 +1,4 @@
-TimeFlags := -f "time results: real - %E , user - %U user,system - %S ,memory %M KiB"
+TimeFlags := time -f "time results: real - %E , user - %U user,system - %S ,memory %M KiB"
 
 
 Libs := -ldl -lpthread
@@ -23,7 +23,7 @@ ifeq ($(cross),win32)
 endif
 
 en:
-	./ver3 -g -C0 libs2 -C1 Source --vk ./vk.xml -o out.ll
+	$(TimeFlags) ./ver3 -g -C0 libs2 -C1 Source --vk ./vk.xml -o out.ll
 	clang -g out.ll -lm -o en
 
 WinCompiler := x86_64-w64-mingw32-gcc 
