@@ -148,7 +148,7 @@ VulkanInit := !() -> void
 	vkPhysCard = vk.PhysicalDevice
 	vkLogCard = vk.LogicalDevice
 
-	vk.CreateSurface(glfwWindow)
+	vk.CreateSurface(win.windowHandle)
 
 	crtFence := VkFenceCreateInfo()
 	vkCreateFence(vkLogCard,crtFence&,null,vkFence&)

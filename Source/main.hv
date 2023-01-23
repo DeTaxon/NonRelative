@@ -110,7 +110,7 @@ main := !(char^[] args) -> int
 			vk.DrawPresentImage(surfaceIndex)
 		}
 		
-		glfwSwapBuffers(glfwWindow)
+		glfwSwapBuffers(win.windowHandle)
 		glfwPollEvents()
 
 		if not drawRes
@@ -120,7 +120,7 @@ main := !(char^[] args) -> int
 			gCam.UpdatePerspective(win.Width,win.Height)
 		}
 
-		if glfwWindowShouldClose(glfwWindow) or buttons['Q']
+		if glfwWindowShouldClose(win.windowHandle) or buttons['Q']
 		{
 			gQuit = true
 		}
