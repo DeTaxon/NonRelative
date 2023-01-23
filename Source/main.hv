@@ -93,6 +93,11 @@ main := !(char^[] args) -> int
 
 		if drawRes
 		{
+			nuklearC.InputCheck(win)
+			nuklearC.MakeDraw()
+			nuklearC.RenderStep()
+			nuklearC.Clear()
+
 			vk.PushDrawQueueAndWait(cmd ==> {
 				StartDraw(cmd.Get())
 

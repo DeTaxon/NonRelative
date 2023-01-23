@@ -18,6 +18,21 @@ NuklearVulkanContext := class //extend TGCObject
 	{
 	}
 
+
+	InputCheck := !(GLFWWindow^ wn) -> void
+	{
+		nk_input_begin(itContext)
+		nk_input_motion(itContext,wn.MouseX,wn.MouseY)
+		nk_input_button(itContext,NK_BUTTON_LEFT,wn.MouseX,wn.MouseY,wn.M1Pressed)
+		nk_input_button(itContext,NK_BUTTON_RIGHT,wn.MouseX,wn.MouseY,wn.M2Pressed)
+		nk_input_end(itContext)
+	}
+
+	Clear := !() -> void
+	{
+		nk_clear(itContext)
+	}
+
 	Init := !(VulkanInstance^ vi) -> void
 	{
 		vInstance = vi
@@ -88,21 +103,27 @@ NuklearVulkanContext := class //extend TGCObject
 		vRealVertBuf := Vector.{u8}(16*1024)
 		vRealIndBuf := Vector.{u8}(16*1024)
 
-		nk_buffer_init_fixed(vBuf[0]&,vRealVertBuf.GetPointer(),16*1024)
+		nk_buffer_init_fixed(vBuf[0]&,vRealVertBuf.GetPointer(),16*1024) //TODO cleanup
 		nk_buffer_init_fixed(iBuf[0]&,vRealIndBuf.GetPointer(),2048)
 		res := nk_convert(nuklearContext,cmds[0]&,vBuf[0]&,iBuf[0]&,cfg&)
 
 		assert(res == 0)
 
+		textList.Destroy()
 		cmd := nk__draw_begin(nuklearContext,cmds[0]&)->{nk_draw_command^}
 		while cmd != null
 		{
-			printf("step %p %i\n",cmd.texture,cmd.elem_count)
+			//printf("step %p %i\n",cmd.texture,cmd.elem_count)
 			textList.Emplace(cmd.elem_count,cmd.clip_rect.x,cmd.clip_rect.y,cmd.clip_rect.w,cmd.clip_rect.h)
 			cmd = nk__draw_next(cmd,cmds[0]&,nuklearContext)->{nk_draw_command^}
 		}
 
-		renderMesh = vInstance.CreateMesh(vRealVertBuf&,vRealIndBuf&,VKType(VType_UInt16,1))
+		if renderMesh == null
+		{
+			renderMesh = vInstance.CreateMesh(vRealVertBuf&,vRealIndBuf&,VKType(VType_UInt16,1))
+		}else{
+			renderMesh.TransferData(vRealVertBuf&,vRealIndBuf&)
+		}
 	}
 
 	drawLayout := TShaderInput^

@@ -22,13 +22,12 @@ TestNuklear := class extend NuklearVulkanContext
 
 NuklearTestInit := !() -> void
 {
-	nuklearC = new NuklearVulkanContext
+	nuklearC = new TestNuklear
 
 	nuklearC.Init(vk)
 
 	nuklearContext = nuklearC.itContext //calloc(1,nk_context_size())
 	
-	nuklearC.MakeDraw()
 	nuklearC.CreateShader(engine.lightRenderPass)
 }
 
@@ -38,7 +37,6 @@ canvasProp := vProp^
 
 NuklearCreateStep := !() -> void
 {
-	nuklearC.RenderStep()
 
 }
 
