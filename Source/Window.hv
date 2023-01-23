@@ -1,11 +1,8 @@
 
-gWindowW := int
-gWindowH := int
 gLastTimeResized := double
 gDisableMouse := bool
 
 glfwWindow := void^
-buttons := bool[256]
 mouseX := double
 mouseY := double
 
@@ -50,20 +47,14 @@ glfwKeyPressRes := !(void^ win,int key, int scancode,int action) -> void
 }
 glfwWinResized := !(void^ window, int newW, int newH) -> void
 {
-	gWindowW = newW
-	gWindowH = newH
+	win.Width = newW
+	win.Height = newH
 	gLastTimeResized = glfwGetTime()
 }
 glfwMouseMove := !(void^ w, double itX, double itY) -> void
 {
 	mouseX = itX
 	mouseY = itY
-}
-
-CreateWindow := !(int newW,int newH) -> void
-{
-	gWindowW = newW
-	gWindowH = newH
 }
 
 DestroyWindow := !() -> void

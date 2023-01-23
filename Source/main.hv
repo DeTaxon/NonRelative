@@ -29,7 +29,6 @@ main := !(char^[] args) -> int
 	//TODO can't create empty class
 	engine = new TEngine
 
-	CreateWindow(x,y)
 	VulkanInit()
 	
 	engine.vInstance = vk
@@ -117,8 +116,8 @@ main := !(char^[] args) -> int
 		if not drawRes
 		{
 			//TODO cases when one of values is zero
-			vk.CreateSwapchain(gWindowW,gWindowH)
-			gCam.UpdatePerspective(gWindowW,gWindowH)
+			vk.CreateSwapchain(win.Width,win.Height)
+			gCam.UpdatePerspective(win.Width,win.Height)
 		}
 
 		if glfwWindowShouldClose(glfwWindow) or buttons['Q']
