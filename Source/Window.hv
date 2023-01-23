@@ -1,6 +1,22 @@
 
 gLastTimeResized := double
-gDisableMouse := bool
 
 nuklearContext := void^
 
+TestWindow := class extend GLFWWindow
+{
+	menuMode := bool 
+	KeyChanged := virtual !(int key, int scancode, bool pressed) -> void
+	{
+		if pressed and key == 290
+		{
+			menuMode = not menuMode
+			if menuMode
+			{
+				SetInputMode("NORMAL")
+			}else{
+				SetInputMode("DISABLED")
+			}
+		}
+	}
+}

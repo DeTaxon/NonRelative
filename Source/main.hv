@@ -23,8 +23,9 @@ main := !(char^[] args) -> int
 	x := 1800
 	y := 1000
 
-	win = new GLFWWindow
+	win = new TestWindow
 	win.Init(x,y,"Hi Again")
+	win.SetInputMode("DISABLED")
 	
 	//TODO can't create empty class
 	engine = new TEngine
