@@ -2,8 +2,5 @@
 gLastTimeResized := double
 gDisableMouse := bool
 
-mouseX := double
-mouseY := double
-
 nuklearContext := void^
 

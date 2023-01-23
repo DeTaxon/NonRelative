@@ -19,8 +19,8 @@ vCamera := class
 		leftRightAng = 0.0f
 		camPos.w = 1.0f
 		//vkPerspMem.CreateObject(4*4,true)
-		mouseCamX = mouseX
-		mouseCamY = mouseY
+		mouseCamX = win.MouseX
+		mouseCamY = win.MouseY
 	}
 
 	AddAngs := !(float lrA, float udA) -> void
@@ -129,8 +129,8 @@ vCamera := class
 		if buttons['r'] AddAngs(0.0f, deltaTime*0.5f)
 		if buttons['f'] AddAngs(0.0f,-deltaTime*0.5f)
 
-		msXDiff := mouseX - mouseCamX
-		msYDiff := mouseY - mouseCamY
+		msXDiff := win.MouseX - mouseCamX
+		msYDiff := win.MouseY - mouseCamY
 		mouseCamX = mouseX
 		mouseCamY = mouseY
 		mouseSense := 0.4
