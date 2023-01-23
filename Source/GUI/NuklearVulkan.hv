@@ -9,6 +9,15 @@ NuklearVulkanContext := class //extend TGCObject
 	textList := List.{Tuple.{int,float,float,float,float}}
 	renderMesh := TVkMesh^
 
+
+	MakeDraw := !() -> void
+	{
+		DrawCode(itContext)
+	}
+	DrawCode := virtual !(void^ nk) -> void
+	{
+	}
+
 	Init := !(VulkanInstance^ vi) -> void
 	{
 		vInstance = vi

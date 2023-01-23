@@ -1,6 +1,25 @@
 
 nuklearC := NuklearVulkanContext^
 
+TestNuklear := class extend NuklearVulkanContext
+{
+
+	DrawCode := virtual !(void^ nk) -> void
+	{
+		rect := nk_rect//(10,10,100,100)
+		rect.x = 100
+		rect.y = 100
+		rect.w = 250
+		rect.h = 250
+		if nk_begin(nk,"HI",rect,NK_WINDOW_MOVABLE + NK_WINDOW_BORDER + NK_WINDOW_CLOSABLE) != 0
+		{
+			nk_layout_row_dynamic(nk,30,1)
+			nk_label(nk,"test",0x11)
+		}
+		nk_end(nk)
+	}
+}
+
 NuklearTestInit := !() -> void
 {
 	nuklearC = new NuklearVulkanContext
@@ -8,20 +27,9 @@ NuklearTestInit := !() -> void
 	nuklearC.Init(vk)
 
 	nuklearContext = nuklearC.itContext //calloc(1,nk_context_size())
-
-	rect := nk_rect//(10,10,100,100)
-	rect.x = 100
-	rect.y = 100
-	rect.w = 250
-	rect.h = 250
-	if nk_begin(nuklearContext,"HI",rect,NK_WINDOW_MOVABLE + NK_WINDOW_BORDER + NK_WINDOW_CLOSABLE) != 0
-	{
-		nk_layout_row_dynamic(nuklearContext,30,1)
-		nk_label(nuklearContext,"test",0x11)
-	}
-	nk_end(nuklearContext)
-
-
+	
+	nuklearC.MakeDraw()
+	nuklearC.CreateShader(engine.lightRenderPass)
 }
 
 nuklearContext := void^
@@ -31,7 +39,6 @@ canvasProp := vProp^
 NuklearCreateStep := !() -> void
 {
 	nuklearC.RenderStep()
-	nuklearC.CreateShader(engine.lightRenderPass)
 
 }
 
