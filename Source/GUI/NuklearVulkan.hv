@@ -184,9 +184,14 @@ NuklearVulkanContext := class //extend TGCObject
 			nW := it.3
 			if nW + nX >= w
 				nW = w - nX
+
+			if nW <= 0
+				continue
 			nH := it.4
 			if nH + nY >= h
 				nH = h - nY
+			if nH <= 0
+				continue
 
 			sc := VkRect2D
 			sc.offset.x = nX
