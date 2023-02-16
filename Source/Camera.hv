@@ -113,7 +113,7 @@ vCamera := class
 	{
 		vkCmdBindDescriptorSets(cmdB,VK_PIPELINE_BIND_POINT_GRAPHICS,gModelLayout.Get(),0,1,vkPerspSet&,0,null)
 	}
-	InputCheck := !(double deltaTime) -> void
+	InputCheck := !(GLFWWindow^ win,double deltaTime, bool applyMove = true) -> void
 	{
 		walkM := 0.5f
 		addLR := 0.0f
@@ -131,10 +131,10 @@ vCamera := class
 
 		msXDiff := win.MouseX - mouseCamX
 		msYDiff := win.MouseY - mouseCamY
-		mouseCamX = mouseX
-		mouseCamY = mouseY
+		mouseCamX = win.MouseX
+		mouseCamY = win.MouseY
 		mouseSense := 0.4
-		if not gDisableMouse
+		if applyMove
 			AddAngs(deltaTime*msXDiff*mouseSense,deltaTime*msYDiff*mouseSense)
 		addLocal(vec4f(addFB,addLR,0.0f,0.0f))
 	}

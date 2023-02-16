@@ -85,7 +85,7 @@ main := !(char^[] args) -> int
 		delta := nowTime - oldTime
 		oldTime = nowTime
 
-		//gCam.InputCheck(delta*inputCoef)
+		gCam.InputCheck(win,delta*inputCoef,true)
 
 		surfaceIndex := u32
 		drawRes := true
@@ -99,7 +99,8 @@ main := !(char^[] args) -> int
 			nuklearC.Clear()
 
 			vk.PushDrawQueueAndWait(cmd ==> {
-				StartDraw(cmd.Get())
+
+				StartModelDraw(cmd.Get())
 
 				gCam.camPos.x = gPlayer.System.pos.x
 				gCam.camPos.y = gPlayer.System.pos.y
@@ -110,7 +111,13 @@ main := !(char^[] args) -> int
 
 				DrawMap(cmd.Get(),gPlayerMap,centf(),4)
 
-				StopDraw(cmd.Get(),vk.GetSurfaceFramebuffer(surfaceIndex))
+				StopModelDraw(cmd.Get())
+
+				StartTextDraw(cmd.Get(),vk.GetSurfaceFramebuffer(surfaceIndex))
+
+				NuklearDrawStep(cmd.Get(),vk.GetSurfaceWidth(),vk.GetSurfaceHeight())
+				StopTextDraw(cmd.Get())
+
 			})
 
 			vk.DrawPresentImage(surfaceIndex)

@@ -102,7 +102,7 @@ DrawGetImage := !() -> bool
 	return true
 }
 
-StartDraw := !(VkCommandBuffer cmd) -> bool
+StartModelDraw := !(VkCommandBuffer cmd) -> bool
 {
 	clrValues := float[13]
 
@@ -132,11 +132,12 @@ StartDraw := !(VkCommandBuffer cmd) -> bool
 	vkCmdBeginRenderPass(cmd,rpC&,VK_SUBPASS_CONTENTS_INLINE)
 	return true
 }
-StopDraw := !(VkCommandBuffer cmd,VkFramebuffer frm ) -> void
+StopModelDraw := !(VkCommandBuffer cmd) -> bool
 {
-
 	vkCmdEndRenderPass(cmd)
-		
+}
+StartTextDraw := !(VkCommandBuffer cmd,VkFramebuffer frm ) -> void
+{
 	imgBarCPre := VkImageMemoryBarrier[2]
 
 	beginInfo := VkRenderPassBeginInfo()
@@ -176,8 +177,8 @@ StopDraw := !(VkCommandBuffer cmd,VkFramebuffer frm ) -> void
 	vkCmdPushConstants(cmd,gLightLayout,VK_SHADER_STAGE_VERTEX_BIT,0,4*2,scales&)
 
 	vkCmdDraw(cmd,3,1,0,0)
-
-	NuklearDrawStep(cmd,vk.GetSurfaceWidth(),vk.GetSurfaceHeight())
-
+}
+StopTextDraw := !(VkCommandBuffer cmd) -> bool
+{
 	vkCmdEndRenderPass(cmd)
 }
