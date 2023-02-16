@@ -8,7 +8,7 @@ LoadShaderModule := !(char^ name) -> vShaderModule^
 	result.LoadShaderModule(filMap.Get(),filMap.Size())
 }
 
-win := GLFWWindow^ 
+win := TestWindow^ 
 
 gPlayer := PhysPlayer^ 
 gCam := vCamera^
@@ -85,7 +85,7 @@ main := !(char^[] args) -> int
 		delta := nowTime - oldTime
 		oldTime = nowTime
 
-		gCam.InputCheck(win,delta*inputCoef,true)
+		gCam.InputCheck(win,delta*inputCoef,not win.menuMode)
 
 		surfaceIndex := u32
 		drawRes := true
@@ -115,7 +115,8 @@ main := !(char^[] args) -> int
 
 				StartTextDraw(cmd.Get(),vk.GetSurfaceFramebuffer(surfaceIndex))
 
-				NuklearDrawStep(cmd.Get(),vk.GetSurfaceWidth(),vk.GetSurfaceHeight())
+				if win.menuMode 
+					NuklearDrawStep(cmd.Get(),vk.GetSurfaceWidth(),vk.GetSurfaceHeight())
 				StopTextDraw(cmd.Get())
 
 			})

@@ -115,6 +115,13 @@ vCamera := class
 	}
 	InputCheck := !(GLFWWindow^ win,double deltaTime, bool applyMove = true) -> void
 	{
+		if not applyMove
+		{
+			mouseCamX = win.MouseX
+			mouseCamY = win.MouseY
+			return void
+		}
+
 		walkM := 0.5f
 		addLR := 0.0f
 		addFB := 0.0f
@@ -134,8 +141,7 @@ vCamera := class
 		mouseCamX = win.MouseX
 		mouseCamY = win.MouseY
 		mouseSense := 0.4
-		if applyMove
-			AddAngs(deltaTime*msXDiff*mouseSense,deltaTime*msYDiff*mouseSense)
+		AddAngs(deltaTime*msXDiff*mouseSense,deltaTime*msYDiff*mouseSense)
 		addLocal(vec4f(addFB,addLR,0.0f,0.0f))
 	}
 }
