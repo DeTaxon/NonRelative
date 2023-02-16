@@ -23,7 +23,7 @@ ifeq ($(cross),win32)
 endif
 
 en:
-	$(TimeFlags) ./ver3 -g -C0 libs2 -C1 Source --vk ./vk.xml -o out.ll
+	$(TimeFlags) ./halfvoid -g -C0 libs2 -C1 Source --vk ./vk.xml -o out.ll
 	clang -g out.ll -lm -o en
 
 WinCompiler := x86_64-w64-mingw32-gcc 
