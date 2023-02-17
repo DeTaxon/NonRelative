@@ -25,6 +25,9 @@ endif
 en:
 	$(TimeFlags) ./halfvoid -g -C0 libs2 -C1 Source --vk ./vk.xml -o out.ll
 	clang -g out.ll -lm -o en
+win.exe:
+	$(TimeFlags) ./halfvoid -win32  -g -C0 libs2 -C1 Source --vk ./vk.xml -o out.ll
+	clang --target=x86_64-w64-mingw32-gnu  out.ll  -o win.exe
 
 WinCompiler := x86_64-w64-mingw32-gcc 
 
@@ -47,6 +50,6 @@ clean:
 grind:
 	valgrind --log-file=grind.txt --leak-check=full --leak-resolution=med ./engi
 soft:
-	LIBGL_ALWAYS_SOFTWARE=1 __GLX_VENDOR_LIBRARY_NAME=mesa VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/lvp_icd.i686.json:/usr/share/vulkan/icd.d/lvp_icd.x86_64.json ./engi
+	LIBGL_ALWAYS_SOFTWARE=1 __GLX_VENDOR_LIBRARY_NAME=mesa VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/lvp_icd.i686.json:/usr/share/vulkan/icd.d/lvp_icd.x86_64.json ./en
 
 .PHONY: clean engi Objs/engi.ll en

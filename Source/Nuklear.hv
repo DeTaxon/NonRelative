@@ -6,6 +6,8 @@ TestNuklear := class extend NuklearVulkanContext
 
 	DrawCode := virtual !(void^ nk) -> void
 	{
+		intVal := char[256]
+		sprintf(intVal[0]&,"fps %i",gFpsCounter)
 		rect := nk_rect//(10,10,100,100)
 		rect.x = 100
 		rect.y = 100
@@ -14,7 +16,7 @@ TestNuklear := class extend NuklearVulkanContext
 		if nk_begin(nk,"HI",rect,NK_WINDOW_MOVABLE + NK_WINDOW_BORDER + NK_WINDOW_CLOSABLE) != 0
 		{
 			nk_layout_row_dynamic(nk,30,1)
-			nk_label(nk,"test",0x11)
+			nk_label(nk,intVal[0]&,0x11)
 		}
 		nk_end(nk)
 	}

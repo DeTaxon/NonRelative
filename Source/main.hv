@@ -18,6 +18,8 @@ gQuit := bool
 
 engine := TEngine^
 
+gFpsCounter := int
+
 main := !(char^[] args) -> int
 {
 	x := 1800
@@ -77,6 +79,9 @@ main := !(char^[] args) -> int
 		}
 	})
 
+	lastFpsCheck := GetSteadyTime()
+	localFpsCounter := 0
+
 	oldTime := GetSteadyTime()
 	inputCoef := 0.5
 	while not gQuit
@@ -90,6 +95,15 @@ main := !(char^[] args) -> int
 		surfaceIndex := u32
 		drawRes := true
 		@work vk.DrawGetImage(surfaceIndex&,drawRes&)
+
+		localFpsCounter += 1
+
+		if nowTime - lastFpsCheck > 1.0
+		{
+			lastFpsCheck = nowTime
+			gFpsCounter = localFpsCounter
+			localFpsCounter = 0
+		}
 
 		if drawRes
 		{
