@@ -176,6 +176,7 @@ StartTextDraw := !(VkCommandBuffer cmd,VkFramebuffer frm ) -> void
 	scales[1] = vk.GetSurfaceHeight() / gFBH
 	vkCmdPushConstants(cmd,gLightLayout,VK_SHADER_STAGE_VERTEX_BIT,0,4*2,scales&)
 
+	gQuad.Bind(cmd)
 	vkCmdDraw(cmd,3,1,0,0)
 }
 StopTextDraw := !(VkCommandBuffer cmd) -> bool

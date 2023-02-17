@@ -27,6 +27,7 @@ AppendClass VulkanInstance
 		Funcs.vkResetFences(LogicalDevice,1,itGlobFence&)
 		tmpCmd.Submit(TransferQueue,itGlobFence)
 
+
 		hm := u64 //TODO
 		hm = not_b hm
 		Funcs.vkWaitForFences(LogicalDevice,1,itGlobFence&,0,hm)

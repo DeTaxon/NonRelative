@@ -67,6 +67,8 @@ main := !(char^[] args) -> int
 	NuklearTestInit()
 	NuklearCreateStep()
 
+	CreateQuad()
+
 
 	TSpawnTask(() ==> {
 		oldTime := GetSteadyTime()
@@ -81,6 +83,9 @@ main := !(char^[] args) -> int
 
 	lastFpsCheck := GetSteadyTime()
 	localFpsCounter := 0
+
+	step1Cmd := TVkCommandBuffer(vk,vk.itDrawCommandPool)
+	step2Cmd := TVkCommandBuffer(vk,vk.itDrawCommandPool)
 
 	oldTime := GetSteadyTime()
 	inputCoef := 0.5
@@ -107,33 +112,53 @@ main := !(char^[] args) -> int
 
 		if drawRes
 		{
-			nuklearC.InputCheck(win)
-			nuklearC.MakeDraw()
-			nuklearC.RenderStep()
-			nuklearC.Clear()
+			{
+				step1Cmd.Reset()
+				step1Cmd.Start()
 
-			vk.PushDrawQueueAndWait(cmd ==> {
-
-				StartModelDraw(cmd.Get())
+				StartModelDraw(step1Cmd.Get())
 
 				gCam.camPos.x = gPlayer.System.pos.x
 				gCam.camPos.y = gPlayer.System.pos.y
 				gCam.camPos.z = gPlayer.System.pos.z + 1.7
 
-				learnShader.ApplyShaderToQueue(cmd.Get())
-				gCam.BindDescriptor(cmd.Get())
+				learnShader.ApplyShaderToQueue(step1Cmd.Get())
+				gCam.BindDescriptor(step1Cmd.Get())
 
-				DrawMap(cmd.Get(),gPlayerMap,centf(),4)
+				DrawMap(step1Cmd.Get(),gPlayerMap,centf(),4)
+				StopModelDraw(step1Cmd.Get())
 
-				StopModelDraw(cmd.Get())
+				step1Cmd.Stop()
+				step1Cmd.Submit(vk.DrawQueue,null)
+			}
 
-				StartTextDraw(cmd.Get(),vk.GetSurfaceFramebuffer(surfaceIndex))
+			{
 
-				if win.menuMode 
-					NuklearDrawStep(cmd.Get(),vk.GetSurfaceWidth(),vk.GetSurfaceHeight())
-				StopTextDraw(cmd.Get())
+				step2Cmd.Reset()
+				step2Cmd.Start()
 
-			})
+
+				StartTextDraw(step2Cmd.Get(),vk.GetSurfaceFramebuffer(surfaceIndex))
+
+				if win.menuMode
+				{
+					nuklearC.InputCheck(win)
+					nuklearC.MakeDraw()
+					nuklearC.RenderStep()
+					nuklearC.Clear()
+
+					NuklearDrawStep(step2Cmd.Get(),vk.GetSurfaceWidth(),vk.GetSurfaceHeight())
+				}
+				StopTextDraw(step2Cmd.Get())
+
+				step2Cmd.Stop()
+				vk.Funcs.vkResetFences(vk.LogicalDevice,1,vk.itGlobFence&)
+				step2Cmd.Submit(vk.DrawQueue,vk.itGlobFence)
+
+				hm := u64 //TODO
+				hm = not_b hm
+				@work vk.Funcs.vkWaitForFences(vk.LogicalDevice,1,vk.itGlobFence&,0,hm)
+			}
 
 			vk.DrawPresentImage(surfaceIndex)
 		}
@@ -150,6 +175,7 @@ main := !(char^[] args) -> int
 
 		if glfwWindowShouldClose(win.windowHandle) or buttons['Q']
 		{
+			exit(0)
 			gQuit = true
 		}
 	}
