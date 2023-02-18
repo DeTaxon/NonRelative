@@ -23,7 +23,6 @@ TVkMemBuffer := class extend TVkMemoryObject
 	{
 		assert(itMemInfo != null)
 
-
 		useStage := not itMemInfo.IsHostVisible()
 
 		useMem := this&->{TVkMemoryObject^}

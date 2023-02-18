@@ -36,7 +36,7 @@ NuklearVulkanContext := class //extend TGCObject
 	Init := !(VulkanInstance^ vi) -> void
 	{
 		vInstance = vi
-		uring_init() //TODO once
+		Nuklear_init() //TODO once
 
 		itContext = calloc(nk_context_size(),1)
 
@@ -124,6 +124,10 @@ NuklearVulkanContext := class //extend TGCObject
 		}else{
 			renderMesh.TransferData(vRealVertBuf&,vRealIndBuf&)
 		}
+
+		nk_buffer_free(vBuf[0]&)
+		nk_buffer_free(iBuf[0]&)
+		nk_buffer_free(cmds[0]&)
 	}
 
 	drawLayout := TShaderInput^
