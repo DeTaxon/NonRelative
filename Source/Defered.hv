@@ -129,12 +129,12 @@ StartModelDraw := !(VkCommandBuffer cmd) -> bool
 	rpC.clearValueCount = 3
 	rpC.pClearValues&->{void^^}^ = clrValues[0]&
 	
-	vkCmdBeginRenderPass(cmd,rpC&,VK_SUBPASS_CONTENTS_INLINE)
+	vk.Funcs.vkCmdBeginRenderPass(cmd,rpC&,VK_SUBPASS_CONTENTS_INLINE) //TODO remove vk.Funcs
 	return true
 }
 StopModelDraw := !(VkCommandBuffer cmd) -> bool
 {
-	vkCmdEndRenderPass(cmd)
+	vk.Funcs.vkCmdEndRenderPass(cmd) //TODO remove vk.Funcs
 }
 StartTextDraw := !(VkCommandBuffer cmd,VkFramebuffer frm ) -> void
 {
@@ -164,22 +164,22 @@ StartTextDraw := !(VkCommandBuffer cmd,VkFramebuffer frm ) -> void
 	beginInfo.clearValueCount = 1
 	beginInfo.pClearValues&->{void^^}^ = clrValues[0]&->{void^}
 	
-	vkCmdBeginRenderPass(cmd,beginInfo&,VK_SUBPASS_CONTENTS_INLINE)
+	vk.Funcs.vkCmdBeginRenderPass(cmd,beginInfo&,VK_SUBPASS_CONTENTS_INLINE) //TODO remove vk.Funcs
 
 	gLightShader.ApplyShaderToQueue(cmd)
 	sts := VkDescriptorSet[2]
 	sts[0] = gGBufferTextureSet
-	vkCmdBindDescriptorSets(cmd,VK_PIPELINE_BIND_POINT_GRAPHICS,gLightLayout,0,1,sts[0]&,0,null)
+	vk.Funcs.vkCmdBindDescriptorSets(cmd,VK_PIPELINE_BIND_POINT_GRAPHICS,gLightLayout,0,1,sts[0]&,0,null) //TODO remove vk.Funcs
 
 	scales := float[2]
 	scales[0] = vk.GetSurfaceWidth() / gFBW
 	scales[1] = vk.GetSurfaceHeight() / gFBH
-	vkCmdPushConstants(cmd,gLightLayout,VK_SHADER_STAGE_VERTEX_BIT,0,4*2,scales&)
+	vk.Funcs.vkCmdPushConstants(cmd,gLightLayout,VK_SHADER_STAGE_VERTEX_BIT,0,4*2,scales&) //TODO remove vk.Funcs
 
 	gQuad.Bind(cmd)
-	vkCmdDraw(cmd,3,1,0,0)
+	vk.Funcs.vkCmdDraw(cmd,3,1,0,0) //TODO remove vk.Funcs
 }
 StopTextDraw := !(VkCommandBuffer cmd) -> bool
 {
-	vkCmdEndRenderPass(cmd)
+	vk.Funcs.vkCmdEndRenderPass(cmd) //TODO remove vk.Funcs
 }

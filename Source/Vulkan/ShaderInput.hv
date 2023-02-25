@@ -375,7 +375,7 @@ TDescriptorPool := class extend TGCObject
 		descPoolC.poolSizeCount = 1
 		descPoolC.pPoolSizes&->{void^^}^ = test[0]&->{void^}//descPoolSize
 	
-		vkCreateDescriptorPool(vkLogCard,descPoolC&,null,vPool&)
+		baseLayout.itInstance.Funcs.vkCreateDescriptorPool(vkLogCard,descPoolC&,null,vPool&)
 	}
 	CreateDescriptor := !() -> VkDescriptorSet
 	{
@@ -386,7 +386,7 @@ TDescriptorPool := class extend TGCObject
 		allDesc.pSetLayouts&->{void^^}^ = lay&
 
 		preRes := void^
-		vkAllocateDescriptorSets(vkLogCard,allDesc&,preRes&)
+		baseLayout.itInstance.Funcs.vkAllocateDescriptorSets(vkLogCard,allDesc&,preRes&)
 		return preRes
 	}
 	//TODO need Destroy

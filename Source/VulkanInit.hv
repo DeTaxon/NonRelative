@@ -141,17 +141,13 @@ VulkanInit := !() -> void
 	vk = new VKNonRelative
 	vk.Init()
 
-	vkInstance = vk.Instance		
-
-	vkHVInit()
-
 	vkPhysCard = vk.PhysicalDevice
 	vkLogCard = vk.LogicalDevice
 
 	vk.CreateSurface(win.windowHandle)
 
 	crtFence := VkFenceCreateInfo()
-	vkCreateFence(vkLogCard,crtFence&,null,vkFence&)
+	vk.Funcs.vkCreateFence(vkLogCard,crtFence&,null,vkFence&)
 
 	//testTextureFormat := VkFormatProperties
 	//vkGetPhysicalDeviceFormatProperties(vkPhysCard,VK_FORMAT_R8G8B8_UNORM,testTextureFormat&)

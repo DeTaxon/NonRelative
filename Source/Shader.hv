@@ -120,7 +120,7 @@ vShaderModule := class extend TGCObject
 		vSC := VkShaderModuleCreateInfo()
 		vSC.codeSize = modSize
 		vSC.pCode&->{void^^}^ = modPoint
-		vkCreateShaderModule(vkLogCard,vSC&,null,itModule&)
+		vk.Funcs.vkCreateShaderModule(vkLogCard,vSC&,null,itModule&) //TODO remove vk.Funcs
 	}
 	Get := !() -> VkShaderModule
 	{
@@ -149,9 +149,9 @@ vShader := class
 		sc.extent.width = vk.GetSurfaceWidth()
 		sc.extent.height = vk.GetSurfaceHeight()
 
-		vkCmdBindPipeline(itBuf,VK_PIPELINE_BIND_POINT_GRAPHICS,itPipe)
-		vkCmdSetViewport(itBuf,0,1,vp&)
-		vkCmdSetScissor(itBuf,0,1,sc&)
+		vk.Funcs.vkCmdBindPipeline(itBuf,VK_PIPELINE_BIND_POINT_GRAPHICS,itPipe)
+		vk.Funcs.vkCmdSetViewport(itBuf,0,1,vp&)
+		vk.Funcs.vkCmdSetScissor(itBuf,0,1,sc&)
 	}
 	LoadShader := !(vShaderModule^ vertModule,vShaderModule^ fragModule,vShaderVertexOptions^ opts) -> void
 	{

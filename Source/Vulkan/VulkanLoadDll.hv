@@ -1,5 +1,10 @@
 
 vkLib := Library^
+vkGetInstanceProcAddr := PFN_vkGetInstanceProcAddr
+vkEnumerateInstanceExtensionProperties := PFN_vkEnumerateInstanceExtensionProperties
+vkEnumerateInstanceLayerProperties := PFN_vkEnumerateInstanceLayerProperties
+vkCreateInstance := PFN_vkCreateInstance
+
 innerLoadVKFuncs := !() -> void
 {
 	if vkLib != null

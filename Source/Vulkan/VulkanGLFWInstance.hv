@@ -111,9 +111,9 @@ VulkanGLFWInstance := class extend VulkanInstance
 		}
 	
 		imgCount := u32
-		vkGetSwapchainImagesKHR(vkLogCard,itSwapchain,imgCount&,null)
+		Funcs.vkGetSwapchainImagesKHR(vkLogCard,itSwapchain,imgCount&,null)
 		surfaceImages = new Vector.{VkImage}(imgCount)
-		vkGetSwapchainImagesKHR(vkLogCard,itSwapchain,imgCount&,surfaceImages.GetPointer())
+		Funcs.vkGetSwapchainImagesKHR(vkLogCard,itSwapchain,imgCount&,surfaceImages.GetPointer())
 	
 		surfaceImageViews = new Vector.{VkImageView}(surfaceImages.Size())
 		surfaceFramebuffers = new Vector.{VkFramebuffer}(surfaceImages.Size())

@@ -17,7 +17,7 @@ VoidCoreInit := !() -> void
 	nPool.poolSizeCount = 1
 	nPool.pPoolSizes&->{void^^}^ = poolSize&->{void^}
 
-	vkCreateDescriptorPool(vkLogCard,nPool&,null,gObjectLayoutSets&)
+	vk.Funcs.vkCreateDescriptorPool(vkLogCard,nPool&,null,gObjectLayoutSets&)
 
 	imV := VkSamplerCreateInfo()
 	imV.magFilter = VK_FILTER_NEAREST
@@ -36,10 +36,10 @@ VoidCoreInit := !() -> void
 	imV.borderColor = VK_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK
 	//imV.unnormalizedCoordinates = VK_FALSE
 
-	vkCreateSampler(vkLogCard,imV&,null,gSamplerNearest&)
+	vk.Funcs.vkCreateSampler(vkLogCard,imV&,null,gSamplerNearest&)
 	imV.magFilter = VK_FILTER_LINEAR
 	imV.minFilter = VK_FILTER_LINEAR
-	vkCreateSampler(vkLogCard,imV&,null,gSamplerLinear&)
+	vk.Funcs.vkCreateSampler(vkLogCard,imV&,null,gSamplerLinear&)
 }
 
 vStageCpyToImage := !(VkImage tCpy,int w, int h) -> void
