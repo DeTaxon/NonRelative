@@ -1,0 +1,5 @@
+{
+	"type" : "light",
+	"vertex" : "Defer.vert",
+	"fragment" : "Defer.frag"
+}

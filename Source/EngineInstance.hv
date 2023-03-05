@@ -184,4 +184,79 @@ TEngine := class extend TGCObject
 
 		gLightLayout = lightLayout.Get()
 	}
+
+	
+	shaderCache := CacheFile^
+	shaderData := CacheFileModule^
+	LoadShader := !(StringView shaderInfo) -> vShader^
+	{
+		fil := FSGetFile(shaderInfo)
+		flMap := fil.GetMap()
+		js := new Json
+		js.ParseString(flMap.Get()->{char^},flMap.Size())
+
+		shaderType := TShaderInput^
+
+		vertName := StringSpan
+		fragName := StringSpan
+		for nd, nodeName : js^
+		{
+			switch nodeName
+			{
+				case "type"
+					switch nd.Value()
+					{
+						case "light"
+							shaderType = lightLayout
+						case "model"
+							shaderType = modelLayout
+						case void
+							assert(false) //TODO emit exception
+					}
+				case "vertex"
+					vertName = nd.Value()
+				case "fragment"
+					fragName = nd.Value()
+				case void
+					assert(false) //TODO emit exception
+			}
+		}
+
+		if shaderCache == null //TODO move it somewhere
+		{
+			shaderCache = new CacheFile("Shaders.zip")
+			shaderData = shaderCache.GetFileModule("Shaders")
+		}
+
+
+		getShader := (vRepoFile^ moduleFile,StringView moduleType) ==> Blob^
+		{
+			return shaderData.GetCacheValue(moduleFile,() ==> Blob^ {
+				ec := TEchoStream
+				ec << "glslangValidator -S " << moduleType << " -e main --target-env vulkan1.0 " //TODO i have some trouble selecting version, besides vulkan1.0
+				ec << moduleFile.GetPath()
+				ec << " -o /tmp/MechaCacheFile"
+				st := ec.GetString()
+				res := system(st.Str())
+				if res != 0
+				{
+					printf("failed to compile shader\n")
+					exit(0)
+				}
+				chc := MappedFile("/tmp/MechaCacheFile")
+				result = new BlobOnVector(chc.Size())
+				if chc.Size() != 0
+				{
+					memcpy(result.GetPointer(),chc.Get(),chc.Size())
+				}
+			})
+		}
+
+		vertBlob := getShader(fil.GetFile(vertName),"vert")
+		fragBlob := getShader(fil.GetFile(fragName),"frag")
+
+		
+		shaderCache.Flush()
+		return shaderType.CreateShader(vertBlob,fragBlob)
+	}
 }

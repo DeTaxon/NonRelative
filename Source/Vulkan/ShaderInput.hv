@@ -74,10 +74,22 @@ TShaderInput := class
 		return new TDescriptorPool(this&,setIndex,poolSize)
 	}
 
-	CreateShader := !(vRepoFile^ vertFile, vRepoFile^ fragFile) -> vShader^
+	CreateShader := !(vRepoFile^ vertBlob, vRepoFile^ fragBlob) -> vShader^
 	{
-		vrtObj := LoadShaderModule2(vertFile)
-		fragObj := LoadShaderModule2(fragFile)
+		mp1 := vertBlob.GetMap()
+		b1 := new BlobOnVector(mp1.Size())
+		if mp1.Size() != 0
+			memcpy(b1.GetPointer(),mp1.Get(),mp1.Size())
+		mp2 := fragBlob.GetMap()
+		b2 := new BlobOnVector(mp2.Size())
+		if mp2.Size() != 0
+			memcpy(b2.GetPointer(),mp2.Get(),mp2.Size())
+		return CreateShader(b1,b2)
+	}
+	CreateShader := !(Blob^ vertBlob, Blob^ fragBlob) -> vShader^
+	{
+		vrtObj := LoadShaderModule3(vertBlob)
+		fragObj := LoadShaderModule3(fragBlob)
 
 		vert := vrtObj.Get()
 		frag := fragObj.Get()
@@ -253,6 +265,11 @@ LoadShaderModule2 := !(vRepoFile^ fil) -> vShaderModule^
 
 	result = new vShaderModule
 	result.LoadShaderModule(filMap.Get(),filMap.Size())
+}
+LoadShaderModule3 := !(Blob^ fil) -> vShaderModule^
+{
+	result = new vShaderModule
+	result.LoadShaderModule(fil.GetPointer(),fil.Size())
 }
 
 TShaderSet := class extend TGCObject

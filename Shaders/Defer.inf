@@ -1,4 +1,0 @@
-shader:
-	vertex: Defer.vert
-	fragment: Defer.frag
-	deffered: true
