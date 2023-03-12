@@ -255,7 +255,6 @@ TEngine := class extend TGCObject
 		vertBlob := getShader(fil.GetFile(vertName),"vert")
 		fragBlob := getShader(fil.GetFile(fragName),"frag")
 
-		
 		shaderCache.Flush()
 		return shaderType.CreateShader(vertBlob,fragBlob)
 	}

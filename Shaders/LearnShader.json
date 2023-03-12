@@ -1,5 +1,5 @@
 {
 	"type" : "model",
 	"vertex" : "LearnVert.vert",
-	"fragment" : LearnFrag.frag
+	"fragment" : "LearnFrag.frag"
 }

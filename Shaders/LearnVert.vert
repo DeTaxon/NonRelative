@@ -1,12 +1,16 @@
 #version 420
 #extension GL_AMD_gpu_shader_half_float : enable
 
-#VERT_INPUT_DATA_VARS
 
 layout(push_constant) uniform PushConsts{
 	vec4 quantAng;
 	vec4 g_pos;
 }consts;
+
+
+layout(location = 0) in vec3 i_Position;
+layout(location = 1) in vec3 i_Normal;
+layout(location = 2) in vec2 i_uv;
 
 layout(location = 0) out vec2 o_uv;
 layout(location = 1) out vec3 o_norm;
@@ -40,9 +44,9 @@ vec3 rotate_vertex_position(vec3 position)
   return quat_mult(q_tmp, qr_conj).xyz;
 }
 void main() {
-	#VERT_INPUT_DATA_INIT
 	vec4 prePosition = vec4((rotate_vertex_position(i_Position.xyz*consts.g_pos.w)) + consts.g_pos.xyz,1.0f);
-	prePosition = prePosition.yzxw * vec4(1.0f,-1.0f,1.0f,1.0f);
+	// prePosition = prePosition.yzxw * vec4(1.0f,-1.0f,1.0f,1.0f);
+	prePosition = prePosition.yzxw * vec4(-1.0f,-1.0f,-1.0f,1.0f);
 	gl_Position.x = prePosition.x*prespData.x;
 	gl_Position.y = prePosition.y*prespData.y;
 	gl_Position.z = -(prePosition.z*prespData.z + prespData.w);
