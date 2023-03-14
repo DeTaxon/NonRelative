@@ -38,7 +38,7 @@ main := !(char^[] args) -> int
 	engine.Init()
 
 	VoidCoreInit()
-	vk.CreateSwapchain(x,y)
+	vk.CreateSwapchain(engine.lightRenderPass,x,y)
 	CreateFB()
 
 	gPlayer = new PhysPlayer()
@@ -169,7 +169,7 @@ main := !(char^[] args) -> int
 		if not drawRes
 		{
 			//TODO cases when one of values is zero
-			vk.CreateSwapchain(win.Width,win.Height)
+			vk.CreateSwapchain(engine.lightRenderPass,win.Width,win.Height)
 			gCam.UpdatePerspective(win.Width,win.Height)
 		}
 
