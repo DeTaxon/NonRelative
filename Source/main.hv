@@ -46,8 +46,6 @@ main := !(char^[] args) -> int
 
 	gLightShader = engine.LoadShader("Shaders/Defer.json") //TODO only name Defer needed
 	learnShader := engine.LoadShader("Shaders/LearnShader.json")
-	//gLightShader = engine.lightLayout.CreateShader(FSGetFile("Shaders/ShaderCache/Defer.vert"),FSGetFile("Shaders/ShaderCache/Defer.frag"))
-	//learnShader := engine.modelLayout.CreateShader(FSGetFile("Vert2.vert"),FSGetFile("Shaders/ShaderCache/LearnFrag.frag"))
 
 	canvas := engine.LoadModel("Models/Canvas/Canvas.json")
 

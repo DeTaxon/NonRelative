@@ -149,7 +149,7 @@ NuklearVulkanContext := class //extend TGCObject
 		1
 		)
 
-		textShader = drawLayout.CreateShader(FSGetFile("text.vert"),FSGetFile("text.frag")) //TODO!!! embedd
+		textShader = drawLayout.CreateShader(#FileLocal("TextVertCompiled.vert"),#FileLocal("TextFragCompiled.frag"))
 
 		nuklearPool = drawLayout.CreateDescriptorPool(0,100) //TODO unconst
 		nuklearDescp = nuklearPool.CreateDescriptor()
