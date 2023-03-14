@@ -8,7 +8,7 @@ LoadShaderModule := !(char^ name) -> vShaderModule^
 	result.LoadShaderModule(filMap.Get(),filMap.Size())
 }
 
-win := TestWindow^ 
+win := TestWindow^
 
 gPlayer := PhysPlayer^ 
 gCam := vCamera^
@@ -162,9 +162,9 @@ main := !(char^[] args) -> int
 
 			vk.DrawPresentImage(surfaceIndex)
 		}
-		
-		glfwSwapBuffers(win.windowHandle)
-		glfwPollEvents()
+
+		win.SwapBuffers()
+		win.PollEvents()
 
 		if not drawRes
 		{
@@ -173,7 +173,7 @@ main := !(char^[] args) -> int
 			gCam.UpdatePerspective(win.Width,win.Height)
 		}
 
-		if glfwWindowShouldClose(win.windowHandle) or buttons['Q']
+		if win.ShouldClose() or buttons['Q']
 		{
 			exit(0)
 			gQuit = true

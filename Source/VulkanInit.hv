@@ -117,7 +117,7 @@ VKNonRelative := class extend VulkanGLFWInstance
 				printf(" }\n")
 			}
 		}
-		return 0
+		return 1
 	}
 	DeviceExtensionStep := virtual !(VkExtensionProperties[] deviceExtensions, List.{char^} expectDeviceExtensions) -> void 
 	{ 
