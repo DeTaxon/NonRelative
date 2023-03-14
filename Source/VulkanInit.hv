@@ -15,55 +15,8 @@ gModelLayout := TShaderInput^
 vkRGB8Support := bool
 vkHalfFloatSupport := bool
 
-VKNonRelative := class extend VulkanGLFWInstance
+VKNonRelative := class extend VulkanDefaultInstance
 {
-	LayerStep := virtual !(VkLayerProperties[] supportedLayers, List.{char^} usingLayers) -> void
-	{
-		for i : supportedLayers.Size()
-		{
-			//printf("%i : %s\n",i,supportedLayers[i].layerName&)
-		}
-		addLayer := (char^ nm) ==> 
-		{
-			for it : supportedLayers
-			{
-				if it.layerName[0]& == nm
-				{
-					usingLayers.Push(nm)
-				}
-			}
-		}
-		addLayer("VK_LAYER_LUNARG_standard_validation")
-		addLayer("VK_LAYER_LUNARG_standard_validation")
-		addLayer("VK_LAYER_KHRONOS_validation")
-		addLayer("VK_LAYER_LUNARG_vktrace")
-	}
-	ExtensionStep := virtual !(VkExtensionProperties[] supportedExtensions, List.{char^} usingExtensions) -> void
-	{
-		for it : supportedExtensions
-		{
-			//printf("extension %s\n",it.extensionName[0]&)
-		}
-		addExt := (char^ nm) ==>
-		{
-			for it : supportedExtensions
-			{
-				if it.extensionName[0]& == nm
-				{
-					usingExtensions.Push(nm)
-				}
-			}
-		}
-
-		addExt("VK_EXT_debug_report")
-		addExt("VK_KHR_wayland_surface")
-		addExt("VK_KHR_xcb_surface")
-		addExt("VK_KHR_xlib_surface")
-		addExt("VK_KHR_win32_surface")
-		addExt("VK_KHR_surface")
-		addExt("VK_KHR_get_physical_device_properties2" )
-		addExt("VK_KHR_storage_buffer_storage_class")
-	}
 	AppInfoStep := virtual !(VkApplicationInfo appInfo) -> void
 	{
 		appInfo.pApplicationName = "no one care"
@@ -82,55 +35,6 @@ VKNonRelative := class extend VulkanGLFWInstance
 			debPrint.flags = 2 + 4 + 8// + 16
 			Funcs.vkCreateDebugReportCallbackEXT(Instance,debPrint&,null,vkDebugObj&)
 		}
-	}
-	DeviceSelectStep := virtual !(VkPhysicalDevice[] deviceList) -> int
-	{
-		for it,i : deviceList
-		{
-			printf("device id %i\n",i)
-
-			devProp := VkPhysicalDeviceProperties
-			Funcs.vkGetPhysicalDeviceProperties(it,devProp&)
-				
-			printf("-name %s\n",devProp.deviceName&)
-			printf("-type %i\n",devProp.deviceType)
-
-			propsCount := u32
-			Funcs.vkGetPhysicalDeviceQueueFamilyProperties(it,propsCount&,null)
-			prps := Vector.{VkQueueFamilyProperties}(propsCount)
-			Funcs.vkGetPhysicalDeviceQueueFamilyProperties(it,propsCount&,prps.GetPointer())
-
-			for it,j : prps
-			{
-				printf("-quque family %i\n",j)
-				printf("-- queueCount %i\n",it.queueCount)
-
-				printf("-- queueFlags {")
-				if (it.queueFlags and_b 1) != 0
-					printf(" GRAPHICS")
-				if (it.queueFlags and_b 2) != 0
-					printf(" COMPUTE")
-				if (it.queueFlags and_b 4) != 0
-					printf(" TRANSFER")
-				if (it.queueFlags and_b 8) != 0
-					printf(" SPARSE_BINDING")
-				printf(" }\n")
-			}
-		}
-		return 1
-	}
-	DeviceExtensionStep := virtual !(VkExtensionProperties[] deviceExtensions, List.{char^} expectDeviceExtensions) -> void 
-	{ 
-		expectDeviceExtensions.Push("VK_KHR_swapchain") //TODO check for swapchains
-
-		//halfFloatExt := "VK_KHR_16bit_storage" //TODO maybe add it
-		//if devSupports.Contain(halfFloatExt)
-		//{
-		//	physExts.Insert(halfFloatExt)
-		//	//physExts << "VK_KHR_get_physical_device_properties2" 
-		//	physExts.Insert("VK_KHR_storage_buffer_storage_class")
-		//	vkHalfFloatSupport = true
-		//}
 	}
 }
 

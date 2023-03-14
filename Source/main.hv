@@ -122,7 +122,7 @@ main := !(char^[] args) -> int
 				gCam.camPos.y = gPlayer.System.pos.y
 				gCam.camPos.z = gPlayer.System.pos.z + 1.7
 
-				learnShader.ApplyShaderToQueue(step1Cmd.Get())
+				learnShader.ApplyShaderToQueue(vk,step1Cmd.Get(),vk.GetSurfaceWidth(),vk.GetSurfaceHeight())
 				gCam.BindDescriptor(step1Cmd.Get())
 
 				DrawMap(step1Cmd.Get(),gPlayerMap,centf(),4)

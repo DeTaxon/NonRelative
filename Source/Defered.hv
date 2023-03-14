@@ -166,7 +166,7 @@ StartTextDraw := !(VkCommandBuffer cmd,VkFramebuffer frm ) -> void
 	
 	vk.Funcs.vkCmdBeginRenderPass(cmd,beginInfo&,VK_SUBPASS_CONTENTS_INLINE) //TODO remove vk.Funcs
 
-	gLightShader.ApplyShaderToQueue(cmd)
+	gLightShader.ApplyShaderToQueue(vk,cmd,vk.GetSurfaceWidth(),vk.GetSurfaceHeight())
 	sts := VkDescriptorSet[2]
 	sts[0] = gGBufferTextureSet
 	vk.Funcs.vkCmdBindDescriptorSets(cmd,VK_PIPELINE_BIND_POINT_GRAPHICS,gLightLayout,0,1,sts[0]&,0,null) //TODO remove vk.Funcs
