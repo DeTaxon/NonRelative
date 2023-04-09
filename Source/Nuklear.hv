@@ -26,11 +26,11 @@ NuklearTestInit := !() -> void
 {
 	nuklearC = new TestNuklear
 
-	nuklearC.Init(vk)
+	//nuklearC.Init(vk)
 
-	nuklearContext = nuklearC.itContext //calloc(1,nk_context_size())
+	//nuklearContext = nuklearC.itContext //calloc(1,nk_context_size())
 	
-	nuklearC.CreateShader(engine.lightRenderPass)
+	//nuklearC.CreateShader(engine.lightRenderPass)
 }
 
 nuklearContext := void^

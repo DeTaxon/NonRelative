@@ -228,32 +228,8 @@ TEngine := class extend TGCObject
 			shaderData = shaderCache.GetFileModule("Shaders")
 		}
 
-
-		getShader := (vRepoFile^ moduleFile,StringView moduleType) ==> Blob^
-		{
-			return shaderData.GetCacheValue(moduleFile,() ==> Blob^ {
-				ec := TEchoStream
-				ec << "glslangValidator -S " << moduleType << " -e main --target-env vulkan1.0 " //TODO i have some trouble selecting version, besides vulkan1.0
-				ec << moduleFile.GetPath()
-				ec << " -o /tmp/MechaCacheFile"
-				st := ec.GetString()
-				res := system(st.Str())
-				if res != 0
-				{
-					printf("failed to compile shader\n")
-					exit(0)
-				}
-				chc := MappedFile("/tmp/MechaCacheFile")
-				result = new BlobOnVector(chc.Size())
-				if chc.Size() != 0
-				{
-					memcpy(result.GetPointer(),chc.Get(),chc.Size())
-				}
-			})
-		}
-
-		vertBlob := getShader(fil.GetFile(vertName),"vert")
-		fragBlob := getShader(fil.GetFile(fragName),"frag")
+		vertBlob := CompileVulkanShader(fil.GetFile(vertName))
+		fragBlob := CompileVulkanShader(fil.GetFile(fragName))
 
 		shaderCache.Flush()
 		return shaderType.CreateShader(vertBlob,fragBlob)
