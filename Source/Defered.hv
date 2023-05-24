@@ -14,7 +14,7 @@ gGBufferLayoutSets := VkDescriptorPool
 gGBufferTextureSet := VkDescriptorSet
 
 gFBW := 2048
-gFBH := 1024
+gFBH := 2048
 CreateFB := !() -> void
 {
 	// if depthTexture != null

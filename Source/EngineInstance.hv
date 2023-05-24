@@ -186,8 +186,6 @@ TEngine := class extend TGCObject
 	}
 
 	
-	shaderCache := CacheFile^
-	shaderData := CacheFileModule^
 	LoadShader := !(StringView shaderInfo) -> vShader^
 	{
 		fil := FSGetFile(shaderInfo)
@@ -222,16 +220,9 @@ TEngine := class extend TGCObject
 			}
 		}
 
-		if shaderCache == null //TODO move it somewhere
-		{
-			shaderCache = new CacheFile("Shaders.zip")
-			shaderData = shaderCache.GetFileModule("Shaders")
-		}
-
 		vertBlob := CompileVulkanShader(fil.GetFile(vertName))
 		fragBlob := CompileVulkanShader(fil.GetFile(fragName))
 
-		shaderCache.Flush()
 		return shaderType.CreateShader(vertBlob,fragBlob)
 	}
 }

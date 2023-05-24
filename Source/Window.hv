@@ -6,14 +6,26 @@ TestWindow := class extend GLFWWindow
 	menuMode := bool 
 	KeyChanged := virtual !(int key, int scancode, bool pressed) -> void
 	{
-		if pressed and key == 290
+		if pressed
 		{
-			menuMode = not menuMode
-			if menuMode
+			if key == 290
 			{
-				SetInputMode("NORMAL")
-			}else{
-				SetInputMode("DISABLED")
+				menuMode = not menuMode
+				if menuMode
+				{
+					SetInputMode("NORMAL")
+				}else{
+					SetInputMode("DISABLED")
+				}
+			}
+			if key == 291
+			{
+				if IsFullscreened
+				{
+					SetWindowed()
+				}else{
+					SetFullscreen()
+				}
 			}
 		}
 	}

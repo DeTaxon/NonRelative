@@ -43,6 +43,7 @@ vk := VKNonRelative^
 VulkanInit := !() -> void
 {
 	vk = new VKNonRelative
+	vk.PreferIntegratedGPU()
 	vk.Init()
 
 	vkPhysCard = vk.PhysicalDevice

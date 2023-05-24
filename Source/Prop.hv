@@ -18,7 +18,7 @@ vProp := class extend TGCObject
 	SetTexture := !(TVkTexture^ tex) -> void
 	{
 		thisTexture = tex
-		vSetTexture(modelTextureSet,tex,gSamplerNearest)
+		vSetTexture(vk,modelTextureSet,tex,gSamplerNearest)
 	}
 
 	Draw := !(VkCommandBuffer cmd,vCamera cmr,centf offset) -> void
