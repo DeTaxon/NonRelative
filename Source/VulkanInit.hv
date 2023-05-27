@@ -23,7 +23,8 @@ VKNonRelative := class extend VulkanDefaultInstance
 		appInfo.applicationVersion = 1
 		appInfo.pEngineName = "void engine"
 		appInfo.engineVersion = 1
-		appInfo.apiVersion = 4194325//(1 << 22) + (0 << 11) + 21
+		//appInfo.apiVersion = 4194325//(1 << 22) + (0 << 11) + 21
+		appInfo.apiVersion = 4200448//(1 << 22) + (3 << 11) + 0
 	}
 	DebugStep := virtual !() -> void
 	{
@@ -36,6 +37,19 @@ VKNonRelative := class extend VulkanDefaultInstance
 			Funcs.vkCreateDebugReportCallbackEXT(Instance,debPrint&,null,vkDebugObj&)
 		}
 	}
+	DeviceExtensionStep := virtual !(VkExtensionProperties[] deviceExtensions, List.{char^} expectDeviceExtensions) -> void 
+	{
+		super(deviceExtensions,expectDeviceExtensions)
+
+		expectDeviceExtensions.Push("VK_KHR_acceleration_structure")
+		expectDeviceExtensions.Push("VK_KHR_buffer_device_address")
+		expectDeviceExtensions.Push("VK_KHR_deferred_host_operations")
+		expectDeviceExtensions.Push("VK_EXT_descriptor_indexing")
+		expectDeviceExtensions.Push("VK_KHR_ray_tracing_pipeline")
+		expectDeviceExtensions.Push("VK_KHR_spirv_1_4")
+		expectDeviceExtensions.Push("VK_KHR_shader_float_controls")
+		expectDeviceExtensions.Push("VK_KHR_ray_query")
+	}
 }
 
 vk := VKNonRelative^
@@ -43,7 +57,7 @@ vk := VKNonRelative^
 VulkanInit := !() -> void
 {
 	vk = new VKNonRelative
-	vk.PreferIntegratedGPU()
+	//vk.PreferIntegratedGPU()
 	vk.Init()
 
 	vkPhysCard = vk.PhysicalDevice
@@ -63,8 +77,8 @@ VulkanInit := !() -> void
 
 VkDebugCallback := !(int flags,int bojType,u64 object,u64 location,int msgCode,char^ prefix,char^ msg,void^ usrData) -> int
 {
-	//assert(false)
 	printf("VkError <%s>\n",msg)
+	assert(false)
 	exit(0)
 	return 0
 }

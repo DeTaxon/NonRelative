@@ -23,17 +23,18 @@ vProp := class extend TGCObject
 
 	Draw := !(VkCommandBuffer cmd,vCamera cmr,centf offset) -> void
 	{
-		calculatedPos := centf
+		calculatedPos := centf[2]
 
 		offstPos := offset<*>propPosition
+		calculatedPos[1] = offstPos
 
-		cmr.ApplyCamera(offstPos,calculatedPos)
+		cmr.ApplyCamera(offstPos,calculatedPos[0])
 
 		sts := VkDescriptorSet[2]
 		sts[0] = modelTextureSet //vkPerspSet
 		//sts[1] = modelTextureSet
 		vk.Funcs.vkCmdBindDescriptorSets(cmd,VK_PIPELINE_BIND_POINT_GRAPHICS,gModelLayout.Get(),1,1,sts[0]&,0,null)
-		vk.Funcs.vkCmdPushConstants(cmd,gModelLayout.Get(),VK_SHADER_STAGE_VERTEX_BIT,0,4*8,calculatedPos&) //4*8 = centf->TypeSize
+		vk.Funcs.vkCmdPushConstants(cmd,gModelLayout.Get(),VK_SHADER_STAGE_VERTEX_BIT,0,4*4*4,calculatedPos&) //4*8 = centf->TypeSize
 
 		itModel.AddToCmdBuffer(cmd)
 	}

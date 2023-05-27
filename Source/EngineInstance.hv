@@ -139,6 +139,7 @@ TEngine := class extend TGCObject
 		modelRenderPass = vInstance.CreateRenderPass(![
 			TRenderPassFrame(VK_FORMAT_R8G8B8A8_UNORM,	VK_IMAGE_LAYOUT_UNDEFINED,VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL),
 			TRenderPassFrame(VK_FORMAT_R32G32B32A32_SFLOAT,	VK_IMAGE_LAYOUT_UNDEFINED,VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL),
+			TRenderPassFrame(VK_FORMAT_R32G32B32A32_SFLOAT,	VK_IMAGE_LAYOUT_UNDEFINED,VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
 		],true)
 
 		gRenderPassModel = modelRenderPass.Get()
@@ -156,9 +157,9 @@ TEngine := class extend TGCObject
 			new TUniformSet(),
 			new TImageSet(1)
 		],![
-			new TVertexPushConstant(2*4*4)
+			new TVertexPushConstant(4*4*4)
 		],
-		2
+		3
 		)
 
 		gModelLayout = modelLayout
@@ -172,7 +173,7 @@ TEngine := class extend TGCObject
 		lightLayout = lightRenderPass.CreateLayout(![
 			//vertex input
 		],![
-			new TImageSet(2)
+			new TImageSet(3)
 		],![
 			new TVertexPushConstant(2*4)
 		],

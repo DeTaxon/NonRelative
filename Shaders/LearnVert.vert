@@ -5,6 +5,8 @@
 layout(push_constant) uniform PushConsts{
 	vec4 quantAng;
 	vec4 g_pos;
+	vec4 modelAng;
+	vec4 modelPos;
 }consts;
 
 
@@ -14,6 +16,7 @@ layout(location = 2) in vec2 i_uv;
 
 layout(location = 0) out vec2 o_uv;
 layout(location = 1) out vec3 o_norm;
+layout(location = 2) out vec4 o_vert;
 
 layout(set = 0,binding = 0) uniform perspInfo
 {
@@ -35,18 +38,21 @@ vec4 quat_mult(vec4 q1, vec4 q2)
   return qr;
 }
 
-vec3 rotate_vertex_position(vec3 position)
+vec3 rotate_vertex_position(vec3 position,vec4 qnt)
 { 
-  vec4 qr_conj = quat_conj(consts.quantAng);
+  vec4 qr_conj = quat_conj(qnt);
   vec4 q_pos = vec4(position.x, position.y, position.z, 0);
   
-  vec4 q_tmp = quat_mult(consts.quantAng, q_pos);
+  vec4 q_tmp = quat_mult(qnt, q_pos);
   return quat_mult(q_tmp, qr_conj).xyz;
 }
 void main() {
-	vec4 prePosition = vec4((rotate_vertex_position(i_Position.xyz*consts.g_pos.w)) + consts.g_pos.xyz,1.0f);
+	vec4 prePosition = vec4((rotate_vertex_position(i_Position.xyz*consts.g_pos.w,consts.quantAng)) + consts.g_pos.xyz,1.0f);
 	// prePosition = prePosition.yzxw * vec4(1.0f,-1.0f,1.0f,1.0f);
 	prePosition = prePosition.yzxw * vec4(-1.0f,-1.0f,-1.0f,1.0f);
+
+	vec4 prePosition2 = vec4((rotate_vertex_position(i_Position.xyz*consts.modelPos.w,consts.modelAng)) + consts.modelPos.xyz,1.0f);
+	o_vert = prePosition2.yzxw * vec4(-1.0f,-1.0f,-1.0f,1.0f);
 	gl_Position.x = prePosition.x*prespData.x;
 	gl_Position.y = prePosition.y*prespData.y;
 	gl_Position.z = -(prePosition.z*prespData.z + prespData.w);

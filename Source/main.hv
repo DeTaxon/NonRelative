@@ -190,6 +190,18 @@ main := !(char^[] args) -> int
 
 		if not drawRes
 		{
+
+			while not win.ShouldClose()
+			{
+				win.PollEvents()
+
+				if GetSteadyTime() - win.LastTimeResized > 0.1
+				{
+					break
+				}else{
+					TSleep(0.01)
+				}
+			}
 			//TODO cases when one of values is zero
 			vk.CreateSwapchain(engine.lightRenderPass,win.Width,win.Height)
 			gCam.UpdatePerspective(win.Width,win.Height)

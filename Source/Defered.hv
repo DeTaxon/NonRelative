@@ -5,7 +5,7 @@ gRenderPassLight := VkRenderPass
 gModelFramebuffer := VkFramebuffer
 
 depthTexture := TVkTexture^
-fbTextures := TVkTexture^[2]
+fbTextures := TVkTexture^[3]
 
 gLightShader := vShader^
 
@@ -33,6 +33,11 @@ CreateFB := !() -> void
 		img.usage = VK_IMAGE_USAGE_SAMPLED_BIT or_b VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT or_b VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT
 		img.format = VK_FORMAT_R32G32B32A32_SFLOAT
 	})
+	fbTextures[2] = vk.CreateTexture() //TODO
+	fbTextures[2].CreateObject(gFBW,gFBH, (img,viw) ==> {
+		img.usage = VK_IMAGE_USAGE_SAMPLED_BIT or_b VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT or_b VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT
+		img.format = VK_FORMAT_R32G32B32A32_SFLOAT
+	})
 
 	//create deth
 	depthTexture = vk.CreateTexture()
@@ -42,13 +47,14 @@ CreateFB := !() -> void
 		viv.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT
 	})
 
-	extrV := VkImageView[3]
+	extrV := VkImageView[4]
 	extrV[0] = fbTextures[0].View()
 	extrV[1] = fbTextures[1].View()
-	extrV[2] = depthTexture.View()
+	extrV[2] = fbTextures[2].View()
+	extrV[3] = depthTexture.View()
 	fbC := VkFramebufferCreateInfo()
 	fbC.renderPass = gRenderPassModel
-	fbC.attachmentCount = 3
+	fbC.attachmentCount = 4
 	fbC.pAttachments&->{void^^}^ = extrV[0]&
 	fbC.width = gFBW
 	fbC.height = gFBH
@@ -56,16 +62,19 @@ CreateFB := !() -> void
 
 	vk.Funcs.vkCreateFramebuffer(vk.LogicalDevice,fbC&,null,gModelFramebuffer&)
 
-	imgI := VkDescriptorImageInfo[2]
+	imgI := VkDescriptorImageInfo[3]
 	imgI[0].sampler = gSamplerNearest
 	imgI[0].imageView = fbTextures[0].View()
 	imgI[0].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
 	imgI[1].sampler = gSamplerNearest
 	imgI[1].imageView = fbTextures[1].View()
 	imgI[1].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+	imgI[2].sampler = gSamplerNearest
+	imgI[2].imageView = fbTextures[2].View()
+	imgI[2].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
 
 	wrT := VkWriteDescriptorSet()
-	wrT.descriptorCount = 2
+	wrT.descriptorCount = 3
 	wrT.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
 	wrT.pImageInfo&->{void^^}^ = imgI[0]&
 	wrT.dstSet = gGBufferTextureSet
@@ -104,7 +113,7 @@ DrawGetImage := !() -> bool
 
 StartModelDraw := !(VkCommandBuffer cmd) -> bool
 {
-	clrValues := float[13]
+	clrValues := float[40]
 
 	clrValues[0] = 1.0f
 	clrValues[1] = 0.5f
@@ -121,12 +130,17 @@ StartModelDraw := !(VkCommandBuffer cmd) -> bool
 	clrValues[10] = 1.0f
 	clrValues[11] = 1.0f
 
+	clrValues[12] = 1.0f
+	clrValues[13] = 1.0f
+	clrValues[14] = 1.0f
+	clrValues[15] = 1.0f
+
 	rpC := VkRenderPassBeginInfo()
 	rpC.renderPass = gRenderPassModel
 	rpC.framebuffer = gModelFramebuffer
 	rpC.renderArea.extent.width = vk.GetSurfaceWidth() //surfAb.currentExtent.width
 	rpC.renderArea.extent.height = vk.GetSurfaceHeight() //surfAb.currentExtent.height
-	rpC.clearValueCount = 3
+	rpC.clearValueCount = 4
 	rpC.pClearValues&->{void^^}^ = clrValues[0]&
 	
 	vk.Funcs.vkCmdBeginRenderPass(cmd,rpC&,VK_SUBPASS_CONTENTS_INLINE) //TODO remove vk.Funcs
