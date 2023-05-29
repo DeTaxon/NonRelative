@@ -10,6 +10,14 @@ engine := TEngine^
 
 gFpsCounter := int
 
+vkGeometryInstance := class
+{
+	transform := float[12]
+	instanceId_mask := u32
+	instanceOffset_flags := u32
+	accelerationStructureHandle := u64
+}
+
 main := !(char^[] args) -> int
 {
 	tracy_init()
@@ -105,6 +113,44 @@ main := !(char^[] args) -> int
 
 	lastFpsCheck := GetSteadyTime()
 	localFpsCounter := 0
+
+
+	//gem1 := VkGeometryNV()
+	//gem1.geometryType = VK_GEOMETRY_TYPE_TRIANGLES_NV
+	////gem1.triangles.sType = VK_STRUCTURE_TYPE_GEOMETRY_TRIANGLES_NV
+
+	//gem1.geometry.triangles.sType = VK_STRUCTURE_TYPE_GEOMETRY_TRIANGLES_NV
+	//gem1.geometry.triangles.pNext = null
+	////gem1.geometry.triangles.vertexData = vb.GetBuffer()
+	//gem1.geometry.triangles.vertexOffset = 0
+	//gem1.geometry.triangles.vertexCount = 4
+	//gem1.geometry.triangles.vertexStride = 8*4//sizeof(vec3)
+	//gem1.geometry.triangles.vertexFormat = VK_FORMAT_R32G32B32_SFLOAT
+	////gem1.geometry.triangles.indexData = ib.GetBuffer()
+	//gem1.geometry.triangles.indexOffset = 0
+	//gem1.geometry.triangles.indexCount = 6
+	//gem1.geometry.triangles.indexType = VK_INDEX_TYPE_UINT32
+	//gem1.geometry.triangles.transformData = null
+	//gem1.geometry.triangles.transformOffset = 0
+	////gem1.geometry.aabbs
+	//gem1.geometry.aabbs.sType = VK_STRUCTURE_TYPE_GEOMETRY_AABB_NV
+	//gem1.flags = VK_GEOMETRY_OPAQUE_BIT_NV
+
+	////vkGeometryInstance := class
+	////{
+	////	transform := float[12]
+	////	instanceId_mask := u32
+	////	instanceOffset_flags := 32
+	////	accelerationStructureHandle := u64
+	////}
+
+	//gemInst := vkGeometryInstance
+	//gemInst.instanceId_mask = 255 shl 24
+	//gemInst.instanceOffset_flags = VK_GEOMETRY_INSTANCE_TRIANGLE_CULL_DISABLE_BIT_NV shl 24
+
+	//printf("test %p\n",vk.Funcs.vkCmdTraceRaysNV)
+
+	accl := VkAccelerationStructureCreateInfoNV()
 
 	step1Cmd := TVkCommandBuffer(vk,vk.itDrawCmdPool2)
 	step2Cmd := TVkCommandBuffer(vk,vk.itDrawCmdPool2)
@@ -203,7 +249,10 @@ main := !(char^[] args) -> int
 				}
 			}
 			//TODO cases when one of values is zero
-			vk.CreateSwapchain(engine.lightRenderPass,win.Width,win.Height)
+			while not vk.CreateSwapchain(engine.lightRenderPass,win.Width,win.Height)
+			{
+				TSleep(0.5)
+			}
 			gCam.UpdatePerspective(win.Width,win.Height)
 		}
 

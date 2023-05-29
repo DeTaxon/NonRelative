@@ -41,14 +41,19 @@ VKNonRelative := class extend VulkanDefaultInstance
 	{
 		super(deviceExtensions,expectDeviceExtensions)
 
-		expectDeviceExtensions.Push("VK_KHR_acceleration_structure")
-		expectDeviceExtensions.Push("VK_KHR_buffer_device_address")
-		expectDeviceExtensions.Push("VK_KHR_deferred_host_operations")
-		expectDeviceExtensions.Push("VK_EXT_descriptor_indexing")
-		expectDeviceExtensions.Push("VK_KHR_ray_tracing_pipeline")
-		expectDeviceExtensions.Push("VK_KHR_spirv_1_4")
-		expectDeviceExtensions.Push("VK_KHR_shader_float_controls")
-		expectDeviceExtensions.Push("VK_KHR_ray_query")
+		for it : deviceExtensions
+		{
+			printf("hm %s\n",it&)
+		}
+
+		//expectDeviceExtensions.Push("VK_KHR_acceleration_structure")
+		//expectDeviceExtensions.Push("VK_KHR_buffer_device_address")
+		//expectDeviceExtensions.Push("VK_KHR_deferred_host_operations")
+		//expectDeviceExtensions.Push("VK_EXT_descriptor_indexing")
+		//expectDeviceExtensions.Push("VK_KHR_ray_tracing_pipeline")
+		//expectDeviceExtensions.Push("VK_KHR_spirv_1_4")
+		//expectDeviceExtensions.Push("VK_KHR_shader_float_controls")
+		//expectDeviceExtensions.Push("VK_KHR_ray_query")
 	}
 }
 
@@ -57,7 +62,7 @@ vk := VKNonRelative^
 VulkanInit := !() -> void
 {
 	vk = new VKNonRelative
-	//vk.PreferIntegratedGPU()
+	vk.PreferIntegratedGPU()
 	vk.Init()
 
 	vkPhysCard = vk.PhysicalDevice
