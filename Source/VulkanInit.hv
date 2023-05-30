@@ -31,7 +31,7 @@ VKNonRelative := class extend VulkanDefaultInstance
 		if Funcs.vkCreateDebugReportCallbackEXT != null
 		{
 			debPrint := VkDebugReportCallbackCreateInfoEXT()
-			debPrint.sType = 1000011000
+			//debPrint.sType = 1000011000
 			debPrint.pfnCallback&->{void^^}^ = VkDebugCallback->{void^}
 			debPrint.flags = 2 + 4 + 8// + 16
 			Funcs.vkCreateDebugReportCallbackEXT(Instance,debPrint&,null,vkDebugObj&)
@@ -43,8 +43,10 @@ VKNonRelative := class extend VulkanDefaultInstance
 
 		for it : deviceExtensions
 		{
-			printf("hm %s\n",it&)
+			//printf("hm %s\n",it&)
 		}
+		expectDeviceExtensions.Push("VK_KHR_imageless_framebuffer")
+		expectDeviceExtensions.Push("VK_KHR_image_format_list")
 
 		//expectDeviceExtensions.Push("VK_KHR_acceleration_structure")
 		//expectDeviceExtensions.Push("VK_KHR_buffer_device_address")

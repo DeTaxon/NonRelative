@@ -150,7 +150,7 @@ StopModelDraw := !(VkCommandBuffer cmd) -> bool
 {
 	vk.Funcs.vkCmdEndRenderPass(cmd) //TODO remove vk.Funcs
 }
-StartTextDraw := !(VkCommandBuffer cmd,VkFramebuffer frm ) -> void
+StartTextDraw := !(VkCommandBuffer cmd,VkFramebuffer frm, VkImageView img ) -> void
 {
 	imgBarCPre := VkImageMemoryBarrier[2]
 
@@ -178,6 +178,11 @@ StartTextDraw := !(VkCommandBuffer cmd,VkFramebuffer frm ) -> void
 	beginInfo.clearValueCount = 1
 	beginInfo.pClearValues&->{void^^}^ = clrValues[0]&->{void^}
 	
+	renderPassAttms := VkRenderPassAttachmentBeginInfo()
+	renderPassAttms.attachmentCount = 1
+	renderPassAttms.pAttachments = img&
+	beginInfo.pNext = renderPassAttms&
+
 	vk.Funcs.vkCmdBeginRenderPass(cmd,beginInfo&,VK_SUBPASS_CONTENTS_INLINE) //TODO remove vk.Funcs
 
 	gLightShader.ApplyShaderToQueue(vk,cmd,vk.GetSurfaceWidth(),vk.GetSurfaceHeight())

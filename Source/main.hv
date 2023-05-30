@@ -206,7 +206,7 @@ main := !(char^[] args) -> int
 				step2Cmd.Start()
 
 
-				StartTextDraw(step2Cmd.Get(),vk.GetSurfaceFramebuffer(surfaceIndex))
+				StartTextDraw(step2Cmd.Get(),vk.surfaceFramebuffer,vk.surfaceImageViews[surfaceIndex])
 
 				if win.menuMode
 				{
