@@ -2,7 +2,7 @@
 gRenderPassModel := VkRenderPass
 gRenderPassLight := VkRenderPass
 
-gModelFramebuffer := VkFramebuffer
+//gModelFramebuffer := VkFramebuffer
 
 depthTexture := TVkTexture^
 fbTextures := TVkTexture^[3]
@@ -13,33 +13,16 @@ gLightLayout := VkPipelineLayout
 gGBufferLayoutSets := VkDescriptorPool
 gGBufferTextureSet := VkDescriptorSet
 
+gModelBase2 := VFramebufferBase^
+gModel2 := VFramebuffer^
+
+
 gFBW := 2048
 gFBH := 2048
 CreateFB := !() -> void
 {
-	// if depthTexture != null
-	// {
-	// 	depthTexture.Destroy()
-	// 	delete depthTexture
-	// 	depthTexture = null
-	// }
 
-	fbTextures[0] = vk.CreateTexture() //TODO
-	fbTextures[0].CreateObject(gFBW,gFBH, (img,viw) ==> {
-		img.usage = VK_IMAGE_USAGE_SAMPLED_BIT or_b VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT or_b VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT
-	})
-	fbTextures[1] = vk.CreateTexture() //TODO
-	fbTextures[1].CreateObject(gFBW,gFBH, (img,viw) ==> {
-		img.usage = VK_IMAGE_USAGE_SAMPLED_BIT or_b VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT or_b VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT
-		img.format = VK_FORMAT_R32G32B32A32_SFLOAT
-	})
-	fbTextures[2] = vk.CreateTexture() //TODO
-	fbTextures[2].CreateObject(gFBW,gFBH, (img,viw) ==> {
-		img.usage = VK_IMAGE_USAGE_SAMPLED_BIT or_b VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT or_b VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT
-		img.format = VK_FORMAT_R32G32B32A32_SFLOAT
-	})
-
-	//create deth
+	//create depth
 	depthTexture = vk.CreateTexture()
 	depthTexture.CreateObject(gFBW,gFBH,(img,viv)==> {
 		img.format = VK_FORMAT_D16_UNORM
@@ -47,20 +30,22 @@ CreateFB := !() -> void
 		viv.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT
 	})
 
-	extrV := VkImageView[4]
-	extrV[0] = fbTextures[0].View()
-	extrV[1] = fbTextures[1].View()
-	extrV[2] = fbTextures[2].View()
-	extrV[3] = depthTexture.View()
-	fbC := VkFramebufferCreateInfo()
-	fbC.renderPass = gRenderPassModel
-	fbC.attachmentCount = 4
-	fbC.pAttachments&->{void^^}^ = extrV[0]&
-	fbC.width = gFBW
-	fbC.height = gFBH
-	fbC.layers = 1
+	gModelBase2 = CreateFramebufferBase(vk,engine.modelRenderPass,2048,2048,![
+		VK_FORMAT_R8G8B8A8_UNORM,
+		VK_FORMAT_R32G32B32A32_SFLOAT,
+		VK_FORMAT_R32G32B32A32_SFLOAT
+	],true)
 
-	vk.Funcs.vkCreateFramebuffer(vk.LogicalDevice,fbC&,null,gModelFramebuffer&)
+	gModel2 = gModelBase2.CreateFrame(null,depthTexture)
+
+	fbTextures[0] = gModel2.Images[0]
+	fbTextures[1] = gModel2.Images[1]
+	fbTextures[2] = gModel2.Images[2]
+
+	gModel2.ClearValues[0] = 1.0f
+	gModel2.ClearValues[1] = 0.5f
+	gModel2.ClearValues[2] = 0.0f
+	gModel2.ClearValues[3] = 1.0f
 
 	imgI := VkDescriptorImageInfo[3]
 	imgI[0].sampler = gSamplerNearest
@@ -113,37 +98,7 @@ DrawGetImage := !() -> bool
 
 StartModelDraw := !(VkCommandBuffer cmd) -> bool
 {
-	clrValues := float[40]
-
-	clrValues[0] = 1.0f
-	clrValues[1] = 0.5f
-	clrValues[2] = 0.0f
-	clrValues[3] = 1.0f
-
-	clrValues[4] = 1.0f
-	clrValues[5] = 1.0f
-	clrValues[6] = 1.0f
-	clrValues[7] = 1.0f
-
-	clrValues[8] = 1.0f
-	clrValues[9] = 1.0f
-	clrValues[10] = 1.0f
-	clrValues[11] = 1.0f
-
-	clrValues[12] = 1.0f
-	clrValues[13] = 1.0f
-	clrValues[14] = 1.0f
-	clrValues[15] = 1.0f
-
-	rpC := VkRenderPassBeginInfo()
-	rpC.renderPass = gRenderPassModel
-	rpC.framebuffer = gModelFramebuffer
-	rpC.renderArea.extent.width = vk.GetSurfaceWidth() //surfAb.currentExtent.width
-	rpC.renderArea.extent.height = vk.GetSurfaceHeight() //surfAb.currentExtent.height
-	rpC.clearValueCount = 4
-	rpC.pClearValues&->{void^^}^ = clrValues[0]&
-	
-	vk.Funcs.vkCmdBeginRenderPass(cmd,rpC&,VK_SUBPASS_CONTENTS_INLINE) //TODO remove vk.Funcs
+	gModel2.StartRenderPass(cmd)
 	return true
 }
 StopModelDraw := !(VkCommandBuffer cmd) -> bool

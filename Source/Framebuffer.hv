@@ -1,0 +1,127 @@
+
+VFramebufferBase := class extend TGCObject
+{
+	instance := VulkanDefaultInstance^
+	renderPass := TRenderPass^
+	framebuffer := VkFramebuffer
+	width := int
+	height := int
+	formats := HybridQueue.{int,16}
+
+	CreateFrame := !(TVkTexture^[] imgs, TVkTexture^ depthImage) -> VFramebuffer^
+	{
+		result = new VFramebuffer
+
+		for format,i : formats
+		{
+			resImage := TVkTexture^
+
+			if imgs == null or imgs[i] == null
+			{
+				resImage = instance.CreateTexture()
+				resImage.CreateObject(width,height, (img,viw) ==> {
+					img.usage = VK_IMAGE_USAGE_SAMPLED_BIT or_b VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT or_b VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT
+					img.format = format
+				})
+			}else{
+				resImage = imgs[i]
+			}
+
+			result.Images.Push(resImage)
+		}
+		
+		assert(depthImage != null)
+		result.Images.Push(depthImage)
+		result.Base = this&
+		result.ClearValues[^] = 1.0f
+	}
+}
+VFramebuffer := class extend TGCObject
+{
+	Base := VFramebufferBase^
+	Images := HybridQueue.{TVkTexture^,16}
+	ClearValues := float[64]
+
+	StartRenderPass := !(VkCommandBuffer cmd) -> void
+	{
+		beginInfo := VkRenderPassBeginInfo()
+		beginInfo.renderPass = Base.renderPass.Get()
+		beginInfo.framebuffer = Base.framebuffer
+		beginInfo.renderArea.extent.width = Base.instance.GetSurfaceWidth() //surfAb.currentExtent.width
+		beginInfo.renderArea.extent.height = Base.instance.GetSurfaceHeight() //surfAb.currentExtent.height
+		beginInfo.clearValueCount = Images.Size()
+		beginInfo.pClearValues&->{void^^}^ = ClearValues[0]&->{void^}
+	
+		assert(Images.Size() <= 16)
+		attms := void^[16]
+		for it, i : Images
+		{	
+			attms[i] = it.View()
+		}
+
+		renderPassAttms := VkRenderPassAttachmentBeginInfo()
+		renderPassAttms.attachmentCount = Images.Size()
+		renderPassAttms.pAttachments = attms[0]&
+		beginInfo.pNext = renderPassAttms&
+
+		Base.instance.Funcs.vkCmdBeginRenderPass(cmd,beginInfo&,VK_SUBPASS_CONTENTS_INLINE) //TODO remove vk.Funcs
+	}
+	StopRenderPass := !(VkCommandBuffer cmd) -> void
+	{
+		Base.instance.Funcs.vkCmdEndRenderPass(cmd) //TODO remove vk.Funcs
+	}
+}
+
+CreateFramebufferBase := !(VulkanDefaultInstance^ inst,TRenderPass^ renPass ,int width, int height, int[] formats,bool useDepth) -> VFramebufferBase^
+{
+	fbAtt := VkFramebufferAttachmentImageInfo[32]
+
+	for i : formats.Size()
+	{
+		fbAtt[i]."this"()
+		fbAtt[i].width = width
+		fbAtt[i].height = height
+		fbAtt[i].layerCount = 1
+		fbAtt[i].viewFormatCount = 1
+		fbAtt[i].pViewFormats = formats[i]&
+		fbAtt[i].usage = VK_IMAGE_USAGE_SAMPLED_BIT or_b VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT or_b VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT
+	}
+	depthFormat := VK_FORMAT_D16_UNORM
+	if useDepth
+	{
+		i := formats.Size()
+		fbAtt[i]."this"()
+		fbAtt[i].width = width
+		fbAtt[i].height = height
+		fbAtt[i].layerCount = 1
+		fbAtt[i].viewFormatCount = 1
+		fbAtt[i].pViewFormats = depthFormat&
+		fbAtt[i].usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT
+	}
+
+	fbAttCr := VkFramebufferAttachmentsCreateInfo()
+	fbAttCr.attachmentImageInfoCount = formats.Size() + (useDepth ?: 1 : 0)
+	fbAttCr.pAttachmentImageInfos = fbAtt[0]&
+
+	fbC := VkFramebufferCreateInfo()
+	fbC.pNext = fbAttCr&
+	fbC.renderPass = renPass.Get()
+	fbC.flags = 1 //VK_FRAMEBUFFER_CREATE_IMAGELESS_BIT //TODO
+	fbC.attachmentCount = formats.Size()  + (useDepth ?: 1 : 0)
+	fbC.pAttachments&->{void^^}^ = null
+	fbC.width = width
+	fbC.height = height
+	fbC.layers = 1
+
+	fb := VkFramebuffer
+	inst.Funcs.vkCreateFramebuffer(inst.LogicalDevice,fbC&,null,fb&)
+
+	base := new VFramebufferBase
+	base.instance = inst
+	base.framebuffer = fb
+	base.width = width
+	base.height = height
+	base.formats.Push(formats[^])
+	base.renderPass = renPass
+	return base
+}
