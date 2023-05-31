@@ -1,0 +1,11 @@
+script: FirstMap.nut
+prop:
+	model:
+		phys:
+			type: hmap
+			file: FirstMap.hmap1
+		model:
+			file: FirstMap.ply
+		texture:
+			file: wut.webp
+		shader: LearnShader

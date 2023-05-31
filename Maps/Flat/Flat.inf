@@ -1,0 +1,10 @@
+prop:
+	model:
+		phys:
+			type: hmap
+			file: Flat.ply
+		model:
+			file: Flat.ply
+		texture:
+			file: Grass.webp
+		shader: LearnShader
