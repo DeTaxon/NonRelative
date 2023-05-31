@@ -193,15 +193,18 @@ main := !(char^[] args) -> int
 				step1Cmd.Start()
 
 				gMirror.StartRenderPass(step1Cmd.Get())
+
 				gCam.camPos.x = 0.0 
 				gCam.camPos.y = 0.0 
 				gCam.camPos.z = 0.0  + 1.7
+				gCam.camPos.x = gPlayer.System.pos.x
+				gCam.camPos.y = gPlayer.System.pos.y + 10
+				gCam.camPos.z = gPlayer.System.pos.z + 1.7
 				learnShader.ApplyShaderToQueue(vk,step1Cmd.Get(),vk.GetSurfaceWidth(),vk.GetSurfaceHeight())
 				gCam.BindDescriptor(step1Cmd.Get())
 
 				DrawMap(step1Cmd.Get(),gPlayerMap,centf(),4)
 				gMirror.StopRenderPass(step1Cmd.Get())
-
 
 
 				StartModelDraw(step1Cmd.Get())
@@ -216,6 +219,7 @@ main := !(char^[] args) -> int
 				DrawMap(step1Cmd.Get(),gPlayerMap,centf(),4)
 				zeroOffset := centf()
 
+				drawMirrorShader.ApplyShaderToQueue(vk,step1Cmd.Get(),vk.GetSurfaceWidth(),vk.GetSurfaceHeight())
 				canvasProp.Draw(step1Cmd.Get(),gCam^,zeroOffset)
 
 
