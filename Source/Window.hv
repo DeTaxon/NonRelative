@@ -27,6 +27,10 @@ TestWindow := class extend GLFWWindow
 					SetFullscreen()
 				}
 			}
+			if key == 292
+			{
+				TestMirror = not TestMirror
+			}
 		}
 	}
 }

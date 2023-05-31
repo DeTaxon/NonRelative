@@ -47,11 +47,12 @@ main := !(char^[] args) -> int
 	gLightShader = engine.LoadShader("Shaders/Defer.json") //TODO only name Defer needed
 	learnShader := engine.LoadShader("Shaders/LearnShader.json")
 
+	drawMirrorShader := engine.LoadShader("Shaders/Mirror.json")
+
 	canvas := engine.LoadModel("Models/Canvas/Canvas.json")
 
 	gCam = new vCamera()
 	gCam.SetPerspective(x,y,0.001,100,80deg)
-
 
 	gPlayerMap = engine.LoadMap("Maps/FirstMap2/FirstMap.json")
 	gMapMap := gPlayerMap
@@ -61,38 +62,38 @@ main := !(char^[] args) -> int
 	canvasProp = engine.CreateProp(canvas)
 	canvasProp.propPosition.pos = vec4f(2.0,0.0,1.4,1.0)
 	canvasProp.propPosition.ang = quantfAt(0.0,0.0,1.0,-90deg) <*> quantfAt(1.0,0.0,0.0,90deg)
-	gMapMap.mapProps.Push(canvasProp)
+	//gMapMap.mapProps.Push(canvasProp)
 
-	packedChar := Vector.{stbtt_packedchar}(256)
-	atlasTest := Vector.{u8}(512*512)
-	pc := new stbtt_pack_context
-	stb_truetype_init()
-	stbtt_PackBegin(pc,atlasTest.GetPointer(),512,512,512,1,null)
-	stbtt_PackSetOversampling(pc,2,2)
-	testFont := FSGetFile("Goldman-Regular.ttf")
-	//testFont := FSGetFile("Pacifico.ttf")
-	testFontData := testFont.GetMap()
-	stbtt_PackFontRange(pc,testFontData.Get(),0,20,0,256,packedChar.GetPointer())
-	//stbtt_PackEnd(pc)
+	//packedChar := Vector.{stbtt_packedchar}(256)
+	//atlasTest := Vector.{u8}(512*512)
+	//pc := new stbtt_pack_context
+	//stb_truetype_init()
+	//stbtt_PackBegin(pc,atlasTest.GetPointer(),512,512,512,1,null)
+	//stbtt_PackSetOversampling(pc,2,2)
+	//testFont := FSGetFile("Goldman-Regular.ttf")
+	////testFont := FSGetFile("Pacifico.ttf")
+	//testFontData := testFont.GetMap()
+	//stbtt_PackFontRange(pc,testFontData.Get(),0,20,0,256,packedChar.GetPointer())
+	////stbtt_PackEnd(pc)
 
-	atlTexture := vk.CreateTexture()
-	newTexture := Vector.{u8}(512*512*4)
+	//atlTexture := vk.CreateTexture()
+	//newTexture := Vector.{u8}(512*512*4)
 
-	ff := atlasTest.GetPointer()
-	tt := newTexture.GetPointer()
-	for i : 512
-	{
-		for j : 512
-		{
-			tt[(i + j*512)*4 + 0] = ff[i + j*512]
-			tt[(i + j*512)*4 + 1] = ff[i + j*512]
-			tt[(i + j*512)*4 + 2] = ff[i + j*512]
-			tt[(i + j*512)*4 + 3] = 255
-		}
-	}
-	atlTexture.CreateTexture(512,512,newTexture&)
+	//ff := atlasTest.GetPointer()
+	//tt := newTexture.GetPointer()
+	//for i : 512
+	//{
+	//	for j : 512
+	//	{
+	//		tt[(i + j*512)*4 + 0] = ff[i + j*512]
+	//		tt[(i + j*512)*4 + 1] = ff[i + j*512]
+	//		tt[(i + j*512)*4 + 2] = ff[i + j*512]
+	//		tt[(i + j*512)*4 + 3] = 255
+	//	}
+	//}
+	//atlTexture.CreateTexture(512,512,newTexture&)
 
-	canvasProp.SetTexture(atlTexture)
+	//canvasProp.SetTexture(atlTexture)
 
 	NuklearTestInit()
 	NuklearCreateStep()
@@ -150,7 +151,14 @@ main := !(char^[] args) -> int
 
 	//printf("test %p\n",vk.Funcs.vkCmdTraceRaysNV)
 
-	accl := VkAccelerationStructureCreateInfoNV()
+	//accl := VkAccelerationStructureCreateInfoNV()
+
+
+	//mirDescr := engine.modelTextureDescriptor.CreateDescriptor()
+	//{
+	//	vSetTexture(vk,mirDescr,gMirror.Images[0],gSamplerNearest)
+	//}
+	canvasProp.SetTexture(gMirror.Images[0])
 
 	step1Cmd := TVkCommandBuffer(vk,vk.itDrawCmdPool2)
 	step2Cmd := TVkCommandBuffer(vk,vk.itDrawCmdPool2)
@@ -184,6 +192,18 @@ main := !(char^[] args) -> int
 				step1Cmd.Reset()
 				step1Cmd.Start()
 
+				gMirror.StartRenderPass(step1Cmd.Get())
+				gCam.camPos.x = 0.0 
+				gCam.camPos.y = 0.0 
+				gCam.camPos.z = 0.0  + 1.7
+				learnShader.ApplyShaderToQueue(vk,step1Cmd.Get(),vk.GetSurfaceWidth(),vk.GetSurfaceHeight())
+				gCam.BindDescriptor(step1Cmd.Get())
+
+				DrawMap(step1Cmd.Get(),gPlayerMap,centf(),4)
+				gMirror.StopRenderPass(step1Cmd.Get())
+
+
+
 				StartModelDraw(step1Cmd.Get())
 
 				gCam.camPos.x = gPlayer.System.pos.x
@@ -194,6 +214,11 @@ main := !(char^[] args) -> int
 				gCam.BindDescriptor(step1Cmd.Get())
 
 				DrawMap(step1Cmd.Get(),gPlayerMap,centf(),4)
+				zeroOffset := centf()
+
+				canvasProp.Draw(step1Cmd.Get(),gCam^,zeroOffset)
+
+
 				StopModelDraw(step1Cmd.Get())
 
 				step1Cmd.Stop()

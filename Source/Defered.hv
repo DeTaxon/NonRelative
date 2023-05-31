@@ -2,8 +2,6 @@
 gRenderPassModel := VkRenderPass
 gRenderPassLight := VkRenderPass
 
-//gModelFramebuffer := VkFramebuffer
-
 depthTexture := TVkTexture^
 fbTextures := TVkTexture^[3]
 
@@ -12,10 +10,11 @@ gLightShader := vShader^
 gLightLayout := VkPipelineLayout
 gGBufferLayoutSets := VkDescriptorPool
 gGBufferTextureSet := VkDescriptorSet
+gGMirrorSet := VkDescriptorSet
 
 gModelBase2 := VFramebufferBase^
 gModel2 := VFramebuffer^
-
+gMirror := VFramebuffer^
 
 gFBW := 2048
 gFBH := 2048
@@ -30,7 +29,7 @@ CreateFB := !() -> void
 		viv.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT
 	})
 
-	gModelBase2 = CreateFramebufferBase(vk,engine.modelRenderPass,2048,2048,![
+	gModelBase2 = CreateFramebufferBase(vk,engine.modelRenderPass,gFBW,gFBH,![
 		VK_FORMAT_R8G8B8A8_UNORM,
 		VK_FORMAT_R32G32B32A32_SFLOAT,
 		VK_FORMAT_R32G32B32A32_SFLOAT
@@ -65,6 +64,27 @@ CreateFB := !() -> void
 	wrT.dstSet = gGBufferTextureSet
 
 	vk.Funcs.vkUpdateDescriptorSets(vk.LogicalDevice,1,wrT&,0,null)
+
+	gMirror = gModelBase2.CreateFrame(null,depthTexture)
+	fbTextures[0] = gMirror.Images[0]
+	fbTextures[1] = gMirror.Images[1]
+	fbTextures[2] = gMirror.Images[2]
+
+	gMirror.ClearValues[0] = 0.0f
+	gMirror.ClearValues[1] = 0.5f
+	gMirror.ClearValues[2] = 1.0f
+	gMirror.ClearValues[3] = 1.0f
+
+	imgI[0].imageView = fbTextures[0].View()
+	imgI[1].imageView = fbTextures[1].View()
+	imgI[2].imageView = fbTextures[2].View()
+
+	wrT.descriptorCount = 3
+	wrT.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
+	wrT.pImageInfo&->{void^^}^ = imgI[0]&
+	wrT.dstSet = gGMirrorSet
+
+	vk.Funcs.vkUpdateDescriptorSets(vk.LogicalDevice,1,wrT&,0,null)
 }
 
 DrawGetImage := !() -> bool
@@ -74,21 +94,6 @@ DrawGetImage := !() -> bool
 
 	if resAq ==  VK_ERROR_OUT_OF_DATE_KHR or resAq == VK_SUBOPTIMAL_KHR
 	{
-		//if resAq == VK_SUBOPTIMAL_KHR
-		//{
-		//	res := VkResult
-		//	pI := VkPresentInfoKHR()
-		//	pI.pNext = null
-		//	pI.waitSemaphoreCount = 0
-		//	pI.pWaitSemaphores = null
-		//	pI.swapchainCount = 1
-		//	pI.pSwapchains&->{void^^}^ = vkSwapchain&->{void^}
-		//	pI.pImageIndices&->{void^^}^ = nowImg&->{void^}
-		//	pI.pResults&->{void^^}^ = res&
-
-		//	vk.Funcs.vkQueuePresentKHR(vk.DrawQueue,pI&)
-		//	vk.Funcs.vkQueueWaitIdle(vk.DrawQueue)
-		//}
 		return false
 	}
 
@@ -128,8 +133,8 @@ StartTextDraw := !(VkCommandBuffer cmd,VkFramebuffer frm, VkImageView img ) -> v
 
 	beginInfo.renderPass = gRenderPassLight
 	beginInfo.framebuffer = frm
-	beginInfo.renderArea.extent.width = vk.GetSurfaceWidth() //surfAb.currentExtent.width
-	beginInfo.renderArea.extent.height = vk.GetSurfaceHeight() //surfAb.currentExtent.height
+	beginInfo.renderArea.extent.width = vk.GetSurfaceWidth()
+	beginInfo.renderArea.extent.height = vk.GetSurfaceHeight()
 	beginInfo.clearValueCount = 1
 	beginInfo.pClearValues&->{void^^}^ = clrValues[0]&->{void^}
 	
@@ -142,7 +147,13 @@ StartTextDraw := !(VkCommandBuffer cmd,VkFramebuffer frm, VkImageView img ) -> v
 
 	gLightShader.ApplyShaderToQueue(vk,cmd,vk.GetSurfaceWidth(),vk.GetSurfaceHeight())
 	sts := VkDescriptorSet[2]
-	sts[0] = gGBufferTextureSet
+
+	if TestMirror
+	{
+		sts[0] = gGMirrorSet
+	}else{
+		sts[0] = gGBufferTextureSet
+	}
 	vk.Funcs.vkCmdBindDescriptorSets(cmd,VK_PIPELINE_BIND_POINT_GRAPHICS,gLightLayout,0,1,sts[0]&,0,null) //TODO remove vk.Funcs
 
 	scales := float[2]
@@ -153,6 +164,8 @@ StartTextDraw := !(VkCommandBuffer cmd,VkFramebuffer frm, VkImageView img ) -> v
 	gQuad.Bind(cmd)
 	vk.Funcs.vkCmdDraw(cmd,3,1,0,0) //TODO remove vk.Funcs
 }
+
+TestMirror := bool
 StopTextDraw := !(VkCommandBuffer cmd) -> bool
 {
 	vk.Funcs.vkCmdEndRenderPass(cmd) //TODO remove vk.Funcs

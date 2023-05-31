@@ -180,8 +180,9 @@ TEngine := class extend TGCObject
 		1
 		)
 
-		lightTexPool = lightLayout.CreateDescriptorPool(0,1)
+		lightTexPool = lightLayout.CreateDescriptorPool(0,2)
 		gGBufferTextureSet = lightTexPool.CreateDescriptor()
+		gGMirrorSet = lightTexPool.CreateDescriptor()
 
 		gLightLayout = lightLayout.Get()
 	}

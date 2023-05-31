@@ -1,0 +1,5 @@
+{
+	"type" : "model",
+	"vertex" : "Mirror.vert",
+	"fragment" : "Mirror.frag"
+}
