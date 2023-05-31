@@ -1,0 +1,5 @@
+model:
+	file: Canvas.ply
+texture:
+	file: Canvas.bmp
+shader: LearnShader
