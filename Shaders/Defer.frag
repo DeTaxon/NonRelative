@@ -15,9 +15,6 @@ void main()
 	// Get G-Buffer values
 	vec3 fragColor = texture(Gcolor, inUV).rgb;
 	vec3 pos = texture(Gposition,inUV).rgb;
-	float dist =  distance(vec3(0.0,0.0,0.0),pos);
-	float lightSize = 8;
-	float magn = clamp((lightSize - dist) * ( 1.0 / lightSize),0.1,1.0);
 
- 	outFragcolor = vec4(fragColor, 1.0)*vec4(magn,magn,magn,1.0);
+ 	outFragcolor = vec4(fragColor, 1.0);
 }

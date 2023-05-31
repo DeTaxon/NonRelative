@@ -20,7 +20,7 @@ vkGeometryInstance := class
 
 main := !(char^[] args) -> int
 {
-	tracy_init()
+	//tracy_init()
 
 	x := 1800
 	y := 1000
