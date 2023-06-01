@@ -148,12 +148,7 @@ StartTextDraw := !(VkCommandBuffer cmd,VkFramebuffer frm, VkImageView img ) -> v
 	gLightShader.ApplyShaderToQueue(vk,cmd,vk.GetSurfaceWidth(),vk.GetSurfaceHeight())
 	sts := VkDescriptorSet[2]
 
-	if TestMirror
-	{
-		sts[0] = gGMirrorSet
-	}else{
-		sts[0] = gGBufferTextureSet
-	}
+	sts[0] = gGBufferTextureSet
 	vk.Funcs.vkCmdBindDescriptorSets(cmd,VK_PIPELINE_BIND_POINT_GRAPHICS,gLightLayout,0,1,sts[0]&,0,null) //TODO remove vk.Funcs
 
 	scales := float[2]
@@ -165,7 +160,6 @@ StartTextDraw := !(VkCommandBuffer cmd,VkFramebuffer frm, VkImageView img ) -> v
 	vk.Funcs.vkCmdDraw(cmd,3,1,0,0) //TODO remove vk.Funcs
 }
 
-TestMirror := bool
 StopTextDraw := !(VkCommandBuffer cmd) -> bool
 {
 	vk.Funcs.vkCmdEndRenderPass(cmd) //TODO remove vk.Funcs

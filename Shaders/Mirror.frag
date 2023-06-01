@@ -12,7 +12,8 @@ layout(set=1,binding=0) uniform sampler2D u_Texture;
 
 void main()
 {
-	out_Color = texture(u_Texture,i_uv);
+	vec2 uv = gl_FragCoord.xy / vec2(2048.0,2048.0);
+	out_Color = texture(u_Texture,uv);
 	out_Normal = vec4(i_norm,1.0);
 	out_Vert = i_vert;
 }

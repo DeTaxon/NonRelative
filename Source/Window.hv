@@ -1,6 +1,7 @@
 
 nuklearContext := void^
 
+TestF3 := bool
 TestWindow := class extend GLFWWindow
 {
 	menuMode := bool 
@@ -29,7 +30,7 @@ TestWindow := class extend GLFWWindow
 			}
 			if key == 292
 			{
-				TestMirror = not TestMirror
+				TestF3 = not TestF3
 			}
 		}
 	}
