@@ -21,7 +21,7 @@ vPhysStage := !(double deltaTime) -> void
 	zeroOffset := centf()
 	vPhysStagePlayer(deltaTime,gPlayerMap,zeroOffset,2)
 	gPlayer.System.pos += gPlayer.ImpulseV*deltaTime
-	vPhysStagePlayer(deltaTime,gPlayerMap,zeroOffset,2)
+	//vPhysStagePlayer(deltaTime,gPlayerMap,zeroOffset,2)
 
 	vPhysCheckMoves()
 

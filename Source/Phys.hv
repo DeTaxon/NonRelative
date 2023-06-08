@@ -24,6 +24,22 @@ PhysSphere := class extend PhysCommon
 }
 
 
+PhysPlace := class extend PhysCommon
+{
+	Normal := vec4f
+	Dimentions := vec2f
+	Distance := float
+
+	this := !(vec4f pos,vec4f norm, vec2f dimentions) -> void
+	{
+		norm.w = 0.0f
+		System.pos = pos
+		Normal = norm.Normal()
+		Distance = -(norm<+>pos)
+		Dimentions = dimentions
+	}
+}
+
 PhysInfPlane := class extend PhysCommon
 {
 	Normal := vec4f
