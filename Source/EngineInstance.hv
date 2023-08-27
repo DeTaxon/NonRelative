@@ -2,6 +2,7 @@
 TEngine := class extend TGCObject
 {
 	vInstance := VulkanInstance^
+	overlay := VkOverlayContext
 
 	LoadMap := !(StringView charPath) -> vMap^
 	{
@@ -185,6 +186,8 @@ TEngine := class extend TGCObject
 		gGMirrorSet = lightTexPool.CreateDescriptor()
 
 		gLightLayout = lightLayout.Get()
+
+		overlay.Init(lightRenderPass)
 	}
 
 	
