@@ -20,10 +20,6 @@ vkGeometryInstance := class
 
 main := !(char^[] args) -> int
 {
-	//tracy_init()
-	//loadedFile = ModelLoader.Load("file").Await()
-	//Pipe(File("file"),File("file2"))
-
 	x := 1800
 	y := 1000
 

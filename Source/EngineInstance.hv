@@ -4,6 +4,9 @@ TEngine := class extend TGCObject
 	vInstance := VulkanInstance^
 	overlay := VkOverlayContext
 
+	cacheFile := CacheFile^
+	shaderCompiler := ShaderCompiler
+
 	LoadMap := !(StringView charPath) -> vMap^
 	{
 		return LoadMap(FSGetFile(charPath))
@@ -188,6 +191,9 @@ TEngine := class extend TGCObject
 		gLightLayout = lightLayout.Get()
 
 		overlay.Init(lightRenderPass)
+
+		cacheFile = new CacheFile("EngineData.zip")
+		shaderCompiler.SetCacheFile(cacheFile)
 	}
 
 	
@@ -225,8 +231,8 @@ TEngine := class extend TGCObject
 			}
 		}
 
-		vertBlob := CompileVulkanShader(fil.GetFile(vertName))
-		fragBlob := CompileVulkanShader(fil.GetFile(fragName))
+		vertBlob := shaderCompiler.Compile(fil.GetFile(vertName))
+		fragBlob := shaderCompiler.Compile(fil.GetFile(fragName))
 
 		return shaderType.CreateShader(vertBlob,fragBlob)
 	}
