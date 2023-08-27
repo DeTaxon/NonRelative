@@ -187,7 +187,7 @@ PhysHeightMap := class
 		resSpheres := new Vector.{PhysHightSphere}(SpheresStart.Size() - fakeNodes)
 
 		addSphereW := !(int,u16^)&-> void
-		addSphere := (int ind,u16^ resInt) ==> {
+		addSphere := (int ind,u16^ resInt) ==> [addSphereW&] {
 			resInt^ = allctdNodes
 			nowSphere := resSpheres[allctdNodes]&
 			allctdNodes += 1
