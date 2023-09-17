@@ -23,7 +23,7 @@ ifeq ($(cross),win32)
 endif
 
 en:
-	$(TimeFlags) ./halfvoid -g -C0 StandardHVLibrary/ -C1 Source --vk ./vk.xml -o out.ll
+	$(TimeFlags) ./halfvoid -g -C0 StandardHVLibrary/ -C1 Source --vk ./vk.xml -o out.ll -cache /tmp/HVMecha.zip
 	clang -gdwarf-4 -g out.ll -lm -o en
 win.exe:
 	$(TimeFlags) ./halfvoid -win32  -g -C0 StandardLibrary -C1 Source --vk ./vk.xml -o out.ll

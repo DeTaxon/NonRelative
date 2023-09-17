@@ -101,9 +101,9 @@ PhysHeightMap := class
 		
 		for i : triCount
 		{
-			Triangles2[i][0] = inds32[i*3    ] + 1
-			Triangles2[i][1] = inds32[i*3 + 1] + 1
-			Triangles2[i][2] = inds32[i*3 + 2] + 1
+			Triangles2^[i][0] = inds32[i*3    ] + 1
+			Triangles2^[i][1] = inds32[i*3 + 1] + 1
+			Triangles2^[i][2] = inds32[i*3 + 2] + 1
 		}
 		
 		SpheresStart := new List.{PhysHightSphere^}
@@ -112,9 +112,9 @@ PhysHeightMap := class
 		for tri,i : Triangles2
 		{
 			ns := new PhysHightSphere
-			a := nDots[tri[0]]
-			b := nDots[tri[1]]
-			c := nDots[tri[2]]
+			a := nDots^[tri[0]]
+			b := nDots^[tri[1]]
+			c := nDots^[tri[2]]
 			center := (a + b + c) / 3.0
 			aDs := Distance(a,center)
 			bDs := Distance(b,center)
@@ -189,7 +189,7 @@ PhysHeightMap := class
 		addSphereW := !(int,u16^)&-> void
 		addSphere := (int ind,u16^ resInt) ==> [addSphereW&] {
 			resInt^ = allctdNodes
-			nowSphere := resSpheres[allctdNodes]&
+			nowSphere := resSpheres^[allctdNodes]&
 			allctdNodes += 1
 
 			fromSphere := SpheresStart^[ind]
