@@ -156,7 +156,7 @@ main := !(char^[] args) -> int
 	//{
 	//	vSetTexture(vk,mirDescr,gMirror.Images[0],gSamplerNearest)
 	//}
-	canvasProp.SetTexture(gMirror.Images[0])
+	//canvasProp.SetTexture(gMirror.Images[0])
 
 	step1Cmd := TVkCommandBuffer(vk,vk.itDrawCmdPool2)
 	step2Cmd := TVkCommandBuffer(vk,vk.itDrawCmdPool2)
@@ -190,19 +190,42 @@ main := !(char^[] args) -> int
 				step1Cmd.Reset()
 				step1Cmd.Start()
 
-				gMirror.StartRenderPass(step1Cmd.Get())
+				//gMirror.StartRenderPass(step1Cmd.Get())
 
-				gCam.camPos.x = 0.0 
-				gCam.camPos.y = 0.0 
-				gCam.camPos.z = 0.0  + 1.7
-				gCam.camPos.x = gPlayer.System.pos.x
-				gCam.camPos.y = gPlayer.System.pos.y + (TestF3 ?: 10 : 0)
-				gCam.camPos.z = gPlayer.System.pos.z + 1.7
-				learnShader.ApplyShaderToQueue(vk,step1Cmd.Get(),vk.GetSurfaceWidth(),vk.GetSurfaceHeight())
-				gCam.BindDescriptor(step1Cmd.Get())
+				//gCam.camPos.x = 0.0 
+				//gCam.camPos.y = 0.0 
+				//gCam.camPos.z = 0.0  + 1.7
+				//gCam.camPos.x = gPlayer.System.pos.x
+				//gCam.camPos.y = gPlayer.System.pos.y + (TestF3 ?: 10 : 0)
+				//gCam.camPos.z = gPlayer.System.pos.z + 1.7
+				//learnShader.ApplyShaderToQueue(vk,step1Cmd.Get(),vk.GetSurfaceWidth(),vk.GetSurfaceHeight())
+				//gCam.BindDescriptor(step1Cmd.Get())
 
-				DrawMap(step1Cmd.Get(),gPlayerMap,centf(),4)
-				gMirror.StopRenderPass(step1Cmd.Get())
+				//DrawMap(step1Cmd.Get(),gPlayerMap,centf(),4)
+				//gMirror.StopRenderPass(step1Cmd.Get())
+
+
+				for i : 3
+				{
+					bar1 := VkImageMemoryBarrier()
+					bar1.image = fbTextures[i].Img()
+					bar1.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED
+					bar1.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+					bar1.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT
+					bar1.subresourceRange.levelCount = 1
+					bar1.subresourceRange.layerCount = 1
+					vk.Funcs.vkCmdPipelineBarrier(step1Cmd.Get(),VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,0,0,null,0,null,1,bar1&)
+				}
+				{
+					bar1 := VkImageMemoryBarrier()
+					bar1.image = depthTexture.Img()
+					bar1.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED
+					bar1.newLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
+					bar1.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT
+					bar1.subresourceRange.levelCount = 1
+					bar1.subresourceRange.layerCount = 1
+					vk.Funcs.vkCmdPipelineBarrier(step1Cmd.Get(),VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,0,0,null,0,null,1,bar1&)
+				}
 
 
 				StartModelDraw(step1Cmd.Get())
@@ -217,23 +240,30 @@ main := !(char^[] args) -> int
 				DrawMap(step1Cmd.Get(),gPlayerMap,centf(),4)
 				zeroOffset := centf()
 
-				drawMirrorShader.ApplyShaderToQueue(vk,step1Cmd.Get(),vk.GetSurfaceWidth(),vk.GetSurfaceHeight())
-				canvasProp.Draw(step1Cmd.Get(),gCam^,zeroOffset)
+				//drawMirrorShader.ApplyShaderToQueue(vk,step1Cmd.Get(),vk.GetSurfaceWidth(),vk.GetSurfaceHeight())
+				//canvasProp.Draw(step1Cmd.Get(),gCam^,zeroOffset)
 
 
 				StopModelDraw(step1Cmd.Get())
 
+
 				step1Cmd.Stop()
-				step1Cmd.Submit(vk.DrawQueue,null)
+				vk.Funcs.vkResetFences(vk.LogicalDevice,1,vk.itGlobFence&)
+				step1Cmd.Submit(vk.DrawQueue,vk.itGlobFence)
+
+				hm := u64 //TODO
+				hm = not_b hm
+				@work vk.Funcs.vkWaitForFences(vk.LogicalDevice,1,vk.itGlobFence&,0,hm)
 			}
 
 			{
+				step1Cmd.Reset()
+				step1Cmd.Start()
+				//step2Cmd.Reset()
+				//step2Cmd.Start()
 
-				step2Cmd.Reset()
-				step2Cmd.Start()
 
-
-				StartTextDraw(step2Cmd.Get(),vk.surfaceFramebuffer,vk.surfaceImageViews^[surfaceIndex])
+				StartTextDraw(step1Cmd.Get(),vk.surfaceFramebuffer,vk.surfaceImageViews^[surfaceIndex],surfaceIndex)
 
 				if win.menuMode
 				{
@@ -244,11 +274,22 @@ main := !(char^[] args) -> int
 
 					//NuklearDrawStep(step2Cmd.Get(),vk.GetSurfaceWidth(),vk.GetSurfaceHeight())
 				}
-				StopTextDraw(step2Cmd.Get())
+				StopTextDraw(step1Cmd.Get())
 
-				step2Cmd.Stop()
+				{
+					bar1 := VkImageMemoryBarrier()
+					bar1.image = vk.surfaceImages^[surfaceIndex]
+					bar1.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+					bar1.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
+					bar1.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT
+					bar1.subresourceRange.levelCount = 1
+					bar1.subresourceRange.layerCount = 1
+					vk.Funcs.vkCmdPipelineBarrier(step1Cmd.Get(),VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,0,0,null,0,null,1,bar1&)
+				}
+
+				step1Cmd.Stop()
 				vk.Funcs.vkResetFences(vk.LogicalDevice,1,vk.itGlobFence&)
-				step2Cmd.Submit(vk.DrawQueue,vk.itGlobFence)
+				step1Cmd.Submit(vk.DrawQueue,vk.itGlobFence)
 
 				hm := u64 //TODO
 				hm = not_b hm

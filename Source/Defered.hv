@@ -20,7 +20,6 @@ gFBW := 2048
 gFBH := 2048
 CreateFB := !() -> void
 {
-
 	//create depth
 	depthTexture = vk.CreateTexture()
 	depthTexture.CreateObject(gFBW,gFBH,(img,viv)==> {
@@ -65,26 +64,26 @@ CreateFB := !() -> void
 
 	vk.Funcs.vkUpdateDescriptorSets(vk.LogicalDevice,1,wrT&,0,null)
 
-	gMirror = gModelBase2.CreateFrame(null,depthTexture)
-	fbTextures[0] = gMirror.Images[0]
-	fbTextures[1] = gMirror.Images[1]
-	fbTextures[2] = gMirror.Images[2]
+	//gMirror = gModelBase2.CreateFrame(null,depthTexture)
+	//fbTextures[0] = gMirror.Images[0]
+	//fbTextures[1] = gMirror.Images[1]
+	//fbTextures[2] = gMirror.Images[2]
 
-	gMirror.ClearValues[0] = 0.0f
-	gMirror.ClearValues[1] = 0.5f
-	gMirror.ClearValues[2] = 1.0f
-	gMirror.ClearValues[3] = 1.0f
+	//gMirror.ClearValues[0] = 0.0f
+	//gMirror.ClearValues[1] = 0.5f
+	//gMirror.ClearValues[2] = 1.0f
+	//gMirror.ClearValues[3] = 1.0f
 
-	imgI[0].imageView = fbTextures[0].View()
-	imgI[1].imageView = fbTextures[1].View()
-	imgI[2].imageView = fbTextures[2].View()
+	//imgI[0].imageView = fbTextures[0].View()
+	//imgI[1].imageView = fbTextures[1].View()
+	//imgI[2].imageView = fbTextures[2].View()
 
-	wrT.descriptorCount = 3
-	wrT.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
-	wrT.pImageInfo&->{void^^}^ = imgI[0]&
-	wrT.dstSet = gGMirrorSet
+	//wrT.descriptorCount = 3
+	//wrT.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
+	//wrT.pImageInfo&->{void^^}^ = imgI[0]&
+	//wrT.dstSet = gGMirrorSet
 
-	vk.Funcs.vkUpdateDescriptorSets(vk.LogicalDevice,1,wrT&,0,null)
+	//vk.Funcs.vkUpdateDescriptorSets(vk.LogicalDevice,1,wrT&,0,null)
 }
 
 DrawGetImage := !() -> bool
@@ -103,47 +102,145 @@ DrawGetImage := !() -> bool
 
 StartModelDraw := !(VkCommandBuffer cmd) -> bool
 {
-	gModel2.StartRenderPass(cmd)
+	//gModel2.StartRenderPass(cmd)
+
+	clrAtt := u8[720]
+
+	clrValues := float[4]
+	
+	clrValues[0] = 1.0
+	clrValues[1] = 0.5
+	clrValues[2] = 0.0 
+	clrValues[4] = 1.0
+
+	for i : 3 //engine.modelRenderPass.itFrames
+	{
+		atm := clrAtt[i*72]&->{VkRenderingAttachmentInfo^}
+		atm."this"()
+		atm.imageView = fbTextures[i].View()
+		atm.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+		atm.resolveMode = VK_RESOLVE_MODE_NONE //TODO
+		atm.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR
+		atm.storeOp = VK_ATTACHMENT_STORE_OP_STORE
+		memcpy(atm.clearValue&,clrValues[0]&,4*4)
+	}
+
+	clrValues[0] = 1.0
+	dpth := VkRenderingAttachmentInfo()
+	dpth.imageView = depthTexture.View()
+	dpth.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
+	dpth.resolveMode = VK_RESOLVE_MODE_NONE //TODO
+	dpth.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR
+	dpth.storeOp = VK_ATTACHMENT_STORE_OP_STORE
+	memcpy(dpth.clearValue&,clrValues[0]&,4*4)
+
+	rndr := VkRenderingInfo()
+	rndr.renderArea.extent.width = vk.GetSurfaceWidth() //surfAb.currentExtent.width
+	rndr.renderArea.extent.height = vk.GetSurfaceHeight() //surfAb.currentExtent.height
+	rndr.layerCount = 1
+	rndr.colorAttachmentCount = 3
+	rndr.pColorAttachments&->{void^^}^ = clrAtt[0]&
+	rndr.pDepthAttachment = dpth&
+	//rndr.pStencilAttachment = null
+
+	vk.Funcs.vkCmdBeginRendering(cmd,rndr&)
 	return true
 }
 StopModelDraw := !(VkCommandBuffer cmd) -> bool
 {
-	vk.Funcs.vkCmdEndRenderPass(cmd) //TODO remove vk.Funcs
+	//vk.Funcs.vkCmdEndRenderPass(cmd) //TODO remove vk.Funcs
+
+	vk.Funcs.vkCmdEndRendering(cmd)
 }
-StartTextDraw := !(VkCommandBuffer cmd,VkFramebuffer frm, VkImageView img ) -> void
+StartTextDraw := !(VkCommandBuffer cmd,VkFramebuffer frm, VkImageView img , int imgIndx) -> void
 {
 	imgBarCPre := VkImageMemoryBarrier[2]
 
-	beginInfo := VkRenderPassBeginInfo()
+	{
+		bar1 := VkImageMemoryBarrier()
+		bar1.image = vk.surfaceImages^[imgIndx]
+		bar1.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED
+		bar1.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+		bar1.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT
+		bar1.subresourceRange.levelCount = 1
+		bar1.subresourceRange.layerCount = 1
+		vk.Funcs.vkCmdPipelineBarrier(cmd,VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,0,0,null,0,null,1,bar1&)
+	}
+	for i : 3
+	{
+		bar1 := VkImageMemoryBarrier()
+		bar1.image = fbTextures[i].Img()
+		bar1.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+		bar1.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+		bar1.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT
+		bar1.subresourceRange.levelCount = 1
+		bar1.subresourceRange.layerCount = 1
+		vk.Funcs.vkCmdPipelineBarrier(cmd,VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,0,0,null,0,null,1,bar1&)
+	}
 
-	clrValues := float[13]
+	clrAtt := VkRenderingAttachmentInfo[10]
 
-	clrValues[0] = 0.0
-	clrValues[1] = 0.5
-	clrValues[2] = 1.0
-	clrValues[4] = 1.0f
-	clrValues[5] = 0.0f
-	clrValues[6] = 0.0f
-	clrValues[7] = 1.0f
-
-	clrValues[8] = 0.0f
-	clrValues[9] = 1.0f
-	clrValues[10] = 0.0f
-	clrValues[11] = 0.0f
-
-	beginInfo.renderPass = gRenderPassLight
-	beginInfo.framebuffer = frm
-	beginInfo.renderArea.extent.width = vk.GetSurfaceWidth()
-	beginInfo.renderArea.extent.height = vk.GetSurfaceHeight()
-	beginInfo.clearValueCount = 1
-	beginInfo.pClearValues&->{void^^}^ = clrValues[0]&->{void^}
+	clrValues := float[4]
 	
-	renderPassAttms := VkRenderPassAttachmentBeginInfo()
-	renderPassAttms.attachmentCount = 1
-	renderPassAttms.pAttachments = img&
-	beginInfo.pNext = renderPassAttms&
+	clrValues[0] = 1.0
+	clrValues[1] = 1.0 
+	clrValues[2] = 1.0 
+	clrValues[4] = 1.0 
 
-	vk.Funcs.vkCmdBeginRenderPass(cmd,beginInfo&,VK_SUBPASS_CONTENTS_INLINE) //TODO remove vk.Funcs
+	{
+		atm := ref clrAtt[0]
+		atm."this"()
+		atm.imageView = img
+		atm.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+		atm.resolveMode = VK_RESOLVE_MODE_NONE //TODO
+		atm.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD
+		atm.storeOp = VK_ATTACHMENT_STORE_OP_STORE
+		memcpy(atm.clearValue&,clrValues[0]&,4*4)
+	}
+
+	rndr := VkRenderingInfo()
+	rndr.renderArea.extent.width = vk.GetSurfaceWidth() //surfAb.currentExtent.width
+	rndr.renderArea.extent.height = vk.GetSurfaceHeight() //surfAb.currentExtent.height
+	rndr.layerCount = 1
+	rndr.colorAttachmentCount = 1
+	rndr.pColorAttachments&->{void^^}^ = clrAtt[0]&
+
+	//rndr.pDepthAttachment = dpth&
+	//rndr.pStencilAttachment = null
+
+
+	vk.Funcs.vkCmdBeginRendering(cmd,rndr&)
+
+	//beginInfo := VkRenderPassBeginInfo()
+
+	//clrValues := float[13]
+
+	//clrValues[0] = 0.0
+	//clrValues[1] = 0.5
+	//clrValues[2] = 1.0
+	//clrValues[4] = 1.0f
+	//clrValues[5] = 0.0f
+	//clrValues[6] = 0.0f
+	//clrValues[7] = 1.0f
+
+	//clrValues[8] = 0.0f
+	//clrValues[9] = 1.0f
+	//clrValues[10] = 0.0f
+	//clrValues[11] = 0.0f
+
+	//beginInfo.renderPass = gRenderPassLight
+	//beginInfo.framebuffer = frm
+	//beginInfo.renderArea.extent.width = vk.GetSurfaceWidth()
+	//beginInfo.renderArea.extent.height = vk.GetSurfaceHeight()
+	//beginInfo.clearValueCount = 1
+	//beginInfo.pClearValues&->{void^^}^ = clrValues[0]&->{void^}
+	//
+	//renderPassAttms := VkRenderPassAttachmentBeginInfo()
+	//renderPassAttms.attachmentCount = 1
+	//renderPassAttms.pAttachments = img&
+	//beginInfo.pNext = renderPassAttms&
+
+	//vk.Funcs.vkCmdBeginRenderPass(cmd,beginInfo&,VK_SUBPASS_CONTENTS_INLINE) //TODO remove vk.Funcs
 
 	gLightShader.ApplyShaderToQueue(vk,cmd,vk.GetSurfaceWidth(),vk.GetSurfaceHeight())
 	sts := VkDescriptorSet[2]
@@ -162,5 +259,6 @@ StartTextDraw := !(VkCommandBuffer cmd,VkFramebuffer frm, VkImageView img ) -> v
 
 StopTextDraw := !(VkCommandBuffer cmd) -> bool
 {
-	vk.Funcs.vkCmdEndRenderPass(cmd) //TODO remove vk.Funcs
+	//vk.Funcs.vkCmdEndRenderPass(cmd) //TODO remove vk.Funcs
+	vk.Funcs.vkCmdEndRendering(cmd)
 }
