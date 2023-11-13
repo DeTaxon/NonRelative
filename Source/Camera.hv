@@ -59,7 +59,7 @@ vCamera := class
 		perspConsts[2] = (camFar + camNear) / range
 		perspConsts[3] = 2.0*(camFar*camNear/range)
 
-		vkPerspMem.TransferData(TArraySpan.{u8}(perspConsts[0]&->{u8^}, 4*4)) //TODO
+		vkPerspMem.TransferData(ArraySpan.{u8}(perspConsts[0]&->{u8^}, 4*4)) //TODO
 	}
 
 	SetPerspective := !(float w, float h, float near, float far, float pov) -> void

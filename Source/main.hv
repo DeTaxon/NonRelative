@@ -247,18 +247,18 @@ main := !(char^[] args) -> int
 				StopModelDraw(step1Cmd.Get())
 
 
-				step1Cmd.Stop()
-				vk.Funcs.vkResetFences(vk.LogicalDevice,1,vk.itGlobFence&)
-				step1Cmd.Submit(vk.DrawQueue,vk.itGlobFence)
+				//step1Cmd.Stop()
+				//vk.Funcs.vkResetFences(vk.LogicalDevice,1,vk.itGlobFence&)
+				//step1Cmd.Submit(vk.DrawQueue,vk.itGlobFence)
 
-				hm := u64 //TODO
-				hm = not_b hm
-				@work vk.Funcs.vkWaitForFences(vk.LogicalDevice,1,vk.itGlobFence&,0,hm)
+				//hm := u64 //TODO
+				//hm = not_b hm
+				//@work vk.Funcs.vkWaitForFences(vk.LogicalDevice,1,vk.itGlobFence&,0,hm)
 			}
 
 			{
-				step1Cmd.Reset()
-				step1Cmd.Start()
+				//step1Cmd.Reset()
+				//step1Cmd.Start()
 				//step2Cmd.Reset()
 				//step2Cmd.Start()
 
@@ -288,12 +288,13 @@ main := !(char^[] args) -> int
 				}
 
 				step1Cmd.Stop()
-				vk.Funcs.vkResetFences(vk.LogicalDevice,1,vk.itGlobFence&)
-				step1Cmd.Submit(vk.DrawQueue,vk.itGlobFence)
+				//vk.Funcs.vkResetFences(vk.LogicalDevice,1,vk.itGlobFence&)
+				//step1Cmd.Submit(vk.DrawQueue,vk.itGlobFence)
+				step1Cmd.Submit(vk.DrawQueue,null)
 
-				hm := u64 //TODO
-				hm = not_b hm
-				@work vk.Funcs.vkWaitForFences(vk.LogicalDevice,1,vk.itGlobFence&,0,hm)
+				//hm := u64 //TODO
+				//hm = not_b hm
+				//@work vk.Funcs.vkWaitForFences(vk.LogicalDevice,1,vk.itGlobFence&,0,hm)
 			}
 
 			vk.DrawPresentImage(surfaceIndex)
