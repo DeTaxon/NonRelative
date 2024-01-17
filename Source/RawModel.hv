@@ -118,7 +118,7 @@ RawModel := class
 
 	// 	return true
 	// }
-	LoadFromFile := !(vRepoFile^ fl) -> bool
+	LoadFromFile := !(File^ fl) -> bool
 	{
 		//ext := fl.GetName()[-3..0]
 		mp := fl.GetMap()

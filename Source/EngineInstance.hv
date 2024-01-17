@@ -11,7 +11,7 @@ TEngine := class extend TGCObject
 	{
 		return LoadMap(FSGetFile(charPath))
 	}
-	LoadMap := !(vRepoFile^ inFile) -> vMap^
+	LoadMap := !(File^ inFile) -> vMap^
 	{
 		mp := inFile.GetMap()
 
@@ -55,7 +55,7 @@ TEngine := class extend TGCObject
 	{
 		return LoadMesh(FSGetFile(charPath))
 	}
-	LoadMesh := !(vRepoFile^ inFile) -> vModel^
+	LoadMesh := !(File^ inFile) -> vModel^
 	{
 		result = new vModel
 		result.LoadFile(inFile)
@@ -66,7 +66,7 @@ TEngine := class extend TGCObject
 	{
 		return LoadModel(FSGetFile(charPath))
 	}
-	LoadModel := !(vRepoFile^ inFile) -> vModel^
+	LoadModel := !(File^ inFile) -> vModel^
 	{
 		js := new Json
 
@@ -76,7 +76,7 @@ TEngine := class extend TGCObject
 
 		return LoadModel(inFile,js)
 	}
-	LoadModel := !(vRepoFile^ inFile,JsonNode^ js) -> vModel^
+	LoadModel := !(File^ inFile,JsonNode^ js) -> vModel^
 	{
 		result = new vModel
 		
@@ -122,7 +122,7 @@ TEngine := class extend TGCObject
 	{
 		return LoadTexture(FSGetFile(charPath))
 	}
-	LoadTexture := !(vRepoFile^ inFile) -> TVkTexture^
+	LoadTexture := !(File^ inFile) -> TVkTexture^
 	{
 		result = vk.CreateTexture() //TODO
 		result.CreateTexture(inFile)

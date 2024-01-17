@@ -15,7 +15,7 @@ vModel := class
 	indexMemory := TVkMemBuffer^
 
 
-	LoadFile := !(vRepoFile^ itFl) -> bool
+	LoadFile := !(File^ itFl) -> bool
 	{
 		rFile := new RawModel
 		if not rFile.LoadFromFile(itFl)

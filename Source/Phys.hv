@@ -229,7 +229,7 @@ PhysHeightMap := class
 
 		return resSize
 	}
-	LoadFromHMap1 := !(vRepoFile^ fl) -> void
+	LoadFromHMap1 := !(File^ fl) -> void
 	{
 		ptr := fl.Map()
 		defer fl.Unmap() //TODO: keep map
