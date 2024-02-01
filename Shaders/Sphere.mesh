@@ -32,6 +32,10 @@ layout(push_constant) uniform PushConsts{
 	vec4 quantAng;
 	vec4 g_pos;
 }consts;
+layout(set = 0,binding = 0) uniform perspInfo
+{
+	vec4 prespData;
+};
 vec4 quat_conj(vec4 q)
 { 
   return vec4(-q.x, -q.y, -q.z, q.w); 
@@ -57,7 +61,17 @@ vec3 rotate_vertex_position(vec3 position,vec4 qnt)
 }
 vec4 compute_position(vec4 i_Position)
 {
-    return vec4((rotate_vertex_position(i_Position.xyz*consts.g_pos.w,consts.quantAng)) + consts.g_pos.xyz,1.0f);
+    vec4 prePosition = vec4((rotate_vertex_position(i_Position.xyz*consts.g_pos.w,consts.quantAng)) + consts.g_pos.xyz,1.0f);
+
+	prePosition = prePosition.yzxw * vec4(-1.0f,-1.0f,-1.0f,1.0f);
+
+    vec4 result;
+	result.x = prePosition.x*prespData.x;
+	result.y = prePosition.y*prespData.y;
+	result.z = -(prePosition.z*prespData.z + prespData.w);
+	result.w = -prePosition.z;
+
+    return result;
 }
 
 void main()
