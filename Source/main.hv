@@ -28,7 +28,7 @@ main := !(char^[] args) -> int
 	win.SetInputMode("DISABLED")
 	
 	//TODO can't create empty class
-	engine = new TEngine
+	engine = new TEngine()
 
 	VulkanInit()
 	
@@ -60,38 +60,6 @@ main := !(char^[] args) -> int
 	canvasProp = engine.CreateProp(canvas)
 	canvasProp.propPosition.pos = vec4f(2.0,0.0,1.4,1.0)
 	canvasProp.propPosition.ang = quantfAt(0.0,0.0,1.0,-90deg) <*> quantfAt(1.0,0.0,0.0,90deg)
-	//gMapMap.mapProps.Push(canvasProp)
-
-	//packedChar := Vector.{stbtt_packedchar}(256)
-	//atlasTest := Vector.{u8}(512*512)
-	//pc := new stbtt_pack_context
-	//stb_truetype_init()
-	//stbtt_PackBegin(pc,atlasTest.GetPointer(),512,512,512,1,null)
-	//stbtt_PackSetOversampling(pc,2,2)
-	//testFont := FSGetFile("Goldman-Regular.ttf")
-	////testFont := FSGetFile("Pacifico.ttf")
-	//testFontData := testFont.GetMap()
-	//stbtt_PackFontRange(pc,testFontData.Get(),0,20,0,256,packedChar.GetPointer())
-	////stbtt_PackEnd(pc)
-
-	//atlTexture := vk.CreateTexture()
-	//newTexture := Vector.{u8}(512*512*4)
-
-	//ff := atlasTest.GetPointer()
-	//tt := newTexture.GetPointer()
-	//for i : 512
-	//{
-	//	for j : 512
-	//	{
-	//		tt[(i + j*512)*4 + 0] = ff[i + j*512]
-	//		tt[(i + j*512)*4 + 1] = ff[i + j*512]
-	//		tt[(i + j*512)*4 + 2] = ff[i + j*512]
-	//		tt[(i + j*512)*4 + 3] = 255
-	//	}
-	//}
-	//atlTexture.CreateTexture(512,512,newTexture&)
-
-	//canvasProp.SetTexture(atlTexture)
 
 	NuklearTestInit()
 	NuklearCreateStep()
@@ -113,50 +81,12 @@ main := !(char^[] args) -> int
 	lastFpsCheck := GetSteadyTime()
 	localFpsCounter := 0
 
+    meshBase := engine.modelRenderPass.CreateLayout(![],![],![],3)
 
-	//gem1 := VkGeometryNV()
-	//gem1.geometryType = VK_GEOMETRY_TYPE_TRIANGLES_NV
-	////gem1.triangles.sType = VK_STRUCTURE_TYPE_GEOMETRY_TRIANGLES_NV
-
-	//gem1.geometry.triangles.sType = VK_STRUCTURE_TYPE_GEOMETRY_TRIANGLES_NV
-	//gem1.geometry.triangles.pNext = null
-	////gem1.geometry.triangles.vertexData = vb.GetBuffer()
-	//gem1.geometry.triangles.vertexOffset = 0
-	//gem1.geometry.triangles.vertexCount = 4
-	//gem1.geometry.triangles.vertexStride = 8*4//sizeof(vec3)
-	//gem1.geometry.triangles.vertexFormat = VK_FORMAT_R32G32B32_SFLOAT
-	////gem1.geometry.triangles.indexData = ib.GetBuffer()
-	//gem1.geometry.triangles.indexOffset = 0
-	//gem1.geometry.triangles.indexCount = 6
-	//gem1.geometry.triangles.indexType = VK_INDEX_TYPE_UINT32
-	//gem1.geometry.triangles.transformData = null
-	//gem1.geometry.triangles.transformOffset = 0
-	////gem1.geometry.aabbs
-	//gem1.geometry.aabbs.sType = VK_STRUCTURE_TYPE_GEOMETRY_AABB_NV
-	//gem1.flags = VK_GEOMETRY_OPAQUE_BIT_NV
-
-	////vkGeometryInstance := class
-	////{
-	////	transform := float[12]
-	////	instanceId_mask := u32
-	////	instanceOffset_flags := 32
-	////	accelerationStructureHandle := u64
-	////}
-
-	//gemInst := vkGeometryInstance
-	//gemInst.instanceId_mask = 255 shl 24
-	//gemInst.instanceOffset_flags = VK_GEOMETRY_INSTANCE_TRIANGLE_CULL_DISABLE_BIT_NV shl 24
-
-	//printf("test %p\n",vk.Funcs.vkCmdTraceRaysNV)
-
-	//accl := VkAccelerationStructureCreateInfoNV()
-
-
-	//mirDescr := engine.modelTextureDescriptor.CreateDescriptor()
-	//{
-	//	vSetTexture(vk,mirDescr,gMirror.Images[0],gSamplerNearest)
-	//}
-	//canvasProp.SetTexture(gMirror.Images[0])
+    task := engine.shaderCompiler.Compile(FSGetFile(StringSpan("Shaders/Sphere.task")))
+    mesh := engine.shaderCompiler.Compile(FSGetFile(StringSpan("Shaders/Sphere.mesh")))
+    frag := engine.shaderCompiler.Compile(FSGetFile(StringSpan("Shaders/Sphere.frag")))
+    meshShader := meshBase.CreateMeshShader(task,mesh,frag) 
 
 	step1Cmd := TVkCommandBuffer(vk,vk.itDrawCmdPool2)
 	step2Cmd := TVkCommandBuffer(vk,vk.itDrawCmdPool2)
@@ -189,20 +119,6 @@ main := !(char^[] args) -> int
 			{
 				step1Cmd.Reset()
 				step1Cmd.Start()
-
-				//gMirror.StartRenderPass(step1Cmd.Get())
-
-				//gCam.camPos.x = 0.0 
-				//gCam.camPos.y = 0.0 
-				//gCam.camPos.z = 0.0  + 1.7
-				//gCam.camPos.x = gPlayer.System.pos.x
-				//gCam.camPos.y = gPlayer.System.pos.y + (TestF3 ?: 10 : 0)
-				//gCam.camPos.z = gPlayer.System.pos.z + 1.7
-				//learnShader.ApplyShaderToQueue(vk,step1Cmd.Get(),vk.GetSurfaceWidth(),vk.GetSurfaceHeight())
-				//gCam.BindDescriptor(step1Cmd.Get())
-
-				//DrawMap(step1Cmd.Get(),gPlayerMap,centf(),4)
-				//gMirror.StopRenderPass(step1Cmd.Get())
 
 
 				for i : 3
@@ -240,28 +156,16 @@ main := !(char^[] args) -> int
 				DrawMap(step1Cmd.Get(),gPlayerMap,centf(),4)
 				zeroOffset := centf()
 
-				//drawMirrorShader.ApplyShaderToQueue(vk,step1Cmd.Get(),vk.GetSurfaceWidth(),vk.GetSurfaceHeight())
-				//canvasProp.Draw(step1Cmd.Get(),gCam^,zeroOffset)
+				meshShader.ApplyShaderToQueue(vk,step1Cmd.Get(),vk.GetSurfaceWidth(),vk.GetSurfaceHeight())
+                vk.Funcs.vkCmdDrawMeshTasksEXT(step1Cmd.Get(),1,1,1)
 
 
 				StopModelDraw(step1Cmd.Get())
 
 
-				//step1Cmd.Stop()
-				//vk.Funcs.vkResetFences(vk.LogicalDevice,1,vk.itGlobFence&)
-				//step1Cmd.Submit(vk.DrawQueue,vk.itGlobFence)
-
-				//hm := u64 //TODO
-				//hm = not_b hm
-				//@work vk.Funcs.vkWaitForFences(vk.LogicalDevice,1,vk.itGlobFence&,0,hm)
 			}
 
 			{
-				//step1Cmd.Reset()
-				//step1Cmd.Start()
-				//step2Cmd.Reset()
-				//step2Cmd.Start()
-
 
 				StartTextDraw(step1Cmd.Get(),vk.surfaceFramebuffer,vk.surfaceImageViews^[surfaceIndex],surfaceIndex)
 

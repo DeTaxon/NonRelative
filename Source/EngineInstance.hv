@@ -7,6 +7,11 @@ TEngine := class extend TGCObject
 	cacheFile := CacheFile^
 	shaderCompiler := ShaderCompiler
 
+    this := !() -> void
+    {
+        shaderCompiler."this"()
+    }
+
 	LoadMap := !(StringView charPath) -> vMap^
 	{
 		return LoadMap(FSGetFile(charPath))

@@ -48,6 +48,9 @@ VKNonRelative := class extend VulkanDefaultInstance
 		expectDeviceExtensions.Push("VK_KHR_imageless_framebuffer")
 		expectDeviceExtensions.Push("VK_KHR_image_format_list")
 
+		expectDeviceExtensions.Push("VK_EXT_mesh_shader")
+		expectDeviceExtensions.Push("VK_KHR_maintenance4")
+
 		//expectDeviceExtensions.Push("VK_KHR_acceleration_structure")
 		//expectDeviceExtensions.Push("VK_KHR_buffer_device_address")
 		//expectDeviceExtensions.Push("VK_KHR_deferred_host_operations")
@@ -64,7 +67,7 @@ vk := VKNonRelative^
 VulkanInit := !() -> void
 {
 	vk = new VKNonRelative
-	vk.PreferIntegratedGPU()
+	//vk.PreferIntegratedGPU()
 	vk.Init()
 
 	vkPhysCard = vk.PhysicalDevice

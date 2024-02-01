@@ -40,8 +40,8 @@ CreateFB := !() -> void
 	fbTextures[1] = gModel2.Images[1]
 	fbTextures[2] = gModel2.Images[2]
 
-	gModel2.ClearValues[0] = 1.0f
-	gModel2.ClearValues[1] = 0.5f
+	gModel2.ClearValues[0] = 0.0f
+	gModel2.ClearValues[1] = 0.0f
 	gModel2.ClearValues[2] = 0.0f
 	gModel2.ClearValues[3] = 1.0f
 
@@ -108,8 +108,8 @@ StartModelDraw := !(VkCommandBuffer cmd) -> bool
 
 	clrValues := float[4]
 	
-	clrValues[0] = 1.0
-	clrValues[1] = 0.5
+	clrValues[0] = 0.0
+	clrValues[1] = 0.0
 	clrValues[2] = 0.0 
 	clrValues[4] = 1.0
 
