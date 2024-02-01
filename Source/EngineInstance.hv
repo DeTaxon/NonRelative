@@ -195,7 +195,7 @@ TEngine := class extend TGCObject
 
 		gLightLayout = lightLayout.Get()
 
-		overlay.Init(lightRenderPass)
+		//overlay.Init(lightRenderPass)
 
 		cacheFile = new CacheFile("EngineData.zip")
 		shaderCompiler.SetCacheFile(cacheFile)

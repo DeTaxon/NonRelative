@@ -81,7 +81,11 @@ main := !(char^[] args) -> int
 	lastFpsCheck := GetSteadyTime()
 	localFpsCounter := 0
 
-    meshBase := engine.modelRenderPass.CreateLayout(![],![],![],3)
+    meshBase := engine.modelRenderPass.CreateLayout(![],![],![
+			new TMeshPushConstant(4*4*2)
+    ],3)
+
+    meshPos := centf()
 
     task := engine.shaderCompiler.Compile(FSGetFile(StringSpan("Shaders/Sphere.task")))
     mesh := engine.shaderCompiler.Compile(FSGetFile(StringSpan("Shaders/Sphere.mesh")))
@@ -154,9 +158,13 @@ main := !(char^[] args) -> int
 				gCam.BindDescriptor(step1Cmd.Get())
 
 				DrawMap(step1Cmd.Get(),gPlayerMap,centf(),4)
+
 				zeroOffset := centf()
 
+                meshBasePos := centf()
+                gCam.ApplyCamera(meshPos,meshBasePos)
 				meshShader.ApplyShaderToQueue(vk,step1Cmd.Get(),vk.GetSurfaceWidth(),vk.GetSurfaceHeight())
+		        vk.Funcs.vkCmdPushConstants(step1Cmd.Get(),meshBase.Get(),1 shl 7,0,4*4*2,meshBasePos&)
                 vk.Funcs.vkCmdDrawMeshTasksEXT(step1Cmd.Get(),1,1,1)
 
 
