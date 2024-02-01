@@ -1,9 +1,3 @@
-/* Copyright (c) 2021, Sascha Willems
- *
- * SPDX-License-Identifier: MIT
- *
- */
-
 #version 450
  
 layout (location = 0) in VertexInput {
@@ -13,7 +7,6 @@ layout (location = 0) in VertexInput {
 layout(location = 0) out vec4 out_Color;
 layout(location = 1) out vec4 out_Normal;
 layout(location = 2) out vec4 out_Vert;
-
  
 
 void main()
