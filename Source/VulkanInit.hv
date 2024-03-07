@@ -67,6 +67,7 @@ vk := VKNonRelative^
 VulkanInit := !() -> void
 {
 	vk = new VKNonRelative
+    vk.UseMeshShader()
 	//vk.PreferIntegratedGPU()
 	vk.Init()
 

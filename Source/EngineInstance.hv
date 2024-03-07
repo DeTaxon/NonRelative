@@ -207,6 +207,7 @@ TEngine := class extend TGCObject
 		fil := FSGetFile(shaderInfo)
 		flMap := fil.GetMap()
 		js := new Json
+
 		js.ParseString(flMap.Get()->{char^},flMap.Size())
 
 		shaderType := TShaderInput^

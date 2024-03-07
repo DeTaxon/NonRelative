@@ -55,7 +55,7 @@ main := !(char^[] args) -> int
 	gPlayerMap = engine.LoadMap("Maps/FirstMap2/FirstMap.json")
 	gMapMap := gPlayerMap
 
-	LinkMaps(gPlayerMap,gPlayerMap,45.5x,quantf(0,0,0,1))
+	//LinkMaps(gPlayerMap,gPlayerMap,45.5x,quantf(0,0,0,1))
 
 	canvasProp = engine.CreateProp(canvas)
 	canvasProp.propPosition.pos = vec4f(2.0,0.0,1.4,1.0)
@@ -77,6 +77,7 @@ main := !(char^[] args) -> int
 			TSleep(1 / 150)
 		}
 	})
+
 
 	lastFpsCheck := GetSteadyTime()
 	localFpsCounter := 0
@@ -119,7 +120,7 @@ main := !(char^[] args) -> int
     
 	{
 		aspect := 1800 / 1000
-		fovTM := 1.0f / tanf(gCam.camPOV*0.5f)
+		fovTM := 1.0f / tan(gCam.camPOV*0.5f)
 		range := gCam.camFar - gCam.camNear
 
         perspConsts := float[4]
@@ -147,7 +148,8 @@ main := !(char^[] args) -> int
 
 		surfaceIndex := u32
 		drawRes := true
-		@work vk.DrawGetImage(surfaceIndex&,drawRes&)
+		//@work vk.DrawGetImage(surfaceIndex&,drawRes&)
+		vk.DrawGetImage(surfaceIndex&,drawRes&)
 
 		localFpsCounter += 1
 
@@ -270,8 +272,15 @@ main := !(char^[] args) -> int
 					TSleep(0.01)
 				}
 			}
+
+		    surfaceInfo := VkSurfaceCapabilitiesKHR
+		    vk.Funcs.vkGetPhysicalDeviceSurfaceCapabilitiesKHR(vk.PhysicalDevice,vk.itSurface,surfaceInfo&)
+
+		    setW := clamp(surfaceInfo.minImageExtent.width,win.Width->{u32},surfaceInfo.minImageExtent.width)
+		    setH := clamp(surfaceInfo.minImageExtent.height,win.Height->{u32},surfaceInfo.minImageExtent.height)
+
 			//TODO cases when one of values is zero
-			while not vk.CreateSwapchain(engine.lightRenderPass,win.Width,win.Height)
+			while not vk.CreateSwapchain(engine.lightRenderPass,setW,setH)
 			{
 				TSleep(0.5)
 			}

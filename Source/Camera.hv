@@ -51,7 +51,7 @@ vCamera := class
 	UpdatePerspective := !(float w, float h) -> void
 	{
 		aspect := w / h
-		fovTM := 1.0f / tanf(camPOV*0.5f)
+		fovTM := 1.0f / tan(camPOV*0.5f)
 		range := camFar - camNear
 
 		perspConsts[0] = fovTM / aspect
@@ -89,7 +89,9 @@ vCamera := class
 	
 	camQuant := !() -> quantf
 	{
-		return quantfAt(0.0f,0.0f,1.0f,-leftRightAng)<*>quantfAt(0.0f,1.0f,0.0f,upDownAng)
+		q1 := quantfAt(0.0f,0.0f,1.0f,-leftRightAng)
+        q2 := quantfAt(0.0f,1.0f,0.0f,upDownAng)
+        result = q1 <*> q2
 	}
 	addLocal := !(vec4f diffAdd) -> void
 	{
