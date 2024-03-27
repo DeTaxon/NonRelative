@@ -117,6 +117,7 @@ vCamera := class
 	}
 	InputCheck := !(GLFWWindow^ win,double deltaTime, bool applyMove = true) -> void
 	{
+
 		if not applyMove
 		{
 			mouseCamX = win.MouseX

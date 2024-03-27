@@ -13,6 +13,11 @@ ifeq ($(OS),Windows_NT)
 endif
 
 
+
+ifeq ($(tui),yes)
+	gdb_tui := gdb --tui --args 
+endif
+
 CmpLL :=  clang++ -g Objs/engi.ll $(Libs) -o $(Result) -march=native
 
 ifeq ($(cross),win32)
@@ -29,7 +34,7 @@ win.exe:
 	$(TimeFlags) ./halfvoid -win32  -g -C0 StandardLibrary -C1 Source --vk ./vk.xml -o out.ll
 	clang --target=x86_64-w64-mingw32-gnu  out.ll  -o win.exe
 run:
-	./halfvoid -g -C0 StandardHVLibrary/ -C1 Source --vk ./vk.xml -o out.ll -cache /tmp/HVMecha.zip -run main
+	$(gdb_tui) ./halfvoid -g -C0 StandardHVLibrary/ -C1 Source --vk ./vk.xml -o out.ll -cache /tmp/HVMecha.zip -run main
 
 WinCompiler := x86_64-w64-mingw32-gcc 
 
@@ -51,6 +56,8 @@ clean:
 	rm -f out.ll WinObj.o a.exe a.out engig
 grind:
 	valgrind --log-file=grind.txt --leak-check=full --leak-resolution=med ./engi
+run_soft:
+	LIBGL_ALWAYS_SOFTWARE=1 __GLX_VENDOR_LIBRARY_NAME=mesa VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/lvp_icd.i686.json:/usr/share/vulkan/icd.d/lvp_icd.x86_64.json ./halfvoid -g -C0 StandardHVLibrary/ -C1 Source --vk ./vk.xml -o out.ll -cache /tmp/HVMecha.zip -run main
 soft:
 	LIBGL_ALWAYS_SOFTWARE=1 __GLX_VENDOR_LIBRARY_NAME=mesa VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/lvp_icd.i686.json:/usr/share/vulkan/icd.d/lvp_icd.x86_64.json ./en
 
