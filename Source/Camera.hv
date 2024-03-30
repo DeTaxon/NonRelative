@@ -125,11 +125,12 @@ vCamera := class
 			return void
 		}
 
-		walkM := 0.5f
+		walkM := 1.0f
 		addLR := 0.0f
 		addFB := 0.0f
+
 		walkTime := deltaTime
-		if buttons['S'] walkTime *= 3.5
+		if buttons['S'] walkTime *= 20
 		if buttons['a'] addLR =  walkM*walkTime
 		if buttons['d'] addLR = -walkM*walkTime
 		if buttons['w'] addFB =  walkM*walkTime

@@ -72,7 +72,7 @@ main := !(char^[] args) -> int
 		while not gQuit
 		{
 			nowTime := GetSteadyTime()
-			vPhysStage(nowTime - oldTime)
+			//vPhysStage(nowTime - oldTime)
 			oldTime = nowTime
 			TSleep(1 / 150)
 		}
@@ -82,56 +82,57 @@ main := !(char^[] args) -> int
 	lastFpsCheck := GetSteadyTime()
 	localFpsCounter := 0
 
-    //meshBase := engine.modelRenderPass.CreateLayout(![],![
-	//		new TUniformSet(1 shl 7), //TODO
-    //],![
-	//		new TMeshPushConstant(4*4*2)
-    //],3)
+    meshBase := engine.modelRenderPass.CreateLayout(![],![
+			new TUniformSet(1 shl 7), //TODO
+    ],![
+			new TMeshPushConstant(4*4*2)
+    ],3)
 
-    //meshPool := meshBase.CreateDescriptorPool(0,16)
-    //meshDescr := meshPool.CreateDescriptor()
+    meshPool := meshBase.CreateDescriptorPool(0,16)
+    meshDescr := meshPool.CreateDescriptor()
 
-	//meshDescrMem := vk.CreateMemBufferObject(4*4,VK_BUFFER_USAGE_VERTEX_BUFFER_BIT or_b VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT or_b VK_BUFFER_USAGE_TRANSFER_DST_BIT)
+	meshDescrMem := vk.CreateMemBufferObject(4*4,VK_BUFFER_USAGE_VERTEX_BUFFER_BIT or_b VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT or_b VK_BUFFER_USAGE_TRANSFER_DST_BIT)
 
-    //meshPos := centf()
-    //meshPos.pos.x = 9
-    //meshPos.pos.y = 9
-    //meshPos.pos.z = 1.5
-    //meshPos.ang = quantfAt(1.0,0.0,0.0,-90deg)
+    meshPos := centf()
+    meshPos.pos.x = 9
+    meshPos.pos.y = 9
+    meshPos.pos.z = 1.5
+    meshPos.ang = quantfAt(1.0,0.0,0.0,-90deg)
 
-    //task := engine.shaderCompiler.Compile(FSGetFile(StringSpan("Shaders/Sphere.task")))
-    //mesh := engine.shaderCompiler.Compile(FSGetFile(StringSpan("Shaders/Sphere.mesh")))
-    //frag := engine.shaderCompiler.Compile(FSGetFile(StringSpan("Shaders/Sphere.frag")))
-    //meshShader := meshBase.CreateMeshShader(task,mesh,frag) 
+    task := engine.shaderCompiler.Compile(FSGetFile(StringSpan("Shaders/Sphere.task")))
+    mesh := engine.shaderCompiler.Compile(FSGetFile(StringSpan("Shaders/Sphere.mesh")))
+    frag := engine.shaderCompiler.Compile(FSGetFile(StringSpan("Shaders/Sphere.frag")))
+    meshShader := meshBase.CreateMeshShader(task,mesh,frag) 
 
-	//bufInfo := VkDescriptorBufferInfo
-	//bufInfo.buffer = meshDescrMem.itBuffer
-	//bufInfo.offset = 0
-	//bufInfo.range = 4*4
-	//someWrite := VkWriteDescriptorSet()
-	//someWrite.dstSet = meshDescr 
-	//someWrite.dstBinding = 0
-	//someWrite.dstArrayElement = 0
-	//someWrite.descriptorCount = 1
-	//someWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
-	//someWrite.pBufferInfo&->{void^^}^ = bufInfo&
+	bufInfo := VkDescriptorBufferInfo
+	bufInfo.buffer = meshDescrMem.itBuffer
+	bufInfo.offset = 0
+	bufInfo.range = 4*4
+	someWrite := VkWriteDescriptorSet()
+	someWrite.dstSet = meshDescr 
+	someWrite.dstBinding = 0
+	someWrite.dstArrayElement = 0
+	someWrite.descriptorCount = 1
+	someWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
+	someWrite.pBufferInfo&->{void^^}^ = bufInfo&
 
-	//vk.Funcs.vkUpdateDescriptorSets(vk.LogicalDevice,1,someWrite&,0,null)
+	vk.Funcs.vkUpdateDescriptorSets(vk.LogicalDevice,1,someWrite&,0,null)
     
-	//{
-	//	aspect := 1800 / 1000
-	//	fovTM := 1.0f / tan(gCam.camPOV*0.5f)
-	//	range := gCam.camFar - gCam.camNear
+	{
+		aspect := 1800 / 1000
+		fovTM := 1.0f / tan(gCam.camPOV*0.5f)
+		range := gCam.camFar - gCam.camNear
 
-    //    perspConsts := float[4]
+        perspConsts := float[4]
 
-	//	perspConsts[0] = fovTM / aspect
-	//	perspConsts[1] = fovTM
-	//	perspConsts[2] = (gCam.camFar + gCam.camNear) / range
-	//	perspConsts[3] = 2.0*(gCam.camFar*gCam.camNear/range)
+		perspConsts[0] = fovTM / aspect
+		perspConsts[1] = fovTM
+		perspConsts[2] = (gCam.camFar + gCam.camNear) / range
+		perspConsts[3] = 2.0*(gCam.camFar*gCam.camNear/range)
 
-	//	meshDescrMem.TransferData(ArraySpan.{u8}(perspConsts[0]&->{u8^}, 4*4)) //TODO
-	//}
+		meshDescrMem.TransferData(ArraySpan.{u8}(perspConsts[0]&->{u8^}, 4*4)) //TODO
+	}
+    gCam.camPos.z = 1.7
 
 	step1Cmd := TVkCommandBuffer(vk,vk.itDrawCmdPool2)
 	step2Cmd := TVkCommandBuffer(vk,vk.itDrawCmdPool2)
@@ -192,9 +193,9 @@ main := !(char^[] args) -> int
 
 				StartModelDraw(step1Cmd.Get())
 
-				gCam.camPos.x = gPlayer.System.pos.x
-				gCam.camPos.y = gPlayer.System.pos.y
-				gCam.camPos.z = gPlayer.System.pos.z + 1.7
+				//gCam.camPos.x = gPlayer.System.pos.x
+				//gCam.camPos.y = gPlayer.System.pos.y
+				//gCam.camPos.z = gPlayer.System.pos.z + 1.7
 
 				learnShader.ApplyShaderToQueue(vk,step1Cmd.Get(),vk.GetSurfaceWidth(),vk.GetSurfaceHeight())
 				gCam.BindDescriptor(step1Cmd.Get())
@@ -203,12 +204,12 @@ main := !(char^[] args) -> int
 
 				zeroOffset := centf()
 
-                //meshBasePos := centf()
-                //gCam.ApplyCamera(meshPos,meshBasePos)
-				//meshShader.ApplyShaderToQueue(vk,step1Cmd.Get(),vk.GetSurfaceWidth(),vk.GetSurfaceHeight())
-		        //vk.Funcs.vkCmdPushConstants(step1Cmd.Get(),meshBase.Get(),1 shl 7,0,4*4*2,meshBasePos&)
-		        //vk.Funcs.vkCmdBindDescriptorSets(step1Cmd.Get(),VK_PIPELINE_BIND_POINT_GRAPHICS,meshBase.Get(),0,1,meshDescr&,0,null) //TODO remove vk.Funcs
-                //vk.Funcs.vkCmdDrawMeshTasksEXT(step1Cmd.Get(),1,1,1)
+                meshBasePos := centf()
+                gCam.ApplyCamera(meshPos,meshBasePos)
+				meshShader.ApplyShaderToQueue(vk,step1Cmd.Get(),vk.GetSurfaceWidth(),vk.GetSurfaceHeight())
+		        vk.Funcs.vkCmdPushConstants(step1Cmd.Get(),meshBase.Get(),1 shl 7,0,4*4*2,meshBasePos&)
+		        vk.Funcs.vkCmdBindDescriptorSets(step1Cmd.Get(),VK_PIPELINE_BIND_POINT_GRAPHICS,meshBase.Get(),0,1,meshDescr&,0,null) //TODO remove vk.Funcs
+                vk.Funcs.vkCmdDrawMeshTasksEXT(step1Cmd.Get(),30,30,30)
 
 
 				StopModelDraw(step1Cmd.Get())

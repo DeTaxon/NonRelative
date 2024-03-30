@@ -76,14 +76,15 @@ vec4 compute_position(vec4 i_Position)
 
 void main()
 {
-	uint iid = gl_LocalInvocationID.x;
+	uint iid = gl_LocalInvocationID.y;
 
-	vec4 offset = vec4(0.0, 0.0, gl_GlobalInvocationID.x, 0.0);
+    float scale = 0.5f;
+	vec4 offset = vec4(scale*gl_GlobalInvocationID.x - 15.0, -scale*gl_GlobalInvocationID.y, scale*gl_GlobalInvocationID.z, 0.0);
 
 	SetMeshOutputsEXT(3, 1);
-	gl_MeshVerticesEXT[0].gl_Position = compute_position(positions[0]);
-	gl_MeshVerticesEXT[1].gl_Position = compute_position(positions[1]);
-	gl_MeshVerticesEXT[2].gl_Position = compute_position(positions[2]);
+	gl_MeshVerticesEXT[0].gl_Position = compute_position(positions[0] + offset);
+	gl_MeshVerticesEXT[1].gl_Position = compute_position(positions[1] + offset);
+	gl_MeshVerticesEXT[2].gl_Position = compute_position(positions[2] + offset);
 	vertexOutput[0].color = colors[0];
 	vertexOutput[1].color = colors[1];
 	vertexOutput[2].color = colors[2];
