@@ -17,14 +17,14 @@ layout(location = 0) out VertexOutput
 } vertexOutput[];
 
 const vec4[3] positions = {
-	vec4( 0.0, -1.0, 0.0, 1.0),
-	vec4(-1.0,  1.0, 0.0, 1.0),
-	vec4( 1.0,  1.0, 0.0, 1.0)
+	vec4( 0.0,  0.0, 0.0, 1.0),
+	vec4( 1.0,  0.0, 0.0, 1.0),
+	vec4( 0.5,  0.0, 1.0, 1.0)
 };
 
 const vec4[3] colors = {
-	vec4(0.0, 1.0, 0.0, 1.0),
-	vec4(0.0, 0.0, 1.0, 1.0),
+	vec4(0.5, 0.0, 1.0, 1.0),
+	vec4(0.0, 0.5, 0.5, 1.0),
 	vec4(1.0, 0.0, 0.0, 1.0)
 };
 
@@ -61,32 +61,58 @@ vec3 rotate_vertex_position(vec3 position,vec4 qnt)
 }
 vec4 compute_position(vec4 i_Position)
 {
-    vec4 prePosition = vec4((rotate_vertex_position(i_Position.xyz*consts.g_pos.w,consts.quantAng)) + consts.g_pos.xyz,1.0f);
+    vec4 prePosition = i_Position;
+	prePosition = prePosition.yzxw * vec4(1.0f,-1.0f,1.0f,1.0f);
+
+	prePosition = vec4((rotate_vertex_position(prePosition.xyz*consts.g_pos.w,consts.quantAng)) + consts.g_pos.xyz,1.0f);
 
 	prePosition = prePosition.yzxw * vec4(-1.0f,-1.0f,-1.0f,1.0f);
 
-    vec4 result;
+	vec4 result;
 	result.x = prePosition.x*prespData.x;
 	result.y = prePosition.y*prespData.y;
 	result.z = -(prePosition.z*prespData.z + prespData.w);
 	result.w = -prePosition.z;
 
-    return result;
+	return result;
 }
+
+vec4 grid[8] = 
+{
+	vec4(0.0,0.0,0.0,0.0),
+	vec4(0.0,1.0,0.0,0.0),
+	vec4(1.0,1.0,0.0,0.0),
+	vec4(1.0,0.0,0.0,0.0),
+	vec4(0.0,0.0,1.0,0.0),
+	vec4(0.0,1.0,1.0,0.0),
+	vec4(1.0,1.0,1.0,0.0),
+	vec4(1.0,0.0,1.0,0.0)
+};
 
 void main()
 {
-	uint iid = gl_LocalInvocationID.y;
+	vec3 spherePos = vec3(5.0,-5.0,5.0);
 
-    float scale = 0.5f;
-	vec4 offset = vec4(scale*gl_GlobalInvocationID.x - 15.0, -scale*gl_GlobalInvocationID.y, scale*gl_GlobalInvocationID.z, 0.0);
+	float scale = 0.25f;
+	vec4 offset = vec4(scale*gl_GlobalInvocationID.x, scale*gl_GlobalInvocationID.y, scale*gl_GlobalInvocationID.z, 0.0);
 
 	SetMeshOutputsEXT(3, 1);
-	gl_MeshVerticesEXT[0].gl_Position = compute_position(positions[0] + offset);
-	gl_MeshVerticesEXT[1].gl_Position = compute_position(positions[1] + offset);
-	gl_MeshVerticesEXT[2].gl_Position = compute_position(positions[2] + offset);
-	vertexOutput[0].color = colors[0];
-	vertexOutput[1].color = colors[1];
-	vertexOutput[2].color = colors[2];
-	gl_PrimitiveTriangleIndicesEXT[gl_LocalInvocationIndex] =  uvec3(0, 1, 2);
+
+	vec4 vecScale = vec4(scale,scale,scale,1.0);
+
+	float dist = distance(offset.xyz - scale*vec3(15.0,15.0,15.0),spherePos);
+
+	if( dist <= 10.0 && dist >= 9.0)
+	{
+		offset.x -= 15.0;
+
+		gl_MeshVerticesEXT[0].gl_Position = compute_position(positions[0]*vecScale + offset);
+		gl_MeshVerticesEXT[1].gl_Position = compute_position(positions[1]*vecScale + offset);
+		gl_MeshVerticesEXT[2].gl_Position = compute_position(positions[2]*vecScale + offset);
+
+		vertexOutput[0].color = colors[0];
+		vertexOutput[1].color = colors[1];
+		vertexOutput[2].color = colors[2];
+		gl_PrimitiveTriangleIndicesEXT[gl_LocalInvocationIndex] =  uvec3(0, 1, 2);
+	}
 }
