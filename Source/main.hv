@@ -85,7 +85,7 @@ main := !(char^[] args) -> int
     meshBase := engine.modelRenderPass.CreateLayout(![],![
 			new TUniformSet(1 shl 7), //TODO
     ],![
-			new TMeshPushConstant(4*4*2)
+			new TMeshPushConstant(4*4*3)
     ],3)
 
     meshPool := meshBase.CreateDescriptorPool(0,16)
@@ -204,12 +204,14 @@ main := !(char^[] args) -> int
 
 				zeroOffset := centf()
 
-                meshBasePos := centf()
-                gCam.ApplyCamera(meshPos,meshBasePos)
+                constData := u8[128]
+                meshBasePos := constData&->{centf^}
+                constData[4*4*2]&->{float^}^ = glfwGetTime()
+                gCam.ApplyCamera(meshPos,meshBasePos^)
 				meshShader.ApplyShaderToQueue(vk,step1Cmd.Get(),vk.GetSurfaceWidth(),vk.GetSurfaceHeight())
-		        vk.Funcs.vkCmdPushConstants(step1Cmd.Get(),meshBase.Get(),1 shl 7,0,4*4*2,meshBasePos&)
+		        vk.Funcs.vkCmdPushConstants(step1Cmd.Get(),meshBase.Get(),1 shl 7,0,4*4*3,meshBasePos[0]&)
 		        vk.Funcs.vkCmdBindDescriptorSets(step1Cmd.Get(),VK_PIPELINE_BIND_POINT_GRAPHICS,meshBase.Get(),0,1,meshDescr&,0,null) //TODO remove vk.Funcs
-                vk.Funcs.vkCmdDrawMeshTasksEXT(step1Cmd.Get(),30,30,30)
+                vk.Funcs.vkCmdDrawMeshTasksEXT(step1Cmd.Get(),25,25,25)
 
 
 				StopModelDraw(step1Cmd.Get())
