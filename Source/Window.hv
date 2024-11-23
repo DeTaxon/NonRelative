@@ -2,7 +2,7 @@
 nuklearContext := void^
 
 TestF3 := bool
-TestWindow := class extend SimpleWindow
+TestWindow := class extend Window
 {
 	menuMode := bool 
 	KeyChanged := virtual !(int key, int scancode, bool pressed) -> void

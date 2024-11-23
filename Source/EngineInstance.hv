@@ -12,7 +12,7 @@ TEngine := class extend TGCObject
         shaderCompiler."this"()
     }
 
-	LoadMap := !(StringView charPath) -> vMap^
+	LoadMap := !(Str charPath) -> vMap^
 	{
 		return LoadMap(FSGetFile(charPath))
 	}
@@ -67,7 +67,7 @@ TEngine := class extend TGCObject
 	}
 
 
-	LoadModel := !(StringView charPath) -> vModel^
+	LoadModel := !(Str charPath) -> vModel^
 	{
 		return LoadModel(FSGetFile(charPath))
 	}
@@ -202,7 +202,7 @@ TEngine := class extend TGCObject
 	}
 
 	
-	LoadShader := !(StringView shaderInfo) -> vShader^
+	LoadShader := !(Str shaderInfo) -> vShader^
 	{
 		fil := FSGetFile(shaderInfo)
 		flMap := fil.GetMap()
@@ -237,8 +237,8 @@ TEngine := class extend TGCObject
 			}
 		}
 
-		vertBlob := shaderCompiler.Compile(fil.GetFile(vertName))
-		fragBlob := shaderCompiler.Compile(fil.GetFile(fragName))
+		vertBlob := shaderCompiler.Compile(fil.GetFile(vertName)).ResultShader
+		fragBlob := shaderCompiler.Compile(fil.GetFile(fragName)).ResultShader
 
 		return shaderType.CreateShader(vertBlob,fragBlob)
 	}

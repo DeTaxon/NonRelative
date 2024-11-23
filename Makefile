@@ -34,7 +34,7 @@ win.exe:
 	$(TimeFlags) ./halfvoid -win32  -g -C0 StandardLibrary -C1 Source --vk ./vk.xml -o out.ll
 	clang --target=x86_64-w64-mingw32-gnu  out.ll  -o win.exe
 run:
-	$(gdb_tui) ./halfvoid -g -C0 StandardHVLibrary/ -C1 Source --vk ./vk.xml -o out.ll -cache /tmp/HVMecha.zip -run main
+	XDG_SESSION_TYPE=x11 $(gdb_tui) ./halfvoid -nonstop -g -C0 StandardHVLibrary/ -C1 Source --vk ./vk.xml -o out.ll -cache /tmp/HVMecha.zip -run main
 
 WinCompiler := x86_64-w64-mingw32-gcc 
 
