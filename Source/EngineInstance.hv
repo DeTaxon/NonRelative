@@ -95,10 +95,10 @@ TEngine := class extend TGCObject
 					result.ReqTexture = LoadTexture(inFile.GetFile(it.Value()))
 				case "phys"
 					assert(it.IsRecord())
-					switch it^[StringSpan("type")&].Value()
+					switch it^["type"].Value()
 					{
 					case "hmap"
-						hFile := inFile.GetFile(it^[StringSpan("file")&].Value())
+						hFile := inFile.GetFile(it^["file"].Value())
 						mapFile := RawModel
 						mapFile.LoadFromFile(hFile)
 
