@@ -21,7 +21,7 @@ TEngine := class extend TGCObject
 		mp := inFile.GetMap()
 
 		js := new Json
-		js.ParseString(mp.Get(),mp.Size())
+		js.ParseString(mp.Get()->{char^},mp.Size())
 
 		result = new vMap
 
@@ -77,7 +77,7 @@ TEngine := class extend TGCObject
 
 		mp := inFile.GetMap()
 
-		js.ParseString(mp.Get(),inFile.Size())
+		js.ParseString(mp.Get()->{char^},inFile.Size())
 
 		return LoadModel(inFile,js)
 	}
