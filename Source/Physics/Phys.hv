@@ -1,10 +1,18 @@
-PhysType_hmap := 1
-PhysType_player := 2
+
+
+PhysTypeEnum := enum
+{
+	"HMap",
+	"Player",
+	"Sphere",
+	"Box",
+	"Cylinder"
+}
 
 
 PhysCommon := class
 {
-	PhysType := int
+	PhysType := PhysTypeEnum
 	System := centf
 	ImpulseV := vec4f
 	ImpulseA := vec4f
@@ -60,7 +68,7 @@ PhysPlayer := class extend PhysCommon
 	MapTouchTime := double
 	
 	this := !() -> void {
-		PhysType = PhysType_player
+		PhysType = "Player"
 	}
 }
 PhysHightSphere := class
@@ -74,7 +82,7 @@ PhysHightSphere := class
 
 PhysHeightMap := class
 {
-	PhysType := int
+	PhysType := PhysTypeEnum
 	Dots := vec4f^ //array
 	Triangles := u16[3]^
 	Spheres := PhysHightSphere^ //array
@@ -82,7 +90,7 @@ PhysHeightMap := class
 
 	this := !() -> void
 	{
-		PhysType = PhysType_hmap
+		PhysType = "HMap"
 	}
 
 	CreateDots := !(RawModel^ mdlValue) -> int
@@ -460,9 +468,9 @@ PhysVsPhys := !(PhysCommon^ a, PhysCommon^ b,centf offset) -> int
 		return PhysVsPhys(b,a,offset.Inverse())
 	}
 	//TODO: phys to table
-	if a.PhysType == PhysType_player
+	if a.PhysType == "Player"
 	{
-		if b.PhysType == PhysType_hmap
+		if b.PhysType == "HMap"
 		{
 			return PhysCheckPlayerVSHMap(a->{PhysPlayer^},b->{PhysHeightMap^},offset)
 		}
