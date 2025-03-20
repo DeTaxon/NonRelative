@@ -1,0 +1,37 @@
+
+PhysCheckSphereVSHMap := !(PhysSphere^ p,PhysHeightMap^ hMap,centf mapPosition) -> int //TODO
+{
+	fixes := 0
+	triC := 0
+	tris := u16[32]
+
+	invPos := mapPosition.Inverse()
+	pPos := invPos.Apply(p.System.pos)
+	tHeight := p.Radius*pPos.w
+
+	onMap := false
+	hMap.GetTris(pPos,tris&,triC&,0)
+	for i : triC
+	{
+		hV := vec4f
+		nowT := hMap.TriangleDistanceH(pPos,tris[i],hV&)
+		if nowT
+		{
+			itH := p.System.pos.z - hV.z
+			if itH < 0.0f and itH > -pPos.w //UNCONST
+			{
+				//p.MapTouchTime = gNowTime
+				if p.ImpulseV.z < 0.0f
+				{
+					p.ImpulseV.z = 0.0f
+					tmp := mapPosition.Apply(hV) //TODO remove tmp
+					p.System.pos.z = tmp.z
+					fixes += 1
+				}
+				onMap = true
+			}
+		}
+	}
+	return fixes
+	
+}

@@ -468,11 +468,19 @@ PhysVsPhys := !(PhysCommon^ a, PhysCommon^ b,centf offset) -> int
 		return PhysVsPhys(b,a,offset.Inverse())
 	}
 	//TODO: phys to table
-	if a.PhysType == "Player"
+	switch a.PhysType
 	{
-		if b.PhysType == "HMap"
+	case "Player"
+		switch b.PhysType
 		{
+		case "HMap"
 			return PhysCheckPlayerVSHMap(a->{PhysPlayer^},b->{PhysHeightMap^},offset)
+		}
+	case "Sphere"
+		switch b.PhysType
+		{
+		case "HMap"
+			return PhysCheckSphereVSHMap(a->{PhysSphere^},b->{PhysHeightMap^},offset)
 		}
 	}
 	return 0

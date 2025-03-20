@@ -47,7 +47,9 @@ main := !(char^[] args) -> int
 
 	drawMirrorShader := engine.LoadShader("Shaders/Mirror.json")
 
-	canvas := engine.LoadModel("Models/Canvas/Canvas.json")
+	//canvas := engine.LoadModel("Models/Canvas/Canvas.json")
+
+	//sphere := engine.LoadModel("Models/Sphere/Sphere.json")
 
 	gCam = new vCamera()
 	gCam.SetPerspective(x,y,0.001,100,80deg)
@@ -57,9 +59,11 @@ main := !(char^[] args) -> int
 
 	LinkMaps(gPlayerMap,gPlayerMap,45.5x,quantf(0,0,0,1))
 
-	canvasProp = engine.CreateProp(canvas)
-	canvasProp.propPosition.pos = vec4f(2.0,0.0,1.4,1.0)
-	canvasProp.propPosition.ang = quantfAt(0.0,0.0,1.0,-90deg) <*> quantfAt(1.0,0.0,0.0,90deg)
+	//sphr1 := engine.CreateProp(sphere)
+
+	//canvasProp = engine.CreateProp(canvas)
+	//canvasProp.propPosition.pos = vec4f(2.0,0.0,1.4,1.0)
+	//canvasProp.propPosition.ang = quantfAt(0.0,0.0,1.0,-90deg) <*> quantfAt(1.0,0.0,0.0,90deg)
 
 	NuklearTestInit()
 	NuklearCreateStep()
