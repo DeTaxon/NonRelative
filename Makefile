@@ -1,4 +1,7 @@
-TimeFlags := time -f "time results: real - %E , user - %U user,system - %S ,memory %M KiB"
+
+ifeq ($(tm),yes)
+	TimeFlags := time -f "time results: real - %E , user - %U user,system - %S ,memory %M KiB"
+endif
 
 
 Libs := -ldl -lpthread
@@ -28,7 +31,7 @@ ifeq ($(cross),win32)
 endif
 
 en:
-	$(TimeFlags) ./halfvoid -g -C0 StandardHVLibrary/ -C1 Source --vk ./vk.xml -o out.ll -cache /tmp/HVMecha.zip
+	$(TimeFlags) $(gdb_tui) ./halfvoid -g -C0 StandardHVLibrary/ -C1 Source --vk ./vk.xml -o out.ll -cache /tmp/HVMecha.zip
 	clang -gdwarf-4 -g out.ll -lm -o en
 win.exe:
 	$(TimeFlags) ./halfvoid -win32  -g -C0 StandardLibrary -C1 Source --vk ./vk.xml -o out.ll

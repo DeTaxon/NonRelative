@@ -49,7 +49,7 @@ main := !(char^[] args) -> int
 
 	//canvas := engine.LoadModel("Models/Canvas/Canvas.json")
 
-	//sphere := engine.LoadModel("Models/Sphere/Sphere.json")
+	sphere := engine.LoadModel("Models/Sphere/Sphere.json")
 
 	gCam = new vCamera()
 	gCam.SetPerspective(x,y,0.001,100,80deg)
@@ -59,7 +59,10 @@ main := !(char^[] args) -> int
 
 	LinkMaps(gPlayerMap,gPlayerMap,45.5x,quantf(0,0,0,1))
 
-	//sphr1 := engine.CreateProp(sphere)
+	sphr1 := engine.CreateProp(sphere)
+	sphr1.propPosition.pos = vec4f(2.0,0.0,1.4,1.0)
+
+	gPlayerMap.mapProps.Push(sphr1)
 
 	//canvasProp = engine.CreateProp(canvas)
 	//canvasProp.propPosition.pos = vec4f(2.0,0.0,1.4,1.0)

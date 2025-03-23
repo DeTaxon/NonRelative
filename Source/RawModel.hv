@@ -144,189 +144,104 @@ RawModel := class
 	MapFromPLY := !(void^ flP,u64 itSize) -> bool
 	{
 		daFile := flP->{u8^}
-		keyWords := char^[3]
-		keyWords[0] = "element vertex !" 
-		keyWords[1] = "end_header!"
-		keyWords[2] = "property float !"
 
-		poses := int[3]
-		poses[0] = 0
-		poses[1] = 0
-		poses[2] = 0
+		fileAsString := StringSpan(flP->{char^},itSize)
 
-		pos := 0
-		working := true
+		vertCount := int
+		vertArray := new Vector.{float}
+		preInd := new List.{int}
 
-		vertsCount := 0
-
-		while working and pos < itSize
-		{
-			nowVal := flP->{u8^}[pos]
-
-			for i : 3
+		fileAsString.DivideStr("\n", (line) ==> [c = preInd]{
+		
+			stage1 := true
+			while stage1
 			{
-				if keyWords[i][poses[i]] == nowVal
+				switch line.Start
 				{
-					poses[i] += 1
-					if keyWords[i][poses[i] ] == '!'
+				case "property float"
+					switch line[15]
 					{
-						if i == 0
-						{
-							pos += 1
-
-							while flP->{u8^}[pos] in '0'..'9'
-							{
-								vertsCount = vertsCount*10 + daFile[pos] - '0'
-								pos += 1
-							}
-							pos -= 1
-						}
-						if i == 1 working = false
-						if i == 2{	
-							pos += 1
-							if daFile[pos] == 'x' vertItems = vertItems or_b MODEL_POSITION
-							if daFile[pos] == 'n' vertItems = vertItems or_b MODEL_NORMAL
-							if daFile[pos] == 's' vertItems = vertItems or_b MODEL_UV
-						}
-						poses[i] = 0
+					case 'x' vertItems = vertItems or_b MODEL_POSITION
+					case 'n' vertItems = vertItems or_b MODEL_NORMAL
+					case 's' vertItems = vertItems or_b MODEL_UV
 					}
-				}else{
-					poses[i] = 0
+				case "element vertex"
+					line.DivideStr(" ", vl ==> {
+						yield void
+						yield void
+						vertCount = vl.ToInt()
+					})
+				case "end_header"
+					stage1 = false
 				}
-			}			
-			pos += 1
-		}
-
-		vertSize := 0
-
-		if (vertItems and_b MODEL_POSITION) != 0
-		{
-			PositionType = VKType(VType_Float,3)
-			vertSize += 3
-		}
-		if (vertItems and_b MODEL_NORMAL) != 0
-		{
-			NormalType = VKType(VType_Float,3)
-			vertSize += 3
-		}
-		if (vertItems and_b MODEL_UV) != 0
-		{
-			UVType = VKType(VType_Float,2)
-			vertSize += 2
-		}
-
-		if vertItems != 7 return false //TODO: normalless support
-
-		totalVerts := vertsCount*vertSize
-		thisVerts := malloc(4*totalVerts)->{float^}
-		verts = thisVerts
-		VertexCount = vertsCount
-
-		posInVerts := 0
-
-		isNeg := false
-		hiValue := 0
-		lowValue := 1 // value = hi / lo
-
-		vertFileState := 0
-
-		while posInVerts < totalVerts and pos < itSize
-		{
-			if vertFileState == 0
-			{
-				switch daFile[pos]
-				{
-					case '-'
-						isNeg = true
-					case in '0'..'9'
-						hiValue = hiValue*10 + daFile[pos] - '0'
-					case '.'
-						vertFileState = 1
-						pos += 1 //TODO: why?
-					case void
-						isNeg = false
-						lowValue = 1
-						hiValue = 0
-				}
+				yield void
 			}
-			if vertFileState == 1
+			vertSize := 0
+
+			if (vertItems and_b MODEL_POSITION) != 0
 			{
-				if daFile[pos] in '0'..'9'
-				{
-					hiValue = hiValue*10 + daFile[pos] - '0'
-					lowValue *= 10
-				}else{
-					thisVerts[posInVerts] = hiValue / lowValue
-					if isNeg  {
-						thisVerts[posInVerts] *= -1.0f
-					}
-					isNeg = false
-					lowValue = 1
-					hiValue = 0
-					posInVerts += 1
-					vertFileState = 0
-				}
+				PositionType = VKType(VType_Float,3)
+				vertSize += 3
 			}
-			pos += 1
-		}
-
-		preInd := List.{u32}
-		miniBox := int[16]
-		miniPos := 0
-		nowValue := 0
-		nowState := 0
-		intVal := 0
-
-		while pos < itSize
-		{
-			switch nowState
+			if (vertItems and_b MODEL_NORMAL) != 0
 			{
-				case 0 //start
-					switch daFile[pos]
+				NormalType = VKType(VType_Float,3)
+				vertSize += 3
+			}
+			if (vertItems and_b MODEL_UV) != 0
+			{
+				UVType = VKType(VType_Float,2)
+				vertSize += 2
+			}
+
+			assert(vertItems == 7) //TODO: normalless support
+
+			vertArray.Resize(vertCount*vertSize)
+			vertPtr := vertArray.GetPointer()
+
+			j := 0
+			for i : vertCount
+			{
+				line.DivideStr(" ", sub ==> {
+					vertPtr[j] = ToFloat(sub)
+					j += 1
+				})
+				yield void
+			}
+
+			while true
+			{
+				line.DivideStr(" " sub ==> [c2 = c]{
+					val := sub.ToInt()
+
+					datas := int[4]
+
+					for i : val
 					{
-						case in '0'..'9'
-							nowValue = nowValue*10 + daFile[pos] - '0'
-						case ' '
-							nowState = 1
-							intVal = 0
+						yield void
+						datas[i] = sub.ToInt()
 					}
 
-				case 1 //space
-					switch daFile[pos]
-					{
-						case in '0'..'9'
-							intVal = intVal*10 + daFile[pos] - '0'
-						case ' '
-							miniBox[miniPos] = intVal
-							intVal = 0
-							miniPos += 1
-						case '\n'
-							nowState = 0
-							miniBox[miniPos] = intVal
-							intVal = 0
-							miniPos += 1
+					c2.Push(datas[0])
+					c2.Push(datas[1])
+					c2.Push(datas[2])
 
-							switch nowValue
-							{
-								case 4
-									preInd.Push(miniBox[0])
-									preInd.Push(miniBox[1])
-									preInd.Push(miniBox[2])
-									preInd.Push(miniBox[0])
-									preInd.Push(miniBox[2])
-									preInd.Push(miniBox[3])
-								case 3
-									preInd.Push(miniBox[0])
-									preInd.Push(miniBox[1])
-									preInd.Push(miniBox[2])
-							}
-							miniPos = 0
-							nowValue = 0
+					if val == 4 {
+						c2.Push(datas[0])
+						c2.Push(datas[2])
+						c2.Push(datas[3])
 					}
-
+					
+				})
+				yield void
 			}
-			pos += 1
-		}
+		})
+
+		VertexCount = vertCount
+
+		verts = malloc(vertArray.Size()*4)
+		memcpy(verts,vertArray.GetPointer(),vertArray.Size()*4)
+
 		preIndsRaw := malloc(preInd.Size()*4)->{int^}
 		for it , i : preInd
 			preIndsRaw[i] = it
