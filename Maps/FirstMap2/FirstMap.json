@@ -5,11 +5,11 @@
     	    "model" : {
 	    	"mesh" : "FirstMap.ply",
     	    	"texture" : "wut.webp",
-		"phys" : {
-			"type" : "hmap",
-			"file" : "FirstMap.ply"
-		}
-	    }
+				"phys" : {
+					"type" : "hmap",
+					"file" : "FirstMap.ply"
+				}
+			}
     	}
     ]
 }

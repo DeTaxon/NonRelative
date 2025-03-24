@@ -9,7 +9,6 @@ PhysCheckSphereVSHMap := !(PhysSphere^ p,PhysHeightMap^ hMap,centf mapPosition) 
 	pPos := invPos.Apply(p.System.pos)
 	tHeight := p.Radius*pPos.w
 
-	onMap := false
 	hMap.GetTris(pPos,tris&,triC&,0)
 	for i : triC
 	{
@@ -28,7 +27,6 @@ PhysCheckSphereVSHMap := !(PhysSphere^ p,PhysHeightMap^ hMap,centf mapPosition) 
 					p.System.pos.z = tmp.z
 					fixes += 1
 				}
-				onMap = true
 			}
 		}
 	}

@@ -26,6 +26,7 @@ PhysSphere := class extend PhysCommon
 
 	this := !(float rad) -> void
 	{
+		PhysType = "Sphere"
 		Radius = rad
 		System.ang = quantf(0.0f,0.0f,0.0f,1.0f)
 		Weight = 1.0f

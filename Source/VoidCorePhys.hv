@@ -16,10 +16,34 @@ vPhysStage := !(double deltaTime) -> void
 	}
 	gPlayer.ImpulseV = quantfAt(0.0f,0.0f,-1.0f,gCam.leftRightAng)*vec4f(forw,lft,0.0f,0.0f)
 	gPlayer.ImpulseV.z = oldPlayerImpz - 9.8f*deltaTime
+
+	for prp : gPlayerMap.mapProps
+	{
+		if prp.PhysModel == null
+			continue
+		switch prp.PhysModel.PhysType
+		{
+		case "Sphere"
+			prp.PhysModel.ImpulseV.z -= 9.8f*deltaTime
+		}
+	}
 	//if gPlayer.ImpulseV.z < -20.0
 	//	gPlayer.ImpulseV.z = -20
 	zeroOffset := centf()
 	vPhysStagePlayer(deltaTime,gPlayerMap,zeroOffset,2)
+	vPhysStageMapProps(deltaTime,gPlayerMap)
+
+	for prp : gPlayerMap.mapProps
+	{
+		if prp.PhysModel == null
+			continue
+		switch prp.PhysModel.PhysType
+		{
+		case "Sphere"
+			prp.PhysModel.System.pos += prp.PhysModel.ImpulseV*deltaTime
+			prp.propPosition = prp.PhysModel.System
+		}
+	}
 	gPlayer.System.pos += gPlayer.ImpulseV*deltaTime
 	//vPhysStagePlayer(deltaTime,gPlayerMap,zeroOffset,2)
 
@@ -41,6 +65,23 @@ vPhysCheckMoves := !() -> void
 		if gPlayerMap != tst.0 or tst.1.Size() != 0 
 		{
 			gPlayer.System.pos = tst.1.Inverse().Apply(gPlayer.System.pos)
+		}
+	}
+}
+vPhysStageMapProps := !(double deltaTime,vMap^ someMap) -> void
+{
+	zeroOffset := centf()
+	for prop1,i : someMap.mapProps
+	{
+		if prop1.PhysModel == null
+			continue
+		for prop2 , j : someMap.mapProps
+		{
+			if prop2.PhysModel == null
+				continue
+			if i <= j
+				continue
+			PhysVsPhys(prop1.PhysModel,prop2.PhysModel,zeroOffset)
 		}
 	}
 }

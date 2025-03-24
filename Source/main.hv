@@ -61,6 +61,7 @@ main := !(char^[] args) -> int
 
 	sphr1 := engine.CreateProp(sphere)
 	sphr1.propPosition.pos = vec4f(2.0,0.0,1.4,1.0)
+	sphr1.PhysModel.System.pos = vec4f(2.0,0.0,1.4,1.0)
 
 	gPlayerMap.mapProps.Push(sphr1)
 
@@ -73,6 +74,14 @@ main := !(char^[] args) -> int
 
 	CreateQuad()
 
+	TSpawnTask(() ==> {
+		while not gQuit
+		{
+			if buttons['c']
+				sphr1.PhysModel.System.pos = vec4f(2.0,0.0,1.4,1.0)
+			TSleep(0.1)
+		}
+	})
 
 	TSpawnTask(() ==> {
 		oldTime := GetSteadyTime()

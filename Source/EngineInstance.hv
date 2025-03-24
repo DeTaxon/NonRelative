@@ -97,6 +97,8 @@ TEngine := class extend TGCObject
 					assert(it.IsRecord())
 					switch it^["type"].Value()
 					{
+					case "sphere"
+						result.PhysModel = new PhysSphere(1.0)
 					case "hmap"
 						hFile := inFile.GetFile(it^["file"].Value())
 						mapFile := RawModel
