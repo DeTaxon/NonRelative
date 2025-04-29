@@ -285,7 +285,7 @@ PhysHeightMap := class
 	TriangleDistance := !(vec4f pos, u16 ind,vec4f^ res) -> bool
 	{
 		itTri := ref Triangles[ind]
-		return TriangleDistance(pos,itTri[0],itTri[1],itTri[2],res)
+		return TriangleDistance(pos,Dots[itTri[0]],Dots[itTri[1]],Dots[itTri[2]],res)
 	}
 	GetNormal := !(int triInd,vec4f^ nId) -> void
 	{
@@ -307,7 +307,9 @@ PhysHeightMap := class
 		if rb < 0.0f or rc < 0.0f return false
 		if rb + rc > 1.0f return false
 		
-		res^ = ab*rb + ac*rc + a
+
+		preRes := ab*rb + ac*rc + a.xyz
+		res^ = preRes.xyz0
 		
 		return true
 	}

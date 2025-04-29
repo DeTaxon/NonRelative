@@ -13,18 +13,19 @@ PhysCheckSphereVSHMap := !(PhysSphere^ p,PhysHeightMap^ hMap,centf mapPosition) 
 	for i : triC
 	{
 		hV := vec4f
-		nowT := hMap.TriangleDistanceH(pPos,tris[i],hV&)
+		nowT := hMap.TriangleDistance(pPos,tris[i],hV&)
 		if nowT
 		{
-			itH := p.System.pos.z - hV.z
-			if itH < 0.0f and itH > -pPos.w //UNCONST
+			itH := Distance(p.System.pos,hV)
+
+			if itH < p.Radius and itH > - p.Radius
 			{
 				//p.MapTouchTime = gNowTime
 				if p.ImpulseV.z < 0.0f
 				{
 					p.ImpulseV.z = 0.0f
 					tmp := mapPosition.Apply(hV) //TODO remove tmp
-					p.System.pos.z = tmp.z
+					p.System.pos.z = tmp.z + p.Radius
 					fixes += 1
 				}
 			}
