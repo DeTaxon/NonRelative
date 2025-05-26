@@ -152,7 +152,7 @@ StopModelDraw := !(VkCommandBuffer cmd) -> bool
 
 	vk.Funcs.vkCmdEndRendering(cmd)
 }
-StartTextDraw := !(VkCommandBuffer cmd,VkFramebuffer frm, VkImageView img , int imgIndx) -> void
+StartTextDraw := !(VkCommandBuffer cmd, VkImageView img , int imgIndx) -> void
 {
 	imgBarCPre := VkImageMemoryBarrier[2]
 
@@ -211,36 +211,6 @@ StartTextDraw := !(VkCommandBuffer cmd,VkFramebuffer frm, VkImageView img , int 
 
 	vk.Funcs.vkCmdBeginRendering(cmd,rndr&)
 
-	//beginInfo := VkRenderPassBeginInfo()
-
-	//clrValues := float[13]
-
-	//clrValues[0] = 0.0
-	//clrValues[1] = 0.5
-	//clrValues[2] = 1.0
-	//clrValues[4] = 1.0f
-	//clrValues[5] = 0.0f
-	//clrValues[6] = 0.0f
-	//clrValues[7] = 1.0f
-
-	//clrValues[8] = 0.0f
-	//clrValues[9] = 1.0f
-	//clrValues[10] = 0.0f
-	//clrValues[11] = 0.0f
-
-	//beginInfo.renderPass = gRenderPassLight
-	//beginInfo.framebuffer = frm
-	//beginInfo.renderArea.extent.width = vk.GetSurfaceWidth()
-	//beginInfo.renderArea.extent.height = vk.GetSurfaceHeight()
-	//beginInfo.clearValueCount = 1
-	//beginInfo.pClearValues&->{void^^}^ = clrValues[0]&->{void^}
-	//
-	//renderPassAttms := VkRenderPassAttachmentBeginInfo()
-	//renderPassAttms.attachmentCount = 1
-	//renderPassAttms.pAttachments = img&
-	//beginInfo.pNext = renderPassAttms&
-
-	//vk.Funcs.vkCmdBeginRenderPass(cmd,beginInfo&,VK_SUBPASS_CONTENTS_INLINE) //TODO remove vk.Funcs
 
 	gLightShader.ApplyShaderToQueue(vk,cmd,vk.GetSurfaceWidth(),vk.GetSurfaceHeight())
 	sts := VkDescriptorSet[2]

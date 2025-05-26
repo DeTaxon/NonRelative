@@ -5,11 +5,12 @@ TEngine := class extend TGCObject
 	overlay := VkOverlayContext
 
 	cacheFile := CacheFile^
-	shaderCompiler := ShaderCompiler
+
+	shadersDB := VulkanShaderLoader
 
     this := !() -> void
     {
-        shaderCompiler."this"()
+        shadersDB."this"()
     }
 
 	LoadMap := !(Str charPath) -> vMap^
@@ -200,48 +201,15 @@ TEngine := class extend TGCObject
 		//overlay.Init(lightRenderPass)
 
 		cacheFile = new CacheFile("EngineData.zip")
-		shaderCompiler.SetCacheFile(cacheFile)
+		shadersDB.SetCacheFile(cacheFile)
+
+		shadersDB.SetInput("model",modelLayout)
+		shadersDB.SetInput("light",lightLayout)
 	}
 
 	
 	LoadShader := !(Str shaderInfo) -> vShader^
 	{
-		fil := FSGetFile(shaderInfo)
-		flMap := fil.GetMap()
-		js := new Json
-
-		js.ParseString(flMap.Get()->{char^},flMap.Size())
-
-		shaderType := TShaderInput^
-
-		vertName := StringSpan
-		fragName := StringSpan
-		for nd, nodeName : js^
-		{
-			switch nodeName
-			{
-				case "type"
-					switch nd.Value()
-					{
-						case "light"
-							shaderType = lightLayout
-						case "model"
-							shaderType = modelLayout
-						case void
-							assert(false) //TODO emit exception
-					}
-				case "vertex"
-					vertName = nd.Value()
-				case "fragment"
-					fragName = nd.Value()
-				case void
-					assert(false) //TODO emit exception
-			}
-		}
-
-		vertBlob := shaderCompiler.Compile(fil.GetFile(vertName)).ResultShader
-		fragBlob := shaderCompiler.Compile(fil.GetFile(fragName)).ResultShader
-
-		return shaderType.CreateShader(vertBlob,fragBlob)
+		return shadersDB.LoadShader(shaderInfo)
 	}
 }

@@ -36,7 +36,7 @@ main := !(char^[] args) -> int
 	engine.Init()
 
 	VoidCoreInit()
-	vk.CreateSwapchain(engine.lightRenderPass,x,y)
+	vk.CreateSwapchain(x,y)
 	CreateFB()
 
 	gPlayer = new PhysPlayer()
@@ -312,7 +312,7 @@ main := !(char^[] args) -> int
 
 			{
 
-				StartTextDraw(step1Cmd.Get(),vk.surfaceFramebuffer,vk.surfaceImageViews^[surfaceIndex],surfaceIndex)
+				StartTextDraw(step1Cmd.Get(),vk.surfaceImageViews^[surfaceIndex],surfaceIndex)
 
 				if win.menuMode
 				{

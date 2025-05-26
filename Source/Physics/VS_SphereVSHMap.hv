@@ -32,5 +32,4 @@ PhysCheckSphereVSHMap := !(PhysSphere^ p,PhysHeightMap^ hMap,centf mapPosition) 
 		}
 	}
 	return fixes
-	
 }
