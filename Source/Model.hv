@@ -26,12 +26,12 @@ vModel := class
 		
 		vertSize :=  rFile.VertexCount*rFile.GetVertSize()
 		vertexMemory = vk.CreateMemBufferObject(vertSize,VK_BUFFER_USAGE_VERTEX_BUFFER_BIT or_b VK_BUFFER_USAGE_TRANSFER_DST_BIT)
-		vertexMemory.TransferData(ArraySpan.{u8}(rFile.verts->{u8^},vertSize))
+		vertexMemory.TransferData(BlobSpan(rFile.verts->{u8^},vertSize))
 
 
 		indSize := rFile.IndexCount*rFile.IndexType.GetSize()
 		indexMemory = vk.CreateMemBufferObject(indSize,VK_BUFFER_USAGE_INDEX_BUFFER_BIT or_b VK_BUFFER_USAGE_TRANSFER_DST_BIT)
-		indexMemory.TransferData(ArraySpan.{u8}(rFile.inds->{u8^},indSize))
+		indexMemory.TransferData(BlobSpan(rFile.inds->{u8^},indSize))
 	}
 	DestroyVK := !() -> void
 	{

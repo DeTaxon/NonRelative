@@ -7,5 +7,5 @@ CreateQuad := !() -> void
 	inds := Vector.{u8}(6)
 
 	itType := VKType(VType_UInt32,1)
-	gQuad = vk.CreateMesh(vals&,inds&,itType)
+	gQuad = vk.CreateMesh(vals,inds,itType)
 }
