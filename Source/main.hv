@@ -196,6 +196,7 @@ main := !(char^[] args) -> int
 	step1Cmd := TVkCommandBuffer(vk,vk.itDrawCmdPool2)
 	step2Cmd := TVkCommandBuffer(vk,vk.itDrawCmdPool2)
 
+
 	//deleteSphere := vec3f(25.0f,25.0f,65.0f)
 
 	oldTime := GetSteadyTime()
@@ -207,7 +208,6 @@ main := !(char^[] args) -> int
 		oldTime = nowTime
 
 		gCam.InputCheck(win,delta*inputCoef,not win.menuMode)
-
 	
 		if false
 		{

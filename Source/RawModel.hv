@@ -33,18 +33,18 @@ RawModel := class
 		{
 			for typ : ![PositionType&,NormalType&,UVType&]
 			{
-				if typ.BaseType == VType_Void
+				if typ.BaseType == void
 					continue
 				for i : typ.TypeCount
 				{
 					switch typ.BaseType
 					{
-						case VType_Half
+						case half 
 							assert(false)
 							//asHalf := from->{half^}
 							//preRet[preRetI] = asHalf^
 							//from = (asHalf + 1)->{u8^}
-						case VType_Float
+						case float
 							asFloat := from->{float^}
 							preRet^[preRetI] = asFloat^
 							from = (asFloat[1]&)->{u8^}
@@ -180,17 +180,17 @@ RawModel := class
 
 			if (vertItems and_b MODEL_POSITION) != 0
 			{
-				PositionType = VKType(VType_Float,3)
+				PositionType = VKType(float,3)
 				vertSize += 3
 			}
 			if (vertItems and_b MODEL_NORMAL) != 0
 			{
-				NormalType = VKType(VType_Float,3)
+				NormalType = VKType(float,3)
 				vertSize += 3
 			}
 			if (vertItems and_b MODEL_UV) != 0
 			{
-				UVType = VKType(VType_Float,2)
+				UVType = VKType(float,2)
 				vertSize += 2
 			}
 
@@ -246,7 +246,7 @@ RawModel := class
 		for it , i : preInd
 			preIndsRaw[i] = it
 		inds = preIndsRaw
-		IndexType = VKType(VType_UInt32,1)
+		IndexType = VKType(u32,1)
 		IndexCount = preInd.Size()
 
 		return true
@@ -256,12 +256,12 @@ RawModel := class
 	{
 		switch IndexType.BaseType
 		{
-		case VType_UInt32
+		case u32
 				ret := new Vector.{u32}(IndexCount)
 				asU32 := inds->{u32^}
 				ret^[^i] = asU32[i]
 				return ret
-		case VType_UInt16
+		case u16
 			assert(false)
 			//{
 			//	asU16 := inds->{u16[]}
@@ -269,7 +269,7 @@ RawModel := class
 			//	preRet[^i] = asU16[i]
 			//	return preRet
 			//}
-		case VType_UInt8
+		case u8 
 			//{
 			//	asU8 := inds->{int^}
 			//	preRet := new Vector.{u32}(asU8.Size())

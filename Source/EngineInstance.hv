@@ -162,9 +162,9 @@ TEngine := class extend TGCObject
 		gRenderPassLight = lightRenderPass.Get()
 
 		modelLayout = modelRenderPass.CreateLayout(![
-			VKType(VType_Float,3),
-			VKType(VType_Float,3),
-			VKType(VType_Float,2)
+			VKType(float,3),
+			VKType(float,3),
+			VKType(float,2)
 		],![
 			new TUniformSet(),
 			new TImageSet(1)
