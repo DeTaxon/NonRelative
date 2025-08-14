@@ -14,6 +14,7 @@ PhysCommon := class
 {
 	PhysType := PhysTypeEnum
 	System := centf
+	ExpectedMove := vec4f
 	ImpulseV := vec4f
 	ImpulseA := vec4f
 

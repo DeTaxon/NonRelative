@@ -30,6 +30,11 @@ PhysCheckPlayerVSHMap := !(PhysPlayer^ p,PhysHeightMap^ hMap,centf mapPosition) 
 				}
 				onMap = true
 			}
+			diffExp := p.ExpectedMove.z - hV.z
+			if itH > 0.0f and diffExp < 0.0f
+			{
+				p.ExpectedMove.z = hV.z + 0.0001
+			}
 		}
 	}
 	return fixes

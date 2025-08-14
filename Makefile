@@ -31,8 +31,8 @@ ifeq ($(cross),win32)
 endif
 
 en:
-	$(TimeFlags) $(gdb_tui) ./halfvoid -g -C0 StandardHVLibrary/ -C1 Source --vk ./vk.xml -o out.ll -cache /tmp/HVMecha.zip
-	clang -gdwarf-4 -g out.ll -lm -o en
+	$(TimeFlags) $(gdb_tui) ./halfvoid -g -C0 StandardHVLibrary/ -C1 Source --vk ./vk.xml -o /tmp/out.ll -cache /tmp/HVMecha.zip
+	clang -gdwarf-4 -g /tmp/out.ll -lm -o en
 win.exe:
 	$(TimeFlags) ./halfvoid -win32  -g -C0 StandardLibrary -C1 Source --vk ./vk.xml -o out.ll
 	clang --target=x86_64-w64-mingw32-gnu  out.ll  -o win.exe

@@ -27,8 +27,6 @@ vPhysStage := !(double deltaTime) -> void
 			prp.PhysModel.ImpulseV.z -= 9.8f*deltaTime
 		}
 	}
-	//if gPlayer.ImpulseV.z < -20.0
-	//	gPlayer.ImpulseV.z = -20
 	zeroOffset := centf()
 	vPhysStagePlayer(deltaTime,gPlayerMap,zeroOffset,2)
 	vPhysStageMapProps(deltaTime,gPlayerMap)
@@ -44,8 +42,10 @@ vPhysStage := !(double deltaTime) -> void
 			prp.propPosition = prp.PhysModel.System
 		}
 	}
-	gPlayer.System.pos += gPlayer.ImpulseV*deltaTime
+	gPlayer.ExpectedMove = gPlayer.System.pos + gPlayer.ImpulseV*deltaTime
+	vPhysStagePlayer(deltaTime,gPlayerMap,zeroOffset,2)
 	//vPhysStagePlayer(deltaTime,gPlayerMap,zeroOffset,2)
+	gPlayer.System.pos = gPlayer.ExpectedMove
 
 	vPhysCheckMoves()
 

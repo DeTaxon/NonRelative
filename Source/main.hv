@@ -350,6 +350,7 @@ main := !(char^[] args) -> int
 		}
 		//win.SwapBuffers()
 		win.PollEvents()
+		TaskYield()
 
 		if not drawRes
 		{
