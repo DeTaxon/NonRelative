@@ -63,7 +63,12 @@ main := !(char^[] args) -> int
 	sphr1 := engine.CreateProp(sphere)
 	sphr1.PhysModel.System.pos = sPos 
 
+	sPos2 := vec4f(3.0,-2.0,2.0,1.0)
+	sphr2 := engine.CreateProp(sphere)
+	sphr2.PhysModel.System.pos = sPos2
+
 	gPlayerMap.mapProps.Push(sphr1)
+	gPlayerMap.mapProps.Push(sphr2)
 
 	//canvasProp = engine.CreateProp(canvas)
 	//canvasProp.propPosition.pos = vec4f(2.0,0.0,1.4,1.0)
@@ -75,14 +80,22 @@ main := !(char^[] args) -> int
 	CreateQuad()
 
 	TSpawnTask(() ==> {
+
 		while not gQuit
 		{
-			if buttons['c']
-			{
-				sphr1.PhysModel.ImpulseV = vec4f(0,0,0,0)
-				sphr1.PhysModel.System.pos = sPos
-			}
-			TSleep(0.1)
+			sphr1.PhysModel.ImpulseV = vec4f(0,0,0.0,0)
+			sphr1.PhysModel.System.pos = sPos
+			TSleep(1.7)
+		}
+	})
+
+	TSpawnTask(() ==> {
+
+		while not gQuit
+		{
+			sphr2.PhysModel.ImpulseV = vec4f(0,0,0.0,0)
+			sphr2.PhysModel.System.pos = sPos2
+			TSleep(1.3)
 		}
 	})
 
