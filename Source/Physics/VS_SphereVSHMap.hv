@@ -9,6 +9,7 @@ PhysCheckSphereVSHMap := !(PhysSphere^ p,PhysHeightMap^ hMap,centf mapPosition) 
 	pPos := invPos.Apply(p.System.pos)
 	tHeight := p.Radius*pPos.w
 
+
 	hMap.GetTris(pPos,tris&,triC&,0)
 	for i : triC
 	{
@@ -16,20 +17,30 @@ PhysCheckSphereVSHMap := !(PhysSphere^ p,PhysHeightMap^ hMap,centf mapPosition) 
 		nowT := hMap.TriangleDistance(pPos,tris[i],hV&)
 		if nowT
 		{
+			v := hV - p.System.pos
 			itH := Distance(p.System.pos,hV)
 
-			if itH < p.Radius and itH > - p.Radius
+			if itH < p.Radius and itH > (-p.Radius)
 			{
-				//p.MapTouchTime = gNowTime
-				if p.ImpulseV.z < 0.0f
-				{
-					p.ImpulseV.z = 0.0f
-					tmp := mapPosition.Apply(hV) //TODO remove tmp
-					p.System.pos.z = tmp.z + p.Radius
-					fixes += 1
-				}
+				norm := hMap.GetNormal(tris[i])
+
+				diff := p.ImpulseV <+> norm
+				p.ImpulseV -= norm*(diff*2)
+				tmp := mapPosition.Apply(hV) //TODO remove tmp
+				//p.System.pos.z = tmp.z + p.Radius
+				fixes += 1
 			}
 		}
 	}
 	return fixes
 }
+
+//CalcTriangleDist := !(PhysHeightMap^ hMap,vec4f pPos, u16 ind) -> float
+//{
+//	itTri := ref hMap.Triangles[ind]
+//	a := hMap.Dots[itTri[0]]
+//	b := hMap.Dots[itTri[1]]
+//	c := hMap.Dots[itTri[2]]
+//
+//	mdl := (a + b + c) / 3.0f
+//}

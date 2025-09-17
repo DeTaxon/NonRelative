@@ -38,6 +38,10 @@ win.exe:
 	clang --target=x86_64-w64-mingw32-gnu  out.ll  -o win.exe
 run:
 	XDG_SESSION_TYPE=x11 $(gdb_tui) ./halfvoid -nonstop -g -C0 StandardHVLibrary/ -C1 Source --vk ./vk.xml -o out.ll -cache /tmp/HVMecha.zip -run main
+run2:
+	XDG_SESSION_TYPE=x11 $(gdb_tui) ./halfvoid -fastest-runner -nonstop -g -C0 StandardHVLibrary/ -C1 Source --vk ./vk.xml -o out.ll -cache /tmp/HVMecha.zip -run main
+run3:
+	$(gdb_tui) ./halfvoid -fastest-runner -g -C0 StandardHVLibrary/ -C1 Source --vk ./vk.xml -o out.ll -cache /tmp/HVMecha.zip -run main
 
 WinCompiler := x86_64-w64-mingw32-gcc 
 

@@ -50,12 +50,9 @@ vPhysStage := !(double deltaTime) -> void
 	vPhysCheckMoves()
 
 	gMetMapPhys.Destroy()
-
-	//gCam.camPos = gPlayer.System.pos + vec4f(0.0f,0.0f,1.7f,0.0f)
 }
 
 gPlayerMap := vMap^
-gNowTime := double //TODO remove
 
 vPhysCheckMoves := !() -> void
 {

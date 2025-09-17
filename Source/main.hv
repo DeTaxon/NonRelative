@@ -23,6 +23,9 @@ main := !(char^[] args) -> int
 	x := 1920
 	y := 1080
 
+	//x = 500
+	//y = 500
+
 	win = new TestWindow
 	win.Init(x,y,"Hi Again",true)
 	win.SetInputMode("DISABLED")
@@ -69,6 +72,8 @@ main := !(char^[] args) -> int
 
 	gPlayerMap.mapProps.Push(sphr1)
 	gPlayerMap.mapProps.Push(sphr2)
+
+	hdn := engine.CreateProp(sphere)
 
 	//canvasProp = engine.CreateProp(canvas)
 	//canvasProp.propPosition.pos = vec4f(2.0,0.0,1.4,1.0)
@@ -300,7 +305,9 @@ main := !(char^[] args) -> int
 				learnShader.ApplyShaderToQueue(vk,step1Cmd.Get(),vk.GetSurfaceWidth(),vk.GetSurfaceHeight())
 				gCam.BindDescriptor(step1Cmd.Get())
 
+				DebugDrawPoints(step1Cmd.Get(),gCam,hdn)
 				DrawMap(step1Cmd.Get(),gPlayerMap,centf(),4)
+
 
 
 				if false

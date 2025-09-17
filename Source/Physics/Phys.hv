@@ -67,7 +67,6 @@ PhysPlayer := class extend PhysCommon
 {
 	Height := float
 	Width := float
-	MapTouchTime := double
 	
 	this := !() -> void {
 		PhysType = "Player"
@@ -145,7 +144,8 @@ PhysHeightMap := class
 			
 			for it,i : phase^
 			{
-				if it.1 continue
+				if it.1 
+					continue
 				
 				cand := i
 				candDist := 10000000000.0
@@ -268,7 +268,6 @@ PhysHeightMap := class
 	{
 		itSphere := Spheres[sInd]&
 
-
 		if Distance(pos.xyz,itSphere.PosAndSize.xyz) > (pos.w + itSphere.PosAndSize.w)
 			return void
 
@@ -288,29 +287,52 @@ PhysHeightMap := class
 		itTri := ref Triangles[ind]
 		return TriangleDistance(pos,Dots[itTri[0]],Dots[itTri[1]],Dots[itTri[2]],res)
 	}
-	GetNormal := !(int triInd,vec4f^ nId) -> void
+	GetNormal := !(int triInd) -> vec4f
 	{
 		itTri := ref Triangles[triInd]
-		a := itTri[2] - itTri[0]
-		b := itTri[1] - itTri[0]
+		a := Dots[itTri[2]] - Dots[itTri[0]]
+		b := Dots[itTri[1]] - Dots[itTri[0]]
 		preRes := a <*> b
-		nInd^ = preRes.xyz0.Normal()
+		return preRes.xyz0.Normal()
 	}
 	TriangleDistance := !(vec4f pos, vec4f a, vec4f b, vec4f c,vec4f^ res) -> bool
 	{
-		ab := b.xyz - a.xyz
-		ac := c.xyz - a.xyz
-		ap := pos.xyz - a.xyz
+		a = a.xyz0
+		b = b.xyz0
+		c = c.xyz0
 
-		rb := (ab <+> ap) / ab.xyz.LengthSq()
-		rc := (ac <+> ap) / ac.xyz.LengthSq()
+		//DDrawPoint(a)
+		//DDrawPoint(b)
+		//DDrawPoint(c)
+
+		ab := b - a
+		ac := c - a
+
+		ab = ab.Normal()
+		ac = ac.Normal()
+
+		pos = pos.xyz0
+
+		
+		normal := ab <*> ac
+		normal = normal.Normal()
+
+		p := -(normal <+> a)
+
+		dist := normal <+> pos + p
+
+		proj := pos - normal*dist
+		DDrawPoint(proj)
+
+		ap := proj - a
+
+		rb := (ab <+> ap)
+		rc := (ac <+> ap)
 		
 		if rb < 0.0f or rc < 0.0f return false
 		if rb + rc > 1.0f return false
-		
 
-		preRes := ab*rb + ac*rc + a.xyz
-		res^ = preRes.xyz0
+		res^ = proj
 		
 		return true
 	}
@@ -322,7 +344,6 @@ PhysHeightMap := class
 	}
 	TriangleDistanceH := !(vec4f pos, vec4f a, vec4f b, vec4f c,vec4f^ res) -> bool
 	{
-		
 		//img1 := ab.y*ap.x - ab.x*ap.y
 		//img2 := ac.y*ap.x - ac.x*ap.y
 

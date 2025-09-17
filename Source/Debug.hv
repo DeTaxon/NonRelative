@@ -1,0 +1,22 @@
+
+
+debugPoints := List.{vec4f}
+
+
+DDrawPoint := !(vec4f pointPos) -> void
+{
+	debugPoints.Push(pointPos)
+}
+
+DebugDrawPoints := !(VkCommandBuffer cmd,vCamera^ cmr,vProp^ prp) -> void
+{
+	for it : debugPoints
+	{
+		cnt := centf()
+
+		prp.propPosition.pos = it
+		prp.propPosition.pos.w = 0.5
+		prp.Draw(cmd,cmr^,cnt)
+	}
+	debugPoints.Destroy()
+}

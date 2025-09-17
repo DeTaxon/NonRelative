@@ -20,7 +20,6 @@ PhysCheckPlayerVSHMap := !(PhysPlayer^ p,PhysHeightMap^ hMap,centf mapPosition) 
 			itH := p.System.pos.z - hV.z
 			if itH < 0.0f and itH > -pPos.w //UNCONST
 			{
-				p.MapTouchTime = gNowTime
 				if p.ImpulseV.z < 0.0f
 				{
 					p.ImpulseV.z = 0.0f
