@@ -14,18 +14,20 @@ PhysCheckSphereVSHMap := !(PhysSphere^ p,PhysHeightMap^ hMap,centf mapPosition) 
 	for i : triC
 	{
 		hV := vec4f
-		nowT := hMap.TriangleDistance(pPos,tris[i],hV&)
+		normal := vec4f
+		nowT := hMap.TriangleDistance(pPos,tris[i],hV&,normal&)
+
 		if nowT
 		{
 			v := hV - p.System.pos
 			itH := Distance(p.System.pos,hV)
 
-			if itH < p.Radius and itH > (-p.Radius)
-			{
-				norm := hMap.GetNormal(tris[i])
+			// printf("wut %f %f\n",itH,p.Radius)
 
-				diff := p.ImpulseV <+> norm
-				p.ImpulseV -= norm*(diff*2)
+			if itH < p.Radius*1.1 //and itH > (-p.Radius)
+			{
+				diff := p.ImpulseV <+> normal
+				p.ImpulseV -= normal*(diff*2)
 				tmp := mapPosition.Apply(hV) //TODO remove tmp
 				//p.System.pos.z = tmp.z + p.Radius
 				fixes += 1

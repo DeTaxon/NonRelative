@@ -23,8 +23,8 @@ main := !(char^[] args) -> int
 	x := 1920
 	y := 1080
 
-	//x = 500
-	//y = 500
+	//x = 600
+	//y = 600
 
 	win = new TestWindow
 	win.Init(x,y,"Hi Again",true)
@@ -62,16 +62,26 @@ main := !(char^[] args) -> int
 
 	LinkMaps(gPlayerMap,gPlayerMap,45.5x,quantf(0,0,0,1))
 
-	sPos := vec4f(2.0,-1.0,2.0,1.0)
-	sphr1 := engine.CreateProp(sphere)
-	sphr1.PhysModel.System.pos = sPos 
+	blsCount := 20
 
-	sPos2 := vec4f(3.0,-2.0,2.0,1.0)
-	sphr2 := engine.CreateProp(sphere)
-	sphr2.PhysModel.System.pos = sPos2
+	for i : blsCount
+	{
+		pos := vec4f(RandFloat(2.0,20.0),RandFloat(-1,-20.0),1.2,1.0)
+		sphr := engine.CreateProp(sphere)
+		sphr.PhysModel.System.pos = pos
 
-	gPlayerMap.mapProps.Push(sphr1)
-	gPlayerMap.mapProps.Push(sphr2)
+		gPlayerMap.mapProps.Push(sphr)
+
+		TSpawnTask(() ==> [ps = RandFloat(1.0,7.0),sphr,pos]{
+			while not gQuit
+			{
+				TSleep(ps)
+				sphr.PhysModel.ImpulseV = vec4f(0,0,0.0,0)
+				sphr.PhysModel.System.pos = pos
+			}
+		})
+	}
+
 
 	hdn := engine.CreateProp(sphere)
 
@@ -83,26 +93,6 @@ main := !(char^[] args) -> int
 	NuklearCreateStep()
 
 	CreateQuad()
-
-	TSpawnTask(() ==> {
-
-		while not gQuit
-		{
-			sphr1.PhysModel.ImpulseV = vec4f(0,0,0.0,0)
-			sphr1.PhysModel.System.pos = sPos
-			TSleep(1.7)
-		}
-	})
-
-	TSpawnTask(() ==> {
-
-		while not gQuit
-		{
-			sphr2.PhysModel.ImpulseV = vec4f(0,0,0.0,0)
-			sphr2.PhysModel.System.pos = sPos2
-			TSleep(1.3)
-		}
-	})
 
 	TSpawnTask(() ==> {
 		oldTime := GetSteadyTime()
@@ -305,7 +295,7 @@ main := !(char^[] args) -> int
 				learnShader.ApplyShaderToQueue(vk,step1Cmd.Get(),vk.GetSurfaceWidth(),vk.GetSurfaceHeight())
 				gCam.BindDescriptor(step1Cmd.Get())
 
-				DebugDrawPoints(step1Cmd.Get(),gCam,hdn)
+				// DebugDrawPoints(step1Cmd.Get(),gCam,hdn)
 				DrawMap(step1Cmd.Get(),gPlayerMap,centf(),4)
 
 

@@ -121,7 +121,7 @@ TEngine := class extend TGCObject
 	{
 		result = new vProp()
 		result.itModel = inModel
-		result.PhysModel = inModel.PhysModel
+		result.PhysModel = CopyPhysModel(inModel.PhysModel)
 		result.modelTextureSet = modelTextureDescriptor.CreateDescriptor()
 		vSetTexture(vInstance,result.modelTextureSet,inModel.ReqTexture,gSamplerNearest)
 	}

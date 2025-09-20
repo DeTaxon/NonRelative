@@ -282,10 +282,10 @@ PhysHeightMap := class
 		}
 	}
 	
-	TriangleDistance := !(vec4f pos, u16 ind,vec4f^ res) -> bool
+	TriangleDistance := !(vec4f pos, u16 ind,vec4f^ res,vec4f^ resNorm) -> bool
 	{
 		itTri := ref Triangles[ind]
-		return TriangleDistance(pos,Dots[itTri[0]],Dots[itTri[1]],Dots[itTri[2]],res)
+		return TriangleDistance(pos,Dots[itTri[0]],Dots[itTri[1]],Dots[itTri[2]],res,resNorm)
 	}
 	GetNormal := !(int triInd) -> vec4f
 	{
@@ -295,7 +295,7 @@ PhysHeightMap := class
 		preRes := a <*> b
 		return preRes.xyz0.Normal()
 	}
-	TriangleDistance := !(vec4f pos, vec4f a, vec4f b, vec4f c,vec4f^ res) -> bool
+	TriangleDistance := !(vec4f pos, vec4f a, vec4f b, vec4f c,vec4f^ res,vec4f^ resNorm) -> bool
 	{
 		a = a.xyz0
 		b = b.xyz0
@@ -305,24 +305,29 @@ PhysHeightMap := class
 		//DDrawPoint(b)
 		//DDrawPoint(c)
 
+
 		ab := b - a
 		ac := c - a
+
+		dAB := ab.Length()
+		dAC := ac.Length()
 
 		ab = ab.Normal()
 		ac = ac.Normal()
 
 		pos = pos.xyz0
-
 		
 		normal := ab <*> ac
 		normal = normal.Normal()
+
+		resNorm^ = normal
 
 		p := -(normal <+> a)
 
 		dist := normal <+> pos + p
 
 		proj := pos - normal*dist
-		DDrawPoint(proj)
+		// DDrawPoint(proj)
 
 		ap := proj - a
 
@@ -330,7 +335,7 @@ PhysHeightMap := class
 		rc := (ac <+> ap)
 		
 		if rb < 0.0f or rc < 0.0f return false
-		if rb + rc > 1.0f return false
+		if rb + rc > dAB + dAC return false
 
 		res^ = proj
 		
@@ -506,8 +511,27 @@ PhysVsPhys := !(PhysCommon^ a, PhysCommon^ b,centf offset) -> int
 		{
 		case "HMap"
 			return PhysCheckSphereVSHMap(a->{PhysSphere^},b->{PhysHeightMap^},offset)
+			
 		}
 	}
 	return 0
+}
+
+
+CopyPhysModel := !(PhysCommon^ mdl) -> PhysCommon^
+{
+	switch mdl.PhysType
+	{
+	case "Sphere"
+		res := new PhysSphere
+		memcpy(res,mdl,PhysSphere->TypeSize)
+		return res
+	case "HMap"
+		return mdl
+	case void
+		
+		assert(false)
+	}
+
 }
 
