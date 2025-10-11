@@ -395,5 +395,7 @@ main := !(char^[] args) -> int
 			gQuit = true
 		}
 	}
+
+	CurrentThread.SkipTimers()
 }
 
