@@ -89,9 +89,6 @@ main := !(char^[] args) -> int
 	//canvasProp.propPosition.pos = vec4f(2.0,0.0,1.4,1.0)
 	//canvasProp.propPosition.ang = quantfAt(0.0,0.0,1.0,-90deg) <*> quantfAt(1.0,0.0,0.0,90deg)
 
-	NuklearTestInit()
-	NuklearCreateStep()
-
 	CreateQuad()
 
 	TSpawnTask(() ==> {
