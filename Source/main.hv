@@ -45,10 +45,10 @@ main := !(char^[] args) -> int
 	gPlayer = new PhysPlayer()
 	gPlayer.System.pos = vec4f(0.0,0.0,2.0,1.0)
 
-	gLightShader = engine.LoadShader("Shaders/Defer.json") //TODO only name Defer needed
-	learnShader := engine.LoadShader("Shaders/LearnShader.json")
+	gLightShader = engine.LoadShader("ShadersBin/Defer.json") //TODO only name Defer needed
+	learnShader := engine.LoadShader("ShadersBin/LearnShader.json")
 
-	drawMirrorShader := engine.LoadShader("Shaders/Mirror.json")
+	drawMirrorShader := engine.LoadShader("ShadersBin/Mirror.json")
 
 	//canvas := engine.LoadModel("Models/Canvas/Canvas.json")
 

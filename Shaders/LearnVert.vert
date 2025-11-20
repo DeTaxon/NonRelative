@@ -47,7 +47,6 @@ vec3 rotate_vertex_position(vec3 position,vec4 qnt)
   return quat_mult(q_tmp, qr_conj).xyz;
 }
 void main() {
-		asd
 	vec4 prePosition = vec4((rotate_vertex_position(i_Position.xyz*consts.g_pos.w,consts.quantAng)) + consts.g_pos.xyz,1.0f);
 	// prePosition = prePosition.yzxw * vec4(1.0f,-1.0f,1.0f,1.0f);
 	prePosition = prePosition.yzxw * vec4(-1.0f,-1.0f,-1.0f,1.0f);

@@ -17,7 +17,6 @@
 		if HV.IsNonStopMode()
 		{
 			AsyncMonitorFolderNonStop("Shaders/",true,(x,y) ==> {
-				printf("changed file\n")
 				CheckFile(x)
 			})
 		}
@@ -35,6 +34,10 @@
 			shaderFile = true
 		if nm.End == ".frag"
 			shaderFile = true
+
+		ech := TEchoStream
+		ech << "ShadersBin/" << x.GetPath()->AsString^[8..0]
+		binPath := ech.GetStr()
 
 		if shaderFile
 		{
@@ -54,15 +57,20 @@
 				errors[x.GetPath()] = obj
 				// Console << "Error message " << res.ErrorMessage << "\n"
 			}else{
-				ech := TEchoStream
-				ech << "ShadersBin/" << x.GetPath()->AsString^[8..0]
-				binPath := ech.GetStr()
 				// Console << "Compiled " << binPath << "\n"
 
 				outFile := TFile(binPath,"wb")
 				outFile.Write(res.ResultShader.GetPointer(),res.ResultShader.Size())
 				outFile.Close()
 			}
+		}
+		if nm.End == ".json"
+		{
+			blb := x.GetBlob()
+
+			outFile := TFile(binPath,"wb")
+			outFile.Write(blb.GetPointer(),blb.Size())
+			outFile.Close()
 		}
 	}
 
