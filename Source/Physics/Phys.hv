@@ -79,6 +79,8 @@ PhysHightSphere := class
 	TriCount := u8
 	CSpheres := u16[3]
 	Triangles := u16[4]
+
+	"=" := default
 }//total size 32 byte
 
 PhysHeightMap := class
