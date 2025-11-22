@@ -9,6 +9,8 @@
 
 	Init := !() -> void
 	{
+		shaderCompiler."this"()
+
 		rep.ReadFolder("Shaders/",true, x ==> {
 			CheckFile(x)
 		})
@@ -33,6 +35,10 @@
 		if nm.End == ".vert"
 			shaderFile = true
 		if nm.End == ".frag"
+			shaderFile = true
+		if nm.End == ".mesh"
+			shaderFile = true
+		if nm.End == ".task"
 			shaderFile = true
 
 		ech := TEchoStream
