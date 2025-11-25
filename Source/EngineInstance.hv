@@ -183,9 +183,8 @@ TEngine := class extend TGCObject
 
 		modelTextureDescriptor = modelLayout.CreateDescriptorPool(1,100)
 
-		lightLayout = lightRenderPass.CreateLayout(![
-			//vertex input
-		],![
+		empty := TShaderInputVertexInfo	
+		lightLayout = lightRenderPass.CreateLayout(empty,![
 			new TImageSet(3)
 		],![
 			new TVertexPushConstant(2*4)
