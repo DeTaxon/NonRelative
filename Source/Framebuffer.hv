@@ -16,7 +16,7 @@ VFramebufferBase := class extend TGCObject
 		{
 			resImage := TVkTexture^
 
-			if imgs == null or imgs[i] == null
+			if i >= imgs.Size() or imgs[i] == null
 			{
 				resImage = instance.CreateTexture()
 				resImage.CreateObject(width,height, (img,viw) ==> {

@@ -34,7 +34,7 @@ CreateFB := !() -> void
 		VK_FORMAT_R32G32B32A32_SFLOAT
 	],true)
 
-	gModel2 = gModelBase2.CreateFrame(null,depthTexture)
+	gModel2 = gModelBase2.CreateFrame(![],depthTexture)
 
 	fbTextures[0] = gModel2.Images[0]
 	fbTextures[1] = gModel2.Images[1]

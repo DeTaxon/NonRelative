@@ -257,10 +257,10 @@ RawModel := class
 		switch IndexType.BaseType
 		{
 		case u32
-				ret := new Vector.{u32}(IndexCount)
-				asU32 := inds->{u32^}
-				ret^[^i] = asU32[i]
-				return ret
+			result.Resize(IndexCount)
+			asU32 := inds->{u32^}
+			result[^i] = asU32[i]
+
 		case u16
 			assert(false)
 			//{
@@ -276,9 +276,9 @@ RawModel := class
 			//	preRet[^i] = asU8[i]
 			//	return preRet
 			//}
+		case void
+			assert(false)
 		}
-		assert(false)
-		return null->{u32[]}
 	}
 	IndsRefit := !() -> void
 	{
