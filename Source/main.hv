@@ -50,8 +50,6 @@ main := !(char^[] args) -> int
 
 	drawMirrorShader := engine.LoadShader("ShadersBin/Mirror.json")
 
-	//canvas := engine.LoadModel("Models/Canvas/Canvas.json")
-
 	sphere := engine.LoadModel("Models/Sphere/Sphere.json")
 
 	gCam = new vCamera()
@@ -62,32 +60,29 @@ main := !(char^[] args) -> int
 
 	LinkMaps(gPlayerMap,gPlayerMap,45.5x,quantf(0,0,0,1))
 
-	blsCount := 20
-
-	for i : blsCount
-	{
-		pos := vec4f(RandFloat(2.0,20.0),RandFloat(-1,-20.0),1.2,1.0)
-		sphr := engine.CreateProp(sphere)
-		sphr.PhysModel.System.pos = pos
-
-		gPlayerMap.mapProps.Push(sphr)
-
-		TSpawnTask(() ==> [ps = RandFloat(1.0,7.0),sphr,pos]{
-			while not gQuit
-			{
-				TSleep(ps)
-				sphr.PhysModel.ImpulseV = vec4f(0,0,0.0,0)
-				sphr.PhysModel.System.pos = pos
-			}
-		})
-	}
+	// blsCount := 20
+	//
+	// for i : blsCount
+	// {
+	// 	pos := vec4f(RandFloat(2.0,20.0),RandFloat(-1,-20.0),1.2,1.0)
+	// 	sphr := engine.CreateProp(sphere)
+	// 	sphr.PhysModel.System.pos = pos
+	//
+	// 	gPlayerMap.mapProps.Push(sphr)
+	//
+	// 	TSpawnTask(() ==> [ps = RandFloat(1.0,7.0),sphr,pos]{
+	// 		while not gQuit
+	// 		{
+	// 			TSleep(ps)
+	// 			sphr.PhysModel.ImpulseV = vec4f(0,0,0.0,0)
+	// 			sphr.PhysModel.System.pos = pos
+	// 		}
+	// 	})
+	// }
 
 
 	hdn := engine.CreateProp(sphere)
 
-	//canvasProp = engine.CreateProp(canvas)
-	//canvasProp.propPosition.pos = vec4f(2.0,0.0,1.4,1.0)
-	//canvasProp.propPosition.ang = quantfAt(0.0,0.0,1.0,-90deg) <*> quantfAt(1.0,0.0,0.0,90deg)
 
 	CreateQuad()
 
@@ -102,107 +97,15 @@ main := !(char^[] args) -> int
 		}
 	})
 
-	//meshDataBlob := MakeBlob(64*64*64*16)
-	//meshShaderBuffer := vk.CreateMemBufferObject(meshDataBlob.Size(),VK_BUFFER_USAGE_VERTEX_BUFFER_BIT or_b VK_BUFFER_USAGE_STORAGE_BUFFER_BIT or_b VK_BUFFER_USAGE_TRANSFER_DST_BIT)
-	//meshData := meshDataBlob.GetPointer()->{u8^}
-	//
-	//
-	//{
-	//	cntr := vec3f(32.0,32.0,32.0)
-
-	//	iii := 0
-	//	for z : 64
-	//	{
-	//		for y : 64
-	//		{
-	//			for x : 64
-	//			{
-	//				thisCntr := vec3f(x,y,z)
-	//				dist := Distance(thisCntr,cntr)
-	//				meshData[iii*16]&->{u32^}^ = dist <= 19.5 ?: 1 : 0
-	//				iii += 1
-	//			}
-	//		}
-	//	}
-	//}
-
-	//meshShaderBuffer.TransferData(ArraySpan.{u8}(meshData->{u8^},meshDataBlob.Size()))
 
 	lastFpsCheck := GetSteadyTime()
 	localFpsCounter := 0
 
-	//meshBase := engine.modelRenderPass.CreateLayout(![],![
-	//	new TUniformSet(VK_SHADER_STAGE_MESH_BIT_EXT),
-	//	new TUniformStorage(VK_SHADER_STAGE_MESH_BIT_EXT)
-	//],![
-	//	new TMeshPushConstant(4*4*3)
-	//],3)
-
-	//meshPool := meshBase.CreateDescriptorPool(0,16)
-	//meshDescr := meshPool.CreateDescriptor()
-	//meshPool2 := meshBase.CreateDescriptorPool(1,16)
-	//meshDescr2 := meshPool2.CreateDescriptor()
-
-	//meshDescrMem := vk.CreateMemBufferObject(4*4,VK_BUFFER_USAGE_VERTEX_BUFFER_BIT or_b VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT or_b VK_BUFFER_USAGE_TRANSFER_DST_BIT)
-
-	//meshPos := centf()
-	//meshPos.pos.x = 9
-	//meshPos.pos.y = 9
-	//meshPos.pos.z = 1.5
-	//meshPos.ang = quantfAt(1.0,0.0,0.0,-90deg)
-
-	//task := engine.shaderCompiler.Compile(FSGetFile(StringSpan("Shaders/Sphere.task")))
-	//mesh := engine.shaderCompiler.Compile(FSGetFile(StringSpan("Shaders/Sphere.mesh")))
-	//frag := engine.shaderCompiler.Compile(FSGetFile(StringSpan("Shaders/Sphere.frag")))
-	//meshShader := meshBase.CreateMeshShader(task,mesh,frag) 
-
-	//bufInfo := VkDescriptorBufferInfo
-	//bufInfo.buffer = meshDescrMem.itBuffer
-	//bufInfo.offset = 0
-	//bufInfo.range = 4*4
-	//someWrite := VkWriteDescriptorSet[2]
-	//someWrite[0]."this"()
-	//someWrite[0].dstSet = meshDescr 
-	//someWrite[0].dstBinding = 0
-	//someWrite[0].dstArrayElement = 0
-	//someWrite[0].descriptorCount = 1
-	//someWrite[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
-	//someWrite[0].pBufferInfo&->{void^^}^ = bufInfo&
-	//bufInfo2 := VkDescriptorBufferInfo
-	//bufInfo2.buffer = meshShaderBuffer.itBuffer
-	//bufInfo2.offset = 0
-	//bufInfo2.range = meshDataBlob.Size()
-	//someWrite[1]."this"()
-	//someWrite[1].dstSet = meshDescr2
-	//someWrite[1].dstBinding = 0
-	//someWrite[1].dstArrayElement = 0
-	//someWrite[1].descriptorCount = 1
-	//someWrite[1].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER
-	//someWrite[1].pBufferInfo&->{void^^}^ = bufInfo2&
-
-	//vk.Funcs.vkUpdateDescriptorSets(vk.LogicalDevice,2,someWrite[0]&,0,null)
-	//
-	//{
-	//	aspect := 1800 / 1000
-	//	fovTM := 1.0f / tan(gCam.camPOV*0.5f)
-	//	range := gCam.camFar - gCam.camNear
-
-	//	perspConsts := float[4]
-
-	//	perspConsts[0] = fovTM / aspect
-	//	perspConsts[1] = fovTM
-	//	perspConsts[2] = (gCam.camFar + gCam.camNear) / range
-	//	perspConsts[3] = 2.0*(gCam.camFar*gCam.camNear/range)
-
-	//	meshDescrMem.TransferData(ArraySpan.{u8}(perspConsts[0]&->{u8^}, 4*4)) //TODO
-	//}
 	gCam.camPos.z = 1.7
 
 	step1Cmd := TVkCommandBuffer(vk,vk.itDrawCmdPool2)
 	step2Cmd := TVkCommandBuffer(vk,vk.itDrawCmdPool2)
 
-
-	//deleteSphere := vec3f(25.0f,25.0f,65.0f)
 
 	oldTime := GetSteadyTime()
 	inputCoef := 0.5
@@ -214,30 +117,6 @@ main := !(char^[] args) -> int
 
 		gCam.InputCheck(win,delta*inputCoef,not win.menuMode)
 	
-		if false
-		{
-			deleteSphere.z -= delta
-			{
-				iii := 0
-				for z : 64
-				{
-					for y : 64
-					{
-						for x : 64
-						{
-							dist := Distance(deleteSphere,vec3f(x,y,z))
-							if dist <= 6.5
-							{
-								meshData[iii*16]&->{int^}^ = 0
-							}
-							iii += 1
-						}
-					}
-				}
-			}
-			meshShaderBuffer.TransferData(ArraySpan.{u8}(meshData->{u8^},meshDataBlob.Size()))
-		}
-
 		surfaceIndex := u32
 		drawRes := false
 		@work vk.DrawGetImage(surfaceIndex&,drawRes&)
@@ -297,20 +176,6 @@ main := !(char^[] args) -> int
 
 
 
-				if false
-				{
-					zeroOffset := centf()
-
-					constData := u8[128]
-					meshBasePos := constData&->{centf^}
-					constData[4*4*2]&->{float^}^ = glfwGetTime()
-					gCam.ApplyCamera(meshPos,meshBasePos^)
-					meshShader.ApplyShaderToQueue(vk,step1Cmd.Get(),vk.GetSurfaceWidth(),vk.GetSurfaceHeight())
-					vk.Funcs.vkCmdPushConstants(step1Cmd.Get(),meshBase.Get(),1 shl 7,0,4*4*3,meshBasePos[0]&)
-					vk.Funcs.vkCmdBindDescriptorSets(step1Cmd.Get(),VK_PIPELINE_BIND_POINT_GRAPHICS,meshBase.Get(),0,1,meshDescr&,0,null) //TODO remove vk.Funcs
-					vk.Funcs.vkCmdBindDescriptorSets(step1Cmd.Get(),VK_PIPELINE_BIND_POINT_GRAPHICS,meshBase.Get(),1,1,meshDescr2&,0,null) //TODO remove vk.Funcs
-					vk.Funcs.vkCmdDrawMeshTasksEXT(step1Cmd.Get(),63,63,63)
-				}
 
 
 				StopModelDraw(step1Cmd.Get())
@@ -321,15 +186,6 @@ main := !(char^[] args) -> int
 
 				StartTextDraw(step1Cmd.Get(),vk.surfaceImageViews^[surfaceIndex],surfaceIndex)
 
-				if win.menuMode
-				{
-					//nuklearC.InputCheck(win)
-					//nuklearC.MakeDraw()
-					//nuklearC.RenderStep()
-					//nuklearC.Clear()
-
-					//NuklearDrawStep(step2Cmd.Get(),vk.GetSurfaceWidth(),vk.GetSurfaceHeight())
-				}
 				StopTextDraw(step1Cmd.Get())
 
 				{
