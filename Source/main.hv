@@ -174,10 +174,6 @@ main := !(char^[] args) -> int
 				// DebugDrawPoints(step1Cmd.Get(),gCam,hdn)
 				DrawMap(step1Cmd.Get(),gPlayerMap,centf(),4)
 
-
-
-
-
 				StopModelDraw(step1Cmd.Get())
 			}
 

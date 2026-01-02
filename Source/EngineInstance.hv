@@ -10,7 +10,6 @@ TEngine := class extend TGCObject
 
     this := !() -> void
     {
-        shadersDB."this"()
     }
 
 	LoadMap := !(Str charPath) -> vMap^
@@ -199,9 +198,6 @@ TEngine := class extend TGCObject
 		gLightLayout = lightLayout.Get()
 
 		//overlay.Init(lightRenderPass)
-
-		cacheFile = new CacheFile("EngineData.zip")
-		shadersDB.SetCacheFile(cacheFile)
 
 		shadersDB.SetInput("model",modelLayout)
 		shadersDB.SetInput("light",lightLayout)
