@@ -14,7 +14,7 @@ vPhysStage := !(double deltaTime) -> void
 		forw *= 3.0f
 		lft *= 3.0f
 	}
-	gPlayer.ImpulseV = quantfAt(0.0f,0.0f,-1.0f,gCam.leftRightAng)*vec4f(forw,lft,0.0f,0.0f)
+	gPlayer.ImpulseV = ApplyQuaternion(quantfAt(0.0f,0.0f,-1.0f,gCam.leftRightAng),vec4f(forw,lft,0.0f,0.0f))
 	gPlayer.ImpulseV.z = oldPlayerImpz - 9.8f*deltaTime
 
 	for prp : gPlayerMap.mapProps

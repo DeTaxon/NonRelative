@@ -98,7 +98,7 @@ vCamera := class
 		rotQ := camQuant()
 
 		oldW := camPos.w
-		newAt := rotQ*diffAdd
+		newAt := ApplyQuaternion(rotQ,diffAdd)
 		camPos += newAt
 		camPos.w = oldW
 	}
