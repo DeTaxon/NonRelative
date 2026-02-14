@@ -20,6 +20,8 @@ vkGeometryInstance := class
 
 main := !(char^[] args) -> int
 {
+	gQuit = false
+
 	x := 1920
 	y := 1080
 
@@ -245,6 +247,7 @@ main := !(char^[] args) -> int
 		}
 	}
 
-	CurrentThread.SkipTimers()
+	// CurrentThread.SkipTimers()
+	win.DestroyWindow()
 }
 
