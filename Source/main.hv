@@ -33,11 +33,12 @@ main := !(char^[] args) -> int
 	win.SetInputMode("DISABLED")
 	
 	//TODO can't create empty class
-	engine = new TEngine()
+	engine = new TEngine(vk)
 
 	VulkanInit()
+
+	engine."this"(vk)
 	
-	engine.vInstance = vk
 	engine.Init()
 
 	VoidCoreInit()
@@ -247,6 +248,7 @@ main := !(char^[] args) -> int
 		}
 	}
 
+	engine.Destroy()
 	// CurrentThread.SkipTimers()
 	win.DestroyWindow()
 }

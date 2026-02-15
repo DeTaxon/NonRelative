@@ -8,8 +8,12 @@ TEngine := class extend TGCObject
 
 	shadersDB := VulkanShaderLoader
 
-    this := !() -> void
+	resMngr := VKResourceManager
+
+    this := !(VulkanInstance^ inst) -> void
     {
+		vInstance = inst
+		resMngr.inst = inst
     }
 
 	LoadMap := !(Str charPath) -> vMap^
@@ -91,7 +95,7 @@ TEngine := class extend TGCObject
 			switch ind
 			{
 				case "mesh"
-					result.LoadFile(inFile.GetFile(it.Value()))
+					result.LoadFile(resMngr,inFile.GetFile(it.Value()))
 				case "texture"
 					result.ReqTexture = LoadTexture(inFile.GetFile(it.Value()))
 				case "phys"
@@ -132,7 +136,7 @@ TEngine := class extend TGCObject
 	}
 	LoadTexture := !(File^ inFile) -> TVkTexture^
 	{
-		result = vk.CreateTexture() //TODO
+		result = resMngr.CreateTexture() //TODO
 		result.CreateTexture(inFile)
 	}
 
@@ -148,7 +152,7 @@ TEngine := class extend TGCObject
 
 	Init := !() -> void
 	{
-		modelRenderPass = vInstance.CreateRenderPass(![
+		modelRenderPass = resMngr.CreateRenderPass(![
 			TRenderPassFrame(VK_FORMAT_R8G8B8A8_UNORM,	VK_IMAGE_LAYOUT_UNDEFINED,VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL),
 			TRenderPassFrame(VK_FORMAT_R32G32B32A32_SFLOAT,	VK_IMAGE_LAYOUT_UNDEFINED,VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL),
 			TRenderPassFrame(VK_FORMAT_R32G32B32A32_SFLOAT,	VK_IMAGE_LAYOUT_UNDEFINED,VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
@@ -156,7 +160,7 @@ TEngine := class extend TGCObject
 
 		gRenderPassModel = modelRenderPass.Get()
 
-		lightRenderPass = vInstance.CreateRenderPass(![
+		lightRenderPass = resMngr.CreateRenderPass(![
 			TRenderPassFrame(vk.SwapImageFormat,	VK_IMAGE_LAYOUT_UNDEFINED,VK_IMAGE_LAYOUT_PRESENT_SRC_KHR),
 		],false)
 		gRenderPassLight = lightRenderPass.Get()
@@ -207,5 +211,10 @@ TEngine := class extend TGCObject
 	LoadShader := !(Str shaderInfo) -> vShader^
 	{
 		return shadersDB.LoadShader(shaderInfo)
+	}
+
+	Destroy := !() -> void
+	{
+		resMngr.Destroy()
 	}
 }

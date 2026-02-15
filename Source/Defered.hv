@@ -21,7 +21,7 @@ gFBH := 2048
 CreateFB := !() -> void
 {
 	//create depth
-	depthTexture = vk.CreateTexture()
+	depthTexture = engine.resMngr.CreateTexture()
 	depthTexture.CreateObject(gFBW,gFBH,(img,viv)==> {
 		img.format = VK_FORMAT_D16_UNORM
 		img.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT
