@@ -31,7 +31,7 @@ ifeq ($(cross),win32)
 endif
 
 en:
-	$(TimeFlags) $(gdb_tui) ./halfvoid -g -C0 StandardHVLibrary/ -C1 Source -C1 GameEngine --vk ./vk.xml -o /tmp/out.ll -cache /tmp/HVMecha.zip
+	$(TimeFlags) $(gdb_tui) ./halfvoid -test -g -C0 StandardHVLibrary/ -C1 Source -C1 GameEngine --vk ./vk.xml -o /tmp/out.ll -cache /tmp/HVMecha.zip
 	clang -gdwarf-4 -g /tmp/out.ll -lm -o en
 win.exe:
 	$(TimeFlags) ./halfvoid -win32  -g -C0 StandardLibrary -C1 Source --vk ./vk.xml -o out.ll

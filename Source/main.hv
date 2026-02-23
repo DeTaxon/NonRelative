@@ -248,7 +248,7 @@ main := !(char^[] args) -> int
 		}
 	}
 
-	engine.Destroy()
+	engine?.Destroy()
 	// CurrentThread.SkipTimers()
 	win.DestroyWindow()
 }
